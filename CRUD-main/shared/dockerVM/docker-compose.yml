@@ -31,34 +31,32 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=userapi
       - MYSQL_DATABASE=userapi
-    # ports:
-      # - '5432:5432'
-    volumes: 
-      - /postgres/data:/var/lib/postgresql/data
-      - /vagrant_data:/shared
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U" ,"userapi"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - MYSQL_USER=userapi    
+      - MYSQL_PASSWORD=userapi
 
-  postgres:
-    image: postgres
-    container_name: postgres
-    restart: always
-    environment:
-      - POSTGRES_USER=userapi
-      - POSTGRES_PASSWORD=userapi
     # ports:
       # - '5432:5432'
     volumes: 
       - /postgres/data:/var/lib/postgresql/data
       - /vagrant_data:/shared
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U" ,"userapi"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+
+  # postgres:
+  #   image: postgres
+  #   container_name: postgres
+  #   restart: always
+  #   environment:
+  #     - POSTGRES_USER=userapi
+  #     - POSTGRES_PASSWORD=userapi
+  #   # ports:
+  #     # - '5432:5432'
+  #   volumes: 
+  #     - /postgres/data:/var/lib/postgresql/data
+  #     - /vagrant_data:/shared
+  #   healthcheck:
+  #     test: ["CMD", "pg_isready", "-U" ,"userapi"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
 
   redis-server:
     image: redis:6.2.7
@@ -67,8 +65,7 @@ services:
     
   userapi-1:
     depends_on:
-      # - cassandra
-      - postgres
+      - mysql
       - redis-server
 
     build: /vagrant_data
@@ -81,11 +78,16 @@ services:
       - API_PORT=8200
       - REDIS_PORT=6379
       # - GRPC_PORT=8300
-      - PG_HOST=postgres
+      # - PG_HOST=postgres
       - CASSANDRA_HOST=cassandra
       - REDIS_HOST=redis-server
       - REDIS-PASSWORD=userapi
       - KAFKA_HOST=kafka-1
+      - MYSQL_USER=userapi    
+      - MYSQL_PASSWORD=userapi
+      - MYSQL_HOST=mysql    
+      - MYSQL_PORT=3306    
+      - MYSQL_DB_NAME=userapi 
 
   # userapi-2:
   #   depends_on:

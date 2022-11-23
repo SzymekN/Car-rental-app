@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/SzymekN/CRUD/pkg/producer"
+	"github.com/SzymekN/Car-rental-app/pkg/producer"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"

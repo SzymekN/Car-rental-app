@@ -3,8 +3,8 @@ package controller
 import (
 	"fmt"
 
-	"github.com/SzymekN/CRUD/pkg/model"
-	"github.com/SzymekN/CRUD/pkg/storage"
+	"github.com/SzymekN/Car-rental-app/pkg/model"
+	"github.com/SzymekN/Car-rental-app/pkg/storage"
 
 	"github.com/gocql/gocql"
 )

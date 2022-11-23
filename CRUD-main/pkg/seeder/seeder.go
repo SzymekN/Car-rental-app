@@ -5,11 +5,11 @@ import (
 	"log"
 	"reflect"
 
-	"github.com/SzymekN/CRUD/pkg/model"
-	"github.com/SzymekN/CRUD/pkg/storage"
+	"github.com/SzymekN/Car-rental-app/pkg/model"
+	"github.com/SzymekN/Car-rental-app/pkg/storage"
 	"github.com/gocql/gocql"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type SeedPG struct {
@@ -96,16 +96,16 @@ func AllPG() []SeedPG {
 // }
 
 func CreateAndSeed() {
-	CreateAndSeedPG(storage.GetDBInstance())
+	CreateAndSeedPG(storage.MysqlConn.GetDBInstance())
 	// CreateAndSeedCASS(storage.GetCassandraInstance())
 }
 
 func dropTable(db *gorm.DB, tableName string) {
 
-	tableExists := db.HasTable(tableName)
+	tableExists := db.Migrator().HasTable(tableName)
 	if tableExists {
 
-		err := db.DropTable(tableName).Error
+		err := db.Migrator().DropTable(tableName).Error
 
 		if err != nil {
 			log.Fatalf("PG: Dropping table users failed with error: %s", err)
@@ -125,9 +125,9 @@ func createTable(db *gorm.DB, tableName string, dataModel model.DataModel) {
 
 	switch dataModel.(type) {
 	case *model.User:
-		err = db.Table(tableName).AutoMigrate(&model.User{}).Error
+		err = db.Table(tableName).AutoMigrate(&model.User{})
 	case *model.Operator:
-		err = db.Table(tableName).AutoMigrate(&model.Operator{}).Error
+		err = db.Table(tableName).AutoMigrate(&model.Operator{})
 	default:
 		log.Fatal("ERROR COULD NOT CREATE")
 	}

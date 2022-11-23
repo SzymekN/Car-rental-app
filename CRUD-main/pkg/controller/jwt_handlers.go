@@ -7,29 +7,35 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/SzymekN/CRUD/pkg/auth"
-	"github.com/SzymekN/CRUD/pkg/model"
-	"github.com/SzymekN/CRUD/pkg/producer"
-	"github.com/SzymekN/CRUD/pkg/storage"
+	"github.com/SzymekN/Car-rental-app/pkg/auth"
+	"github.com/SzymekN/Car-rental-app/pkg/model"
+	"github.com/SzymekN/Car-rental-app/pkg/producer"
+	"github.com/SzymekN/Car-rental-app/pkg/storage"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 )
 
 func GetOperator(username string) (auth.Operator, error) {
 	// cas := storage.GetCassandraInstance()
-	pg := storage.GetDBInstance()
+	conn := storage.MysqlConn.GetDBInstance()
 	o := auth.Operator{}
+	result := conn.Where(&auth.Operator{Username: username}).Find(&o)
+	err := result.Error
 
-	if err := pg.Where(&auth.Operator{Username: username}).Find(&o).Error; err != nil {
+	if err != nil {
 		fmt.Println(err)
 		return o, err
+	}
+
+	if result.RowsAffected < 1 {
+		return o, errors.New("Operator not found")
 	}
 
 	return o, nil
 }
 
 func SaveOperator(op auth.Operator) error {
-	pg := storage.GetDBInstance()
+	pg := storage.MysqlConn.GetDBInstance()
 	// cas := storage.GetCassandraInstance()
 	if err := pg.Create(&op).Error; err != nil {
 		fmt.Println(err)

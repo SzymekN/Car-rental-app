@@ -7,13 +7,13 @@
 //  Consumes:
 //    - application/json
 
-//  Produces:
-//    - application/json
+//	Produces:
+//	  - application/json
 //
 // swagger:meta
 package docs
 
-import "github.com/SzymekN/CRUD/pkg/model"
+import "github.com/SzymekN/Car-rental-app/pkg/model"
 
 // Data structure representing single user
 // swagger:response userResponse

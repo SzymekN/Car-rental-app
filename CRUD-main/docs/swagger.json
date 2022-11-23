@@ -359,7 +359,7 @@
           "x-go-name": "Message"
         }
       },
-      "x-go-package": "github.com/SzymekN/CRUD/pkg/model"
+      "x-go-package": "github.com/SzymekN/Car-rental-app/pkg/model"
     },
     "GenericMessage": {
       "type": "object",
@@ -373,7 +373,7 @@
           "x-go-name": "Message"
         }
       },
-      "x-go-package": "github.com/SzymekN/CRUD/pkg/model"
+      "x-go-package": "github.com/SzymekN/Car-rental-app/pkg/model"
     },
     "User": {
       "type": "object",
@@ -412,7 +412,7 @@
           "x-go-name": "Lastname"
         }
       },
-      "x-go-package": "github.com/SzymekN/CRUD/pkg/model"
+      "x-go-package": "github.com/SzymekN/Car-rental-app/pkg/model"
     }
   },
   "responses": {

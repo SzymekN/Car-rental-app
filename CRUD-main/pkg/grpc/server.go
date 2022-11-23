@@ -7,9 +7,9 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/SzymekN/CRUD/pkg/controller"
-	"github.com/SzymekN/CRUD/pkg/model"
-	"github.com/SzymekN/CRUD/pkg/producer"
+	"github.com/SzymekN/Car-rental-app/pkg/controller"
+	"github.com/SzymekN/Car-rental-app/pkg/model"
+	"github.com/SzymekN/Car-rental-app/pkg/producer"
 
 	"google.golang.org/grpc"
 	_ "google.golang.org/grpc/credentials/insecure"

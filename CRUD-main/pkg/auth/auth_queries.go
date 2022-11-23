@@ -6,8 +6,8 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/SzymekN/CRUD/pkg/producer"
-	"github.com/SzymekN/CRUD/pkg/storage"
+	"github.com/SzymekN/Car-rental-app/pkg/producer"
+	"github.com/SzymekN/Car-rental-app/pkg/storage"
 )
 
 var ctx = context.Background()

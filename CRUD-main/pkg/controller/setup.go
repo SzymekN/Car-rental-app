@@ -3,7 +3,7 @@ package controller
 import (
 	"net/http"
 
-	"github.com/SzymekN/CRUD/pkg/auth"
+	"github.com/SzymekN/Car-rental-app/pkg/auth"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/mvrilo/go-redoc"

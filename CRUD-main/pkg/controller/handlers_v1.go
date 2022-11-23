@@ -5,23 +5,25 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/SzymekN/CRUD/pkg/model"
-	"github.com/SzymekN/CRUD/pkg/producer"
-	"github.com/SzymekN/CRUD/pkg/storage"
+	"github.com/SzymekN/Car-rental-app/pkg/model"
+	"github.com/SzymekN/Car-rental-app/pkg/producer"
+	"github.com/SzymekN/Car-rental-app/pkg/storage"
 
 	"github.com/labstack/echo/v4"
 )
 
 // swagger:route POST /api/v1/users/save users_v1 postUserV1
 // Save user to postgres database.
-//	Consumes:
-//    - application/json
-//  Produces:
-//    - application/json
+//
+//		Consumes:
+//	   - application/json
+//	 Produces:
+//	   - application/json
 //
 // responses:
-// 		200: userResponse
-//		500: errorResponse
+//
+//	200: userResponse
+//	500: errorResponse
 func SaveUser(c echo.Context) error {
 	var u model.User
 	var err error
@@ -42,7 +44,7 @@ func SaveUser(c echo.Context) error {
 	}
 
 	k = strconv.Itoa(u.Id)
-	db := storage.GetDBInstance()
+	db := storage.MysqlConn.GetDBInstance()
 	err = db.Create(&u).Error
 	if err != nil {
 		status = http.StatusInternalServerError
@@ -57,16 +59,18 @@ func SaveUser(c echo.Context) error {
 
 // swagger:route PUT /api/v1/user/{id} users_v1 putUserV1
 // Updates user in postgres database.
-//	Consumes:
-//    - application/json
-//  Produces:
-//    - application/json
+//
+//		Consumes:
+//	   - application/json
+//	 Produces:
+//	   - application/json
 //
 // responses:
-// 		200: userResponse
-//		400: errorResponse
-//		404: errorResponse
-//		500: errorResponse
+//
+//	200: userResponse
+//	400: errorResponse
+//	404: errorResponse
+//	500: errorResponse
 func UpdateUser(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	var status int
@@ -86,7 +90,7 @@ func UpdateUser(c echo.Context) error {
 	}
 
 	k = strconv.Itoa(id)
-	db := storage.GetDBInstance()
+	db := storage.MysqlConn.GetDBInstance()
 	user := model.User{}
 	result := db.Find(&user, id)
 
@@ -119,13 +123,15 @@ func UpdateUser(c echo.Context) error {
 
 // swagger:route DELETE /api/v1/user/{id} users_v1 deleteUserV1
 // deletes user from postgres database.
-//  Produces:
-//    - application/json
+//
+//	Produces:
+//	  - application/json
 //
 // responses:
-// 		200: messageResponse
-//		400: errorResponse
-//		404: errorResponse
+//
+//	200: messageResponse
+//	400: errorResponse
+//	404: errorResponse
 func DeleteUser(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	var status int
@@ -146,7 +152,7 @@ func DeleteUser(c echo.Context) error {
 	}
 
 	k = strconv.Itoa(id)
-	db := storage.GetDBInstance()
+	db := storage.MysqlConn.GetDBInstance()
 	result := db.Delete(&model.User{}, id)
 
 	if result.RowsAffected < 1 {
@@ -163,13 +169,15 @@ func DeleteUser(c echo.Context) error {
 
 // swagger:route GET /api/v1/user/{id} users_v1 getUserV1
 // Gets user from postgres database.
-//  Produces:
-//    - application/json
+//
+//	Produces:
+//	  - application/json
 //
 // responses:
-// 		200: userResponse
-//		400: errorResponse
-//		404: errorResponse
+//
+//	200: userResponse
+//	400: errorResponse
+//	404: errorResponse
 func GetUserById(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	var status int
@@ -190,7 +198,7 @@ func GetUserById(c echo.Context) error {
 	}
 
 	k = strconv.Itoa(id)
-	db := storage.GetDBInstance()
+	db := storage.MysqlConn.GetDBInstance()
 	user := model.User{}
 	result := db.Find(&user, id)
 
@@ -209,14 +217,15 @@ func GetUserById(c echo.Context) error {
 // swagger:route GET /api/v1/users users_v1 listUsersV1
 // Gets user from postgres database.
 //
-//  Produces:
-//    - application/json
+//	Produces:
+//	  - application/json
 //
 // responses:
-// 		200: usersResponse
-//		500: errorResponse
+//
+//	200: usersResponse
+//	500: errorResponse
 func GetUsers(c echo.Context) error {
-	db := storage.GetDBInstance()
+	db := storage.MysqlConn.GetDBInstance()
 	users := []model.User{}
 
 	k, msg := "all", "userapi_v1.users"

@@ -4,22 +4,24 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/SzymekN/CRUD/pkg/model"
-	"github.com/SzymekN/CRUD/pkg/producer"
+	"github.com/SzymekN/Car-rental-app/pkg/model"
+	"github.com/SzymekN/Car-rental-app/pkg/producer"
 
 	"github.com/labstack/echo/v4"
 )
 
 // swagger:route POST /api/v2/users/save users_v2 postUserV2
 // Save user to cassandra database.
-//	Consumes:
-//    - application/json
-//  Produces:
-//    - application/json
+//
+//		Consumes:
+//	   - application/json
+//	 Produces:
+//	   - application/json
 //
 // responses:
-// 		200: userResponse
-//		500: errorResponse
+//
+//	200: userResponse
+//	500: errorResponse
 func SaveUserCassandraHandler(c echo.Context) error {
 	var u model.User
 	var err error
@@ -55,16 +57,18 @@ func SaveUserCassandraHandler(c echo.Context) error {
 
 // swagger:route PUT /api/v2/user/{id} users_v2 putUserV2
 // Updates user in cassandra database.
-//	Consumes:
-//    - application/json
-//  Produces:
-//    - application/json
+//
+//		Consumes:
+//	   - application/json
+//	 Produces:
+//	   - application/json
 //
 // responses:
-// 		200: userResponse
-//		400: errorResponse
-//		404: errorResponse
-//		500: errorResponse
+//
+//	200: userResponse
+//	400: errorResponse
+//	404: errorResponse
+//	500: errorResponse
 func UpdateUserCassandraHandler(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	k, msg := "", "userapi_v2.users"
@@ -114,13 +118,15 @@ func UpdateUserCassandraHandler(c echo.Context) error {
 
 // swagger:route DELETE /api/v2/user/{id} users_v2 deleteUserV2
 // deletes user from cassandra database.
-//  Produces:
-//    - application/json
+//
+//	Produces:
+//	  - application/json
 //
 // responses:
-// 		200: messageResponse
-//		400: errorResponse
-//		404: errorResponse
+//
+//	200: messageResponse
+//	400: errorResponse
+//	404: errorResponse
 func DeleteUserCassandraHandler(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	k, msg := "", "userapi_v2.users"
@@ -157,13 +163,15 @@ func DeleteUserCassandraHandler(c echo.Context) error {
 
 // swagger:route GET /api/v2/user/{id} users_v2 getUserV2
 // Gets user from cassandra database.
-//  Produces:
-//    - application/json
+//
+//	Produces:
+//	  - application/json
 //
 // responses:
-// 		200: userResponse
-//		400: errorResponse
-//		404: errorResponse
+//
+//	200: userResponse
+//	400: errorResponse
+//	404: errorResponse
 func GetUserByIdCassandraHandler(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 
@@ -201,12 +209,13 @@ func GetUserByIdCassandraHandler(c echo.Context) error {
 // swagger:route GET /api/v2/users users_v2 getUsersV2
 // Gets user from cassandra database.
 //
-//  Produces:
-//    - application/json
+//	Produces:
+//	  - application/json
 //
 // responses:
-// 		200: usersResponse
-//		500: errorResponse
+//
+//	200: usersResponse
+//	500: errorResponse
 func GetUsersCassandraHandler(c echo.Context) error {
 
 	users, err := GetUsersCassandra()

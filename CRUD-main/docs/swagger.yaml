@@ -10,7 +10,7 @@ definitions:
     required:
     - message
     type: object
-    x-go-package: github.com/SzymekN/CRUD/pkg/model
+    x-go-package: github.com/SzymekN/Car-rental-app/pkg/model
   GenericMessage:
     properties:
       message:
@@ -22,7 +22,7 @@ definitions:
     required:
     - message
     type: object
-    x-go-package: github.com/SzymekN/CRUD/pkg/model
+    x-go-package: github.com/SzymekN/Car-rental-app/pkg/model
   User:
     properties:
       age:
@@ -62,7 +62,7 @@ definitions:
     - lastname
     - age
     type: object
-    x-go-package: github.com/SzymekN/CRUD/pkg/model
+    x-go-package: github.com/SzymekN/Car-rental-app/pkg/model
 info: {}
 paths:
   /api/v1/user/{id}:
