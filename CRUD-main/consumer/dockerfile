@@ -1,0 +1,18 @@
+# syntax=docker/dockerfile:1
+
+## Build
+FROM golang:alpine3.16 as build
+WORKDIR /app
+COPY go.mod ./
+COPY go.sum ./
+RUN go mod download
+
+COPY *.go ./
+
+RUN go build -o /consumer
+
+## Deploy
+FROM alpine:3.16
+WORKDIR /
+COPY --from=build /consumer /consumer
+ENTRYPOINT [ "/consumer" ]

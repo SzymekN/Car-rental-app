@@ -1,0 +1,183 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+
+class VagrantPlugins::ProviderVirtualBox::Action::Network
+  def dhcp_server_matches_config?(dhcp_server, config)
+    true
+  end
+end
+
+Vagrant.configure("2") do |config|
+  # The most common configuration options are documented and commented below.
+  # For a complete reference, please see the online documentation at
+  # https://docs.vagrantup.com.
+
+  # Every Vagrant development environment requires a box. You can search for
+  # boxes at https://vagrantcloud.com/search.
+
+  config.vm.synced_folder "../shared", "/vagrant_data"
+
+  config.vm.define "dockerVM" do |dockerVM|
+
+    
+    dockerVM.vm.provider "virtualbox" do |vb|
+      # Display the VirtualBox GUI when booting the machine
+      # vb.gui = true
+      
+      # Customize the amount of memory on the VM:
+      vb.memory = "4096"
+      vb.cpus = 4
+    end
+    
+    dockerVM.vm.hostname = "dockerVM"
+    dockerVM.vm.box = "ubuntu/focal64"
+
+    dockerVM.vm.synced_folder "../", "/vagrant_data"
+    dockerVM.vm.synced_folder "../consumer", "/consumer_data"
+    dockerVM.vm.network "private_network", ip: "192.168.33.50"
+
+    dockerVM.vm.provision "shell", inline: <<-SHELL
+      apt-get update
+
+      echo "<--- DOCKER INSTALL --->"
+      curl -fsSL https://get.docker.com -o get-docker.sh
+      DRY_RUN=1 sudo sh ./get-docker.sh
+      sudo usermod -aG docker vagrant && newgrp docker
+      sudo docker network create redisnet
+      
+      echo "<--- CREATE DIRECTORIES --->"
+      sudo mkdir -p /cassandra/data
+      sudo mkdir -p /postgres/data
+      sudo mkdir -p /zookeeper
+      sudo mkdir -p /kafka/broker-1
+      sudo mkdir -p /kafka/broker-2
+      sudo mkdir -p /kafka/broker-3
+      sudo chmod 777 -R /zookeeper/
+      sudo chmod 777 -R /kafka/
+      
+      echo "<--- IMPORT SAMPLE DATABASE TO CASSANDRA --->"
+      sudo docker network create cassandra
+      sudo docker pull cassandra
+      sudo docker run --rm -d --name cassandra --hostname cassandra -v /cassandra/data:/var/lib/cassandra -p 9042:9042 -p 9160:9160 -e CASSANDRA_CLUSTER_NAME=userapi --network cassandra cassandra
+      sleep 60
+      sudo docker run --rm --network cassandra -v "/vagrant_data/shared/create_db_userapi.cql:/scripts/data.cql" -e CQLSH_HOST=cassandra -e CQLSH_PORT=9042 -e CQLVERSION=3.4.5 nuvo/docker-cqlsh
+      sudo docker kill cassandra
+      sudo docker image rm nuvo/docker-cqlsh
+      sudo docker network rm cassandra
+      SHELL
+      
+      dockerVM.vm.provision "shell", run: "always", inline: <<-SHELL
+      # echo "<--- BUILDING APP --->"
+      # sudo docker build --tag userapi /vagrant_data
+      # echo "<--- RUNNING DOCUMENTATION --->"
+      # make
+      echo "<--- RUNNING SERVICE --->"
+      sudo docker compose -f /vagrant_data/shared/dockerVM/docker-compose.yml build
+      sudo docker compose -f /vagrant_data/shared/dockerVM/docker-compose.yml up -d
+      SHELL
+    
+  end
+ 
+  # config.vm.define "minikube" do |minikube|
+
+    
+  #   minikube.vm.provider "virtualbox" do |vb|
+  #     # Display the VirtualBox GUI when booting the machine
+  #     # vb.gui = true
+      
+  #     # Customize the amount of memory on the VM:
+  #     vb.memory = "8096"
+  #     vb.cpus = 4
+  #   end
+    
+  #   minikube.vm.hostname = "minikube"
+  #   minikube.vm.box = "ubuntu/focal64"
+  #   # minikube.vm.box = "ilionx/ubuntu2004-minikube"
+
+  #   minikube.vm.synced_folder "../", "/vagrant_data"
+  #   minikube.vm.synced_folder "../../consumer", "/consumer_data"
+  #   minikube.vm.network "private_network", ip: "192.168.33.60"
+  #   # minikube.vm.network "forwarded_port", guest: 7080, host: 8222
+
+    
+  #   minikube.vm.provision "shell", inline: <<-SHELL
+  #     apt-get update
+
+  #     sudo mkdir -p /bitnami/cassandra
+  #     sudo mkdir -p /bitnami/redis
+  #     sudo mkdir -p /postgres/data
+  #     sudo chmod 777 -R /kafka/
+  #     sudo chmod 777 -R /bitnami/
+
+  #     echo "<--- DOCKER INSTALL --->"
+  #     curl -fsSL https://get.docker.com -o get-docker.sh
+  #     DRY_RUN=1 sudo sh ./get-docker.sh
+  #     sudo usermod -aG docker vagrant && newgrp docker
+
+  #     curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+  #     sudo install minikube-linux-amd64 /usr/local/bin/minikube
+  #     minikube docker-env
+  #     eval $(minikube -p minikube docker-env)
+  #     # sudo sysctl fs.protected_regular=0
+
+  #     curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+  #     chmod 700 get_helm.sh
+  #     ./get_helm.sh
+
+  #     helm repo add bitnami https://charts.bitnami.com/bitnami
+  #     helm install -f /vagrant_data/shared/kubernetes/cass-values.yaml cassandra bitnami/cassandra --version 9.4.2
+  #     helm install -f /vagrant_data/shared/kubernetes/redis-values.yaml redis bitnami/redis
+  #     helm install kafka -f /vagrant_data/shared/kubernetes/kafka-values.yaml bitnami/kafka
+  #     minikube kubectl -- create -f  /vagrant_data/shared/kubernetes/postgres.yaml
+  #     minikube kubectl -- create -f  /vagrant_data/shared/kubernetes/userapi.yaml
+  #     minikube kubectl -- create -f  /vagrant_data/shared/kubernetes/consumer.yaml
+  #     SHELL
+
+  #     # minikube.vm.provision "shell", run: "always", inline: <<-SHELL
+  #     minikube.vm.provision "shell",  inline: <<-SHELL
+  #     minikube start --memory 6144 --cpus 2
+  #     alias kubectl="minikube kubectl --"
+  #     eval $(minikube -p minikube docker-env)
+  #     docker build --tag userapi:latest /vagrant_data
+  #     ./vagrant_data/shared/kubernetes/restart.sh
+  #     docker build --tag consumer:latest /consumer_data
+
+  #     # minikube kubectl -- port-forward service/userapi 8200:8200 8201:8201 --address 0.0.0.0
+  #     # minikube start
+  #     SHELL
+  # end
+
+
+  # config.vm.define "minikube2" do |minikube|
+
+    
+  #   minikube.vm.provider "virtualbox" do |vb|
+  #     # Display the VirtualBox GUI when booting the machine
+  #     # vb.gui = true
+      
+  #     # Customize the amount of memory on the VM:
+  #     vb.memory = "4096"
+  #     vb.cpus = 2
+  #   end
+    
+  #   minikube.vm.hostname = "minikube"
+  #   # minikube.vm.box = "ubuntu/focal64"
+  #   minikube.vm.box = "ilionx/ubuntu2004-minikube"
+
+  #   minikube.vm.synced_folder "../", "/vagrant_data"
+  #   minikube.vm.synced_folder "../../consumer", "/consumer_data"
+  #   minikube.vm.network "private_network", ip: "192.168.33.70"
+  #   minikube.vm.network "forwarded_port", guest: 7080, host: 8111
+
+  #   # minikube.vm.provision "shell", run: "always", inline: <<-SHELL
+  #   #   alias kubectl="minikube kubectl --"
+  #   #   minikube start
+  #   #   SHELL
+  # end
+
+end

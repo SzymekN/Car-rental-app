@@ -1,0 +1,447 @@
+{
+  "produces": [
+    "application/json"
+  ],
+  "swagger": "2.0",
+  "info": {},
+  "paths": {
+    "/api/v1/user/{id}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "users_v1"
+        ],
+        "summary": "Gets user from postgres database.",
+        "operationId": "getUserV1",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "example": 1,
+            "x-go-name": "ID",
+            "description": "ID of the user that will be deleted or read",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/userResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      },
+      "put": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "users_v1"
+        ],
+        "summary": "Updates user in postgres database.",
+        "operationId": "putUserV1",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "example": 1,
+            "x-go-name": "ID",
+            "description": "ID of the user that will be deleted or read",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "User structure to update or create",
+            "name": "Body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/userResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      },
+      "delete": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "users_v1"
+        ],
+        "summary": "deletes user from postgres database.",
+        "operationId": "deleteUserV1",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "example": 1,
+            "x-go-name": "ID",
+            "description": "ID of the user that will be deleted or read",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/messageResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    },
+    "/api/v1/users": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "users_v1"
+        ],
+        "summary": "Gets user from postgres database.",
+        "operationId": "listUsersV1",
+        "responses": {
+          "200": {
+            "$ref": "#/responses/usersResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    },
+    "/api/v1/users/save": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "users_v1"
+        ],
+        "summary": "Save user to postgres database.",
+        "operationId": "postUserV1",
+        "parameters": [
+          {
+            "description": "User structure to update or create",
+            "name": "Body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/userResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    },
+    "/api/v2/user/{id}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "users_v2"
+        ],
+        "summary": "Gets user from cassandra database.",
+        "operationId": "getUserV2",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "example": 1,
+            "x-go-name": "ID",
+            "description": "ID of the user that will be deleted or read",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/userResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      },
+      "put": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "users_v2"
+        ],
+        "summary": "Updates user in cassandra database.",
+        "operationId": "putUserV2",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "example": 1,
+            "x-go-name": "ID",
+            "description": "ID of the user that will be deleted or read",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "User structure to update or create",
+            "name": "Body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/userResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      },
+      "delete": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "users_v2"
+        ],
+        "summary": "deletes user from cassandra database.",
+        "operationId": "deleteUserV2",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "example": 1,
+            "x-go-name": "ID",
+            "description": "ID of the user that will be deleted or read",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/messageResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    },
+    "/api/v2/users": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "users_v2"
+        ],
+        "summary": "Gets user from cassandra database.",
+        "operationId": "getUsersV2",
+        "responses": {
+          "200": {
+            "$ref": "#/responses/usersResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    },
+    "/api/v2/users/save": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "users_v2"
+        ],
+        "summary": "Save user to cassandra database.",
+        "operationId": "postUserV2",
+        "parameters": [
+          {
+            "description": "User structure to update or create",
+            "name": "Body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/userResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "GenericError": {
+      "type": "object",
+      "required": [
+        "message"
+      ],
+      "properties": {
+        "message": {
+          "description": "Response message\nin: string",
+          "type": "string",
+          "x-go-name": "Message"
+        }
+      },
+      "x-go-package": "github.com/SzymekN/CRUD/pkg/model"
+    },
+    "GenericMessage": {
+      "type": "object",
+      "required": [
+        "message"
+      ],
+      "properties": {
+        "message": {
+          "description": "Response error with message\nin: string",
+          "type": "string",
+          "x-go-name": "Message"
+        }
+      },
+      "x-go-package": "github.com/SzymekN/CRUD/pkg/model"
+    },
+    "User": {
+      "type": "object",
+      "required": [
+        "firstname",
+        "lastname",
+        "age"
+      ],
+      "properties": {
+        "age": {
+          "description": "Age of the user\nin: int64",
+          "type": "integer",
+          "format": "int64",
+          "maximum": 99,
+          "minimum": 18,
+          "x-go-name": "Age"
+        },
+        "firstname": {
+          "description": "Firstname of the user\nin: string",
+          "type": "string",
+          "maxLength": 30,
+          "minLength": 3,
+          "x-go-name": "Firstname"
+        },
+        "id": {
+          "description": "Id of the user\nin: int64",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Id"
+        },
+        "lastname": {
+          "description": "Lastname of the user\nin: string",
+          "type": "string",
+          "maxLength": 30,
+          "minLength": 3,
+          "x-go-name": "Lastname"
+        }
+      },
+      "x-go-package": "github.com/SzymekN/CRUD/pkg/model"
+    }
+  },
+  "responses": {
+    "errorResponse": {
+      "description": "Generic error message returned as a string",
+      "schema": {
+        "$ref": "#/definitions/GenericError"
+      }
+    },
+    "messageResponse": {
+      "description": "Generic message returned as a string",
+      "schema": {
+        "$ref": "#/definitions/GenericMessage"
+      }
+    },
+    "userResponse": {
+      "description": "Data structure representing single user",
+      "schema": {
+        "$ref": "#/definitions/User"
+      }
+    },
+    "usersResponse": {
+      "description": "Data structure representing slice of users",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/User"
+        }
+      }
+    }
+  }
+}

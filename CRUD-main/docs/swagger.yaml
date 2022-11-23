@@ -1,0 +1,319 @@
+definitions:
+  GenericError:
+    properties:
+      message:
+        description: |-
+          Response message
+          in: string
+        type: string
+        x-go-name: Message
+    required:
+    - message
+    type: object
+    x-go-package: github.com/SzymekN/CRUD/pkg/model
+  GenericMessage:
+    properties:
+      message:
+        description: |-
+          Response error with message
+          in: string
+        type: string
+        x-go-name: Message
+    required:
+    - message
+    type: object
+    x-go-package: github.com/SzymekN/CRUD/pkg/model
+  User:
+    properties:
+      age:
+        description: |-
+          Age of the user
+          in: int64
+        format: int64
+        maximum: 99
+        minimum: 18
+        type: integer
+        x-go-name: Age
+      firstname:
+        description: |-
+          Firstname of the user
+          in: string
+        maxLength: 30
+        minLength: 3
+        type: string
+        x-go-name: Firstname
+      id:
+        description: |-
+          Id of the user
+          in: int64
+        format: int64
+        type: integer
+        x-go-name: Id
+      lastname:
+        description: |-
+          Lastname of the user
+          in: string
+        maxLength: 30
+        minLength: 3
+        type: string
+        x-go-name: Lastname
+    required:
+    - firstname
+    - lastname
+    - age
+    type: object
+    x-go-package: github.com/SzymekN/CRUD/pkg/model
+info: {}
+paths:
+  /api/v1/user/{id}:
+    delete:
+      operationId: deleteUserV1
+      parameters:
+      - description: ID of the user that will be deleted or read
+        example: 1
+        format: int64
+        in: path
+        name: id
+        required: true
+        type: integer
+        x-go-name: ID
+      produces:
+      - application/json
+      responses:
+        "200":
+          $ref: '#/responses/messageResponse'
+        "400":
+          $ref: '#/responses/errorResponse'
+        "404":
+          $ref: '#/responses/errorResponse'
+      summary: deletes user from postgres database.
+      tags:
+      - users_v1
+    get:
+      operationId: getUserV1
+      parameters:
+      - description: ID of the user that will be deleted or read
+        example: 1
+        format: int64
+        in: path
+        name: id
+        required: true
+        type: integer
+        x-go-name: ID
+      produces:
+      - application/json
+      responses:
+        "200":
+          $ref: '#/responses/userResponse'
+        "400":
+          $ref: '#/responses/errorResponse'
+        "404":
+          $ref: '#/responses/errorResponse'
+      summary: Gets user from postgres database.
+      tags:
+      - users_v1
+    put:
+      consumes:
+      - application/json
+      operationId: putUserV1
+      parameters:
+      - description: ID of the user that will be deleted or read
+        example: 1
+        format: int64
+        in: path
+        name: id
+        required: true
+        type: integer
+        x-go-name: ID
+      - description: User structure to update or create
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          $ref: '#/responses/userResponse'
+        "400":
+          $ref: '#/responses/errorResponse'
+        "404":
+          $ref: '#/responses/errorResponse'
+        "500":
+          $ref: '#/responses/errorResponse'
+      summary: Updates user in postgres database.
+      tags:
+      - users_v1
+  /api/v1/users:
+    get:
+      operationId: listUsersV1
+      produces:
+      - application/json
+      responses:
+        "200":
+          $ref: '#/responses/usersResponse'
+        "500":
+          $ref: '#/responses/errorResponse'
+      summary: Gets user from postgres database.
+      tags:
+      - users_v1
+  /api/v1/users/save:
+    post:
+      consumes:
+      - application/json
+      operationId: postUserV1
+      parameters:
+      - description: User structure to update or create
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          $ref: '#/responses/userResponse'
+        "500":
+          $ref: '#/responses/errorResponse'
+      summary: Save user to postgres database.
+      tags:
+      - users_v1
+  /api/v2/user/{id}:
+    delete:
+      operationId: deleteUserV2
+      parameters:
+      - description: ID of the user that will be deleted or read
+        example: 1
+        format: int64
+        in: path
+        name: id
+        required: true
+        type: integer
+        x-go-name: ID
+      produces:
+      - application/json
+      responses:
+        "200":
+          $ref: '#/responses/messageResponse'
+        "400":
+          $ref: '#/responses/errorResponse'
+        "404":
+          $ref: '#/responses/errorResponse'
+      summary: deletes user from cassandra database.
+      tags:
+      - users_v2
+    get:
+      operationId: getUserV2
+      parameters:
+      - description: ID of the user that will be deleted or read
+        example: 1
+        format: int64
+        in: path
+        name: id
+        required: true
+        type: integer
+        x-go-name: ID
+      produces:
+      - application/json
+      responses:
+        "200":
+          $ref: '#/responses/userResponse'
+        "400":
+          $ref: '#/responses/errorResponse'
+        "404":
+          $ref: '#/responses/errorResponse'
+      summary: Gets user from cassandra database.
+      tags:
+      - users_v2
+    put:
+      consumes:
+      - application/json
+      operationId: putUserV2
+      parameters:
+      - description: ID of the user that will be deleted or read
+        example: 1
+        format: int64
+        in: path
+        name: id
+        required: true
+        type: integer
+        x-go-name: ID
+      - description: User structure to update or create
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          $ref: '#/responses/userResponse'
+        "400":
+          $ref: '#/responses/errorResponse'
+        "404":
+          $ref: '#/responses/errorResponse'
+        "500":
+          $ref: '#/responses/errorResponse'
+      summary: Updates user in cassandra database.
+      tags:
+      - users_v2
+  /api/v2/users:
+    get:
+      operationId: getUsersV2
+      produces:
+      - application/json
+      responses:
+        "200":
+          $ref: '#/responses/usersResponse'
+        "500":
+          $ref: '#/responses/errorResponse'
+      summary: Gets user from cassandra database.
+      tags:
+      - users_v2
+  /api/v2/users/save:
+    post:
+      consumes:
+      - application/json
+      operationId: postUserV2
+      parameters:
+      - description: User structure to update or create
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          $ref: '#/responses/userResponse'
+        "500":
+          $ref: '#/responses/errorResponse'
+      summary: Save user to cassandra database.
+      tags:
+      - users_v2
+produces:
+- application/json
+responses:
+  errorResponse:
+    description: Generic error message returned as a string
+    schema:
+      $ref: '#/definitions/GenericError'
+  messageResponse:
+    description: Generic message returned as a string
+    schema:
+      $ref: '#/definitions/GenericMessage'
+  userResponse:
+    description: Data structure representing single user
+    schema:
+      $ref: '#/definitions/User'
+  usersResponse:
+    description: Data structure representing slice of users
+    schema:
+      items:
+        $ref: '#/definitions/User'
+      type: array
+swagger: "2.0"
