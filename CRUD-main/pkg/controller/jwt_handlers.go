@@ -15,8 +15,8 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// Checks for the username in the db
 func GetOperator(username string) (auth.Operator, error) {
-	// cas := storage.GetCassandraInstance()
 	conn := storage.MysqlConn.GetDBInstance()
 	o := auth.Operator{}
 	result := conn.Where(&auth.Operator{Username: username}).Find(&o)
@@ -34,9 +34,9 @@ func GetOperator(username string) (auth.Operator, error) {
 	return o, nil
 }
 
+// save signed in user to the db
 func SaveOperator(op auth.Operator) error {
 	pg := storage.MysqlConn.GetDBInstance()
-	// cas := storage.GetCassandraInstance()
 	if err := pg.Create(&op).Error; err != nil {
 		fmt.Println(err)
 		return err
@@ -44,11 +44,16 @@ func SaveOperator(op auth.Operator) error {
 	return nil
 }
 
+// Checks all passed credentials and saves user to the database
 func SignUp(c echo.Context) error {
 
+	// user to save in the database
 	var op auth.Operator
+	// error got while executing
 	var err error
+	// HTTP status code sent as a response
 	var status int
+	// key and message sent to kafka brokers
 	k, msg := "", "userapi.operators"
 
 	defer func() {
@@ -58,12 +63,15 @@ func SignUp(c echo.Context) error {
 		}
 	}()
 
+	// try saving data got in the request to the Operator datatype
 	if err = c.Bind(&op); err != nil {
 		status = http.StatusBadRequest
 		k = op.Username
 		msg += "[" + k + "] SignUp error: incorrect credentials, HTTP: " + strconv.Itoa(status)
 		return err
 	}
+
+	// check if user already exists
 	_, err = GetOperator(op.Username)
 
 	k = op.Username
@@ -74,6 +82,7 @@ func SignUp(c echo.Context) error {
 		return err
 	}
 
+	// hash password
 	op.Password, err = auth.GeneratehashPassword(op.Password)
 	if err != nil {
 		status = http.StatusInternalServerError
@@ -81,7 +90,7 @@ func SignUp(c echo.Context) error {
 		return err
 	}
 
-	//insert user details in database
+	//insert user details to database
 	err = SaveOperator(op)
 	if err != nil {
 		status = http.StatusInternalServerError
@@ -95,6 +104,7 @@ func SignUp(c echo.Context) error {
 
 }
 
+// revokes valid jwt token. Sends the token to Redis
 func SignOut(c echo.Context) error {
 	var err error
 	var status int = 200
@@ -105,12 +115,17 @@ func SignOut(c echo.Context) error {
 		c.JSON(status, &model.GenericMessage{Message: msg})
 	}()
 
+	// retrieve token from the request header
 	user := c.Get("user").(*jwt.Token)
+	// get raw token string
 	token := user.Raw
+	// retrieve from string all claims
 	claims := user.Claims.(jwt.MapClaims)
+	// get expire date from claims
 	exp := claims["exp"]
 	var duration float64
 
+	// check if token is populated and try reflecting to float
 	if expFloat, ok := exp.(float64); ok && token != "" {
 		duration = expFloat - float64(time.Now().Unix())
 	} else {
@@ -119,11 +134,13 @@ func SignOut(c echo.Context) error {
 		return nil
 	}
 
+	// token already not valid
 	if duration < 1 {
 		msg += "SignOut error: duration lesser tha 0, HTTP: " + strconv.Itoa(status)
 		return nil
 	}
 
+	// save token in Redis in order to blacklist it
 	err = auth.SetToken(token, time.Duration(duration))
 	if err != nil {
 		status = http.StatusInternalServerError
@@ -136,6 +153,7 @@ func SignOut(c echo.Context) error {
 	return nil
 }
 
+// sign in a user
 func SignIn(c echo.Context) error {
 
 	var authDetails auth.Authentication
@@ -157,6 +175,7 @@ func SignIn(c echo.Context) error {
 		return err
 	}
 
+	// check if user exists
 	var authUser auth.Operator
 	authUser, err = GetOperator(authDetails.Username)
 
@@ -167,6 +186,7 @@ func SignIn(c echo.Context) error {
 		return err
 	}
 
+	// check if password is correct
 	check := auth.CheckPasswordHash(authDetails.Password, authUser.Password)
 
 	if !check {
@@ -176,6 +196,7 @@ func SignIn(c echo.Context) error {
 		return err
 	}
 
+	// generate token based on username and role
 	var validToken string
 	validToken, err = auth.GenerateJWT(authDetails.Username, authUser.Role)
 	if err != nil {

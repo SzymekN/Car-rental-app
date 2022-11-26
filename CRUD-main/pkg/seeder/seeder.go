@@ -7,23 +7,22 @@ import (
 
 	"github.com/SzymekN/Car-rental-app/pkg/model"
 	"github.com/SzymekN/Car-rental-app/pkg/storage"
-	"github.com/gocql/gocql"
 
 	"gorm.io/gorm"
 )
 
-type SeedPG struct {
-	Name  string
-	Model model.DataModel
-	Run   func(*gorm.DB, string) error
-}
-type SeedCASS struct {
+type seed struct {
+	// name of the seed
 	Name string
-	Run  func(*gocql.Session, string) error
+	// datatype
+	Model model.DataModel
+	// function to run
+	Run func(*gorm.DB, string) error
 }
 
-func AllPG() []SeedPG {
-	return []SeedPG{
+func allSeeds() []seed {
+
+	return []seed{
 		{
 			Name:  "users",
 			Model: &model.User{},
@@ -57,47 +56,6 @@ func AllPG() []SeedPG {
 			},
 		},
 	}
-}
-
-// func AllCASS() []SeedCASS {
-// 	return []SeedCASS{
-// 		{
-// 			Name: "Create users",
-// 			Run: func(cas *gocql.Session) error {
-// 				var err error
-
-// 				for _, u := range Users {
-// 					err = cas.Query(`Insert into userapi.users(id, firstname,lastname, age) values (?,?,?,?)`, u.Id, u.Firstname, u.Lastname, u.Age).Exec()
-// 					if err != nil {
-// 						return err
-// 					}
-// 				}
-
-// 				return nil
-// 			},
-// 		},
-// 		{
-// 			Name: "Create operators",
-// 			Run: func(cas *gocql.Session) error {
-// 				var err error
-
-// 				for _, o := range Operators {
-// 					pwd, _ := auth.GeneratehashPassword(o.Password)
-// 					err = cas.Query(`Insert into userapi.operators(username, email,password, role) values (?,?,?,?)`, o.Username, o.Email, pwd, o.Role).Exec()
-// 					if err != nil {
-// 						return err
-// 					}
-// 				}
-
-// 				return nil
-// 			},
-// 		},
-// 	}
-// }
-
-func CreateAndSeed() {
-	CreateAndSeedPG(storage.MysqlConn.GetDBInstance())
-	// CreateAndSeedCASS(storage.GetCassandraInstance())
 }
 
 func dropTable(db *gorm.DB, tableName string) {
@@ -140,9 +98,12 @@ func createTable(db *gorm.DB, tableName string, dataModel model.DataModel) {
 
 }
 
-func CreateAndSeedPG(db *gorm.DB) {
+// deletes, creates and populates tables
+func CreateAndSeed() {
+	db := storage.MysqlConn.GetDBInstance()
 
-	for _, seed := range AllPG() {
+	// run all defined seeds
+	for _, seed := range allSeeds() {
 		dropTable(db, seed.Name)
 		createTable(db, seed.Name, seed.Model)
 		if err := seed.Run(db, seed.Name); err != nil {
@@ -152,47 +113,3 @@ func CreateAndSeedPG(db *gorm.DB) {
 	}
 
 }
-
-// func CreateAndSeedCASS(cas *gocql.Session) {
-
-// 	err := cas.Query("CREATE KEYSPACE IF NOT EXISTS userapi WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : '1' };").Exec()
-// 	if err != nil {
-// 		log.Fatalf("CASS: Creating table users failed with error: %s", err)
-// 	} else {
-// 		fmt.Println("CASS: SUCCESFULLY dropped table users!")
-// 	}
-
-// 	err = cas.Query(`CREATE TABLE IF NOT EXISTS userapi.users (
-// 		id int PRIMARY KEY,
-// 		firstname text ,
-// 		lastname text,
-// 		age int
-// 		);`).Exec()
-
-// 	if err != nil {
-// 		log.Fatalf("CAS: Creating table users failed with error: %s", err)
-// 	} else {
-// 		fmt.Println("CAS: SUCCESFULLY created table users!")
-// 	}
-
-// 	err = cas.Query(`CREATE TABLE IF NOT EXISTS userapi.operators (
-// 		username text PRIMARY KEY,
-// 		email text,
-// 		password text,
-// 		role text
-// 		);`).Exec()
-
-// 	if err != nil {
-// 		log.Fatalf("CAS: Creating table operators failed with error: %s", err)
-// 	} else {
-// 		fmt.Println("CAS: SUCCESFULLY created table operators!")
-// 	}
-
-// 	for _, seed := range AllCASS() {
-// 		if err := seed.Run(cas); err != nil {
-// 			log.Fatalf("CAS: Running seed '%s', failed with error: %s", seed.Name, err)
-// 		}
-// 	}
-// 	fmt.Println("CAS: SUCCESFULLY seeded table database!")
-
-// }

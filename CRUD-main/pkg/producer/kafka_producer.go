@@ -1,3 +1,5 @@
+// message producer package for kafka
+
 package producer
 
 import (
@@ -22,7 +24,9 @@ const (
 )
 
 var (
-	KafkaCtx    context.Context
+	// context for creating messages
+	KafkaCtx context.Context
+	// object on which behalf messages are sent
 	KafkaWriter *kafka.Writer
 )
 
@@ -34,6 +38,7 @@ func getKafkaCtx() context.Context {
 	return KafkaCtx
 }
 
+// sends message to kafka
 func ProduceMessage(k, val string) error {
 	w := getKafkaWriter()
 	ctx := getKafkaCtx()
