@@ -12,6 +12,7 @@ import (
 
 var ctx = context.Background()
 
+// execute querry to Redis ti get the key needed for signing and validating jwt tokens
 func getSigningKey() (string, error) {
 	rdb := storage.GetRDB()
 
@@ -26,6 +27,7 @@ func getSigningKey() (string, error) {
 	return res, nil
 }
 
+// generate key for signing jwt tokens
 func generateKey() string {
 	//33 - 126 valid ascii characters
 	var min int64 = 33  // '!'
@@ -39,6 +41,7 @@ func generateKey() string {
 	return string(key)
 }
 
+// set signing key for intance, try reading it from Redis, if not exists generate new
 func setSigningKey() (string, error) {
 	rdb := storage.GetRDB()
 
@@ -56,6 +59,7 @@ func setSigningKey() (string, error) {
 	return key, nil
 }
 
+// set black listed jwt token in the Redis
 func SetToken(token string, expireTime time.Duration) error {
 	rdb := storage.GetRDB()
 
@@ -69,6 +73,7 @@ func SetToken(token string, expireTime time.Duration) error {
 	return nil
 }
 
+// try to get jwt token from Redis
 func GetToken(token string) (bool, error) {
 
 	rdb := storage.GetRDB()

@@ -12,16 +12,16 @@ import (
 func main() {
 
 	e := controller.SetupRouter()
-	// storage.SetupPostgresConnection()
 	storage.SetupMysqlConnection()
-	// storage.SetupCassandraConnection()
 	storage.SetupRedisConnection()
 	producer.SetupKafka()
 
 	// defer storage.CloseAll()
 
+	// Drop old tables, create new and populate them - for test purposes
 	seeder.CreateAndSeed()
-	// go grpc.CreateGRPCServer()
+
+	// start server at port=API_PORT
 	e.Logger.Fatal(e.Start(":" + os.Getenv("API_PORT")))
 
 }

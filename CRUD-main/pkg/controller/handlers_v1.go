@@ -13,7 +13,7 @@ import (
 )
 
 // swagger:route POST /api/v1/users/save users_v1 postUserV1
-// Save user to postgres database.
+// Save user to  database.
 //
 //		Consumes:
 //	   - application/json
@@ -25,11 +25,17 @@ import (
 //	200: userResponse
 //	500: errorResponse
 func SaveUser(c echo.Context) error {
+
+	// user to be saved in the db
 	var u model.User
+	// error got while executing function
 	var err error
+	// HTTP  code to send as a response
 	var status int
+	// key for logger and message to save
 	k, msg := "", "userapi_v1.users"
 
+	// before exiting function send message to logs and response to user
 	defer func() {
 		producer.ProduceMessage(k, msg)
 		if err != nil {
@@ -37,7 +43,8 @@ func SaveUser(c echo.Context) error {
 		}
 	}()
 
-	if err := c.Bind(&u); err != nil {
+	// try saving data from user request to provided model.User datatype
+	if err = c.Bind(&u); err != nil {
 		status = http.StatusBadRequest
 		msg += "[" + k + "] SaveUser error: incorrect parameters, HTTP: " + strconv.Itoa(status)
 		return err
@@ -45,8 +52,9 @@ func SaveUser(c echo.Context) error {
 
 	k = strconv.Itoa(u.Id)
 	db := storage.MysqlConn.GetDBInstance()
-	err = db.Create(&u).Error
-	if err != nil {
+
+	// save user in the db
+	if err = db.Create(&u).Error; err != nil {
 		status = http.StatusInternalServerError
 		msg += "[" + k + "] SaveUser error: post query error, HTTP: " + strconv.Itoa(status)
 		return err
@@ -58,7 +66,7 @@ func SaveUser(c echo.Context) error {
 }
 
 // swagger:route PUT /api/v1/user/{id} users_v1 putUserV1
-// Updates user in postgres database.
+// Updates user in  database.
 //
 //		Consumes:
 //	   - application/json
@@ -72,8 +80,13 @@ func SaveUser(c echo.Context) error {
 //	404: errorResponse
 //	500: errorResponse
 func UpdateUser(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	// HTTP status code send as a response
 	var status int
+	// id of a user to update
+	var id int
+	// error
+	var err error
+	id, err = strconv.Atoi(c.Param("id"))
 	k, msg := "", "userapi_v1.users"
 
 	defer func() {
@@ -101,7 +114,7 @@ func UpdateUser(c echo.Context) error {
 		return err
 	}
 
-	if err := c.Bind(&user); err != nil {
+	if err = c.Bind(&user); err != nil {
 		status = http.StatusBadRequest
 		msg += "[" + k + "] UpdateUser error: incorrect parameters, HTTP: " + strconv.Itoa(status)
 		return err
@@ -122,7 +135,7 @@ func UpdateUser(c echo.Context) error {
 }
 
 // swagger:route DELETE /api/v1/user/{id} users_v1 deleteUserV1
-// deletes user from postgres database.
+// deletes user from  database.
 //
 //	Produces:
 //	  - application/json
@@ -168,7 +181,7 @@ func DeleteUser(c echo.Context) error {
 }
 
 // swagger:route GET /api/v1/user/{id} users_v1 getUserV1
-// Gets user from postgres database.
+// Gets user from  database.
 //
 //	Produces:
 //	  - application/json
@@ -215,7 +228,7 @@ func GetUserById(c echo.Context) error {
 }
 
 // swagger:route GET /api/v1/users users_v1 listUsersV1
-// Gets user from postgres database.
+// Gets user from  database.
 //
 //	Produces:
 //	  - application/json

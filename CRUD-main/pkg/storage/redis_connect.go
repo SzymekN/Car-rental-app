@@ -21,6 +21,7 @@ func SetupRedisConnection() *redis.Client {
 		DB:       0,
 	})
 
+	// ping db to check if connection is established
 	pong, err := RDB.Ping(context.Background()).Result()
 
 	fmt.Println(pong, err)

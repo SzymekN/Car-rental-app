@@ -26,6 +26,7 @@ type DBConnector interface {
 
 var MysqlConn MysqlConnect
 
+// reads environmental variables needed to connect to the database
 func (c *MysqlConnect) readEnv() {
 
 	// var errMessage string
@@ -61,6 +62,7 @@ func (c *MysqlConnect) readEnv() {
 	}
 }
 
+// form a connection string
 func (c *MysqlConnect) getConnectionString() string {
 
 	c.readEnv()
@@ -73,6 +75,7 @@ func (c *MysqlConnect) getConnectionString() string {
 	return connString
 }
 
+// connect to Mysql
 func SetupMysqlConnection() {
 	var err error
 

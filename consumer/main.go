@@ -1,5 +1,7 @@
 package main
 
+// Separate application for kafka brokers, read messagees produces by main app
+
 import (
 	"context"
 	"fmt"
@@ -8,7 +10,7 @@ import (
 )
 
 const (
-	topic         = "messages"
+	topic = "messages"
 	// brokerAddress = {"kafka-1:9092","kafka-2:9092","kafka-3:9092"}
 	brokerAddress = "kafka-1:9092"
 )
