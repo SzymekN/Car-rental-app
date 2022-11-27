@@ -1,7 +1,19 @@
 {
+<<<<<<< HEAD
     "folders": [
         {
             "path": "../front"
         }
     ]
+=======
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": ".."
+		}
+	],
+	"settings": {}
+>>>>>>> main
 }

@@ -16,7 +16,10 @@ func SetupRouter() *echo.Echo {
 	})
 
 	e.POST("/api/v3/operators/signup", SignUp)
-	e.GET("/api/v3/operators/signin", SignIn)
+	e.POST("/api/v3/operators/signin", SignIn)
+
+	e.Use(middleware.Logger())
+	e.Use(middleware.CORS())
 
 	// group of routes that will be validated with jwt
 	jwt_auth := e.Group("")

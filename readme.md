@@ -1,0 +1,1 @@
+![Database model](/diagrams/database_model.png "Database model")

@@ -160,13 +160,15 @@ func SignIn(c echo.Context) error {
 	var err error
 	var status int
 	k, msg := "", "userapi.operators"
-
+	fmt.Println("DUPA1")
 	defer func() {
 		producer.ProduceMessage(k, msg)
 		if err != nil {
 			c.JSON(status, &model.GenericError{Message: msg})
 		}
 	}()
+	fmt.Println("DUPA2")
+	fmt.Println(c)
 
 	if err = c.Bind(&authDetails); err != nil {
 		status = http.StatusBadRequest
@@ -174,10 +176,12 @@ func SignIn(c echo.Context) error {
 		msg += "[" + k + "] SignIn error: incorrect credentials, HTTP: " + strconv.Itoa(status)
 		return err
 	}
+	fmt.Println("DUPA3")
 
 	// check if user exists
 	var authUser auth.Operator
 	authUser, err = GetOperator(authDetails.Username)
+	fmt.Println("DUPA4")
 
 	k = authDetails.Username
 	if err != nil {
@@ -188,6 +192,7 @@ func SignIn(c echo.Context) error {
 
 	// check if password is correct
 	check := auth.CheckPasswordHash(authDetails.Password, authUser.Password)
+	fmt.Println("DUPA5")
 
 	if !check {
 		status = http.StatusBadRequest
@@ -195,6 +200,7 @@ func SignIn(c echo.Context) error {
 		err = errors.New("Incorrect password")
 		return err
 	}
+	fmt.Println("DUPA5")
 
 	// generate token based on username and role
 	var validToken string
@@ -204,6 +210,7 @@ func SignIn(c echo.Context) error {
 		msg += "[" + k + "] SignIn error: couldn't generate token, HTTP: " + strconv.Itoa(status)
 		return err
 	}
+	fmt.Println("DUPA6")
 
 	var token auth.Token
 	token.Username = authUser.Username
@@ -211,5 +218,6 @@ func SignIn(c echo.Context) error {
 	token.TokenString = validToken
 	status = http.StatusOK
 	msg += "[" + k + "] SignIn completed: user signed in, HTTP: " + strconv.Itoa(status)
+
 	return c.JSON(status, token)
 }
