@@ -16,28 +16,28 @@ import (
 )
 
 // Checks for the username in the db
-func GetOperator(username string) (auth.Operator, error) {
+func GetUser(email string) (auth.User, error) {
 	conn := storage.MysqlConn.GetDBInstance()
-	o := auth.Operator{}
-	result := conn.Where(&auth.Operator{Username: username}).Find(&o)
+	u := auth.User{}
+	result := conn.Where(&auth.User{Email: email}).Find(&u)
 	err := result.Error
 
 	if err != nil {
 		fmt.Println(err)
-		return o, err
+		return u, err
 	}
 
 	if result.RowsAffected < 1 {
-		return o, errors.New("Operator not found")
+		return u, errors.New("User not found")
 	}
 
-	return o, nil
+	return u, nil
 }
 
 // save signed in user to the db
-func SaveOperator(op auth.Operator) error {
+func SaveUser(u auth.User) error {
 	pg := storage.MysqlConn.GetDBInstance()
-	if err := pg.Create(&op).Error; err != nil {
+	if err := pg.Create(&u).Error; err != nil {
 		fmt.Println(err)
 		return err
 	}
@@ -48,13 +48,13 @@ func SaveOperator(op auth.Operator) error {
 func SignUp(c echo.Context) error {
 
 	// user to save in the database
-	var op auth.Operator
+	var u auth.User
 	// error got while executing
 	var err error
 	// HTTP status code sent as a response
 	var status int
 	// key and message sent to kafka brokers
-	k, msg := "", "userapi.operators"
+	k, msg := "err", "[ERROR]"
 
 	defer func() {
 		producer.ProduceMessage(k, msg)
@@ -63,44 +63,45 @@ func SignUp(c echo.Context) error {
 		}
 	}()
 
-	// try saving data got in the request to the Operator datatype
-	if err = c.Bind(&op); err != nil {
+	// try saving data got in the request to the User datatype
+	if err = c.Bind(&u); err != nil {
 		status = http.StatusBadRequest
-		k = op.Username
-		msg += "[" + k + "] SignUp error: incorrect credentials, HTTP: " + strconv.Itoa(status)
+		k = u.Email
+		msg += " SignUp error: incorrect credentials, email: {" + k + "}, HTTP: " + strconv.Itoa(status)
 		return err
 	}
 
 	// check if user already exists
-	_, err = GetOperator(op.Username)
+	_, err = GetUser(u.Email)
 
-	k = op.Username
+	k = u.Email
 	if err == nil {
 		status = http.StatusInternalServerError
-		msg += "[" + k + "] SignUp error: username in use, HTTP: " + strconv.Itoa(status)
+		msg += " SignUp error: email in use, email: {" + k + "}, HTTP: " + strconv.Itoa(status)
 		err = errors.New("user exists")
 		return err
 	}
 
 	// hash password
-	op.Password, err = auth.GeneratehashPassword(op.Password)
+	u.Password, err = auth.GeneratehashPassword(u.Password)
 	if err != nil {
 		status = http.StatusInternalServerError
-		msg += "[" + k + "] SignUp error: couldn't generate hash, HTTP: " + strconv.Itoa(status)
+		msg += " SignUp error: couldn't generate hash, email: {" + k + "}, HTTP: " + strconv.Itoa(status)
 		return err
 	}
 
 	//insert user details to database
-	err = SaveOperator(op)
+	err = SaveUser(u)
 	if err != nil {
 		status = http.StatusInternalServerError
-		msg += "[" + k + "] SignUp error: insert query error, HTTP: " + strconv.Itoa(status)
+		msg += " SignUp error: insert query error, email: {" + k + "}, HTTP: " + strconv.Itoa(status)
 		return err
 	}
 
 	status = http.StatusOK
-	msg += "[" + k + "] SignUp completed: user signed up, HTTP: " + strconv.Itoa(status)
-	return c.JSON(http.StatusOK, op)
+	k = "info"
+	msg = "[INFO] SignUp completed: user signed up, email: {" + k + "}, HTTP: " + strconv.Itoa(status)
+	return c.JSON(http.StatusOK, u)
 
 }
 
@@ -108,11 +109,13 @@ func SignUp(c echo.Context) error {
 func SignOut(c echo.Context) error {
 	var err error
 	var status int = 200
-	k, msg := "SignOut", "userapi.operators "
+	k, msg := "err", "[ERROR] "
 
 	defer func() {
 		producer.ProduceMessage(k, msg)
-		c.JSON(status, &model.GenericMessage{Message: msg})
+		if err != nil {
+			c.JSON(status, &model.GenericMessage{Message: msg})
+		}
 	}()
 
 	// retrieve token from the request header
@@ -131,26 +134,29 @@ func SignOut(c echo.Context) error {
 	} else {
 		status = http.StatusBadRequest
 		msg += "SignOut error: couldn't retrieve token, HTTP: " + strconv.Itoa(status)
-		return nil
+		err = errors.New(msg)
+		return err
 	}
 
 	// token already not valid
 	if duration < 1 {
-		msg += "SignOut error: duration lesser tha 0, HTTP: " + strconv.Itoa(status)
-		return nil
+		msg += "SignOut error: duration lesser than 0, HTTP: " + strconv.Itoa(status)
+		err = errors.New(msg)
+		return err
 	}
 
 	// save token in Redis in order to blacklist it
 	err = auth.SetToken(token, time.Duration(duration))
 	if err != nil {
 		status = http.StatusInternalServerError
-		msg += "SignOut error: couldn't write to DB, HTTP: " + strconv.Itoa(status)
+		msg += "SignOut error: couldn't write to Redis, HTTP: " + strconv.Itoa(status)
 		return err
 	}
 
 	fmt.Println("SIGNED  OUT")
-	msg += "SignOut completed, HTTP: " + strconv.Itoa(status)
-	return nil
+	k = "info"
+	msg = "[INFO] SignOut completed, HTTP: " + strconv.Itoa(status)
+	return c.JSON(status, &model.GenericMessage{Message: msg})
 }
 
 // sign in a user
@@ -159,7 +165,7 @@ func SignIn(c echo.Context) error {
 	var authDetails auth.Authentication
 	var err error
 	var status int
-	k, msg := "", "userapi.operators"
+	k, msg := "err", "[ERROR]"
 	fmt.Println("DUPA1")
 	defer func() {
 		producer.ProduceMessage(k, msg)
@@ -172,21 +178,21 @@ func SignIn(c echo.Context) error {
 
 	if err = c.Bind(&authDetails); err != nil {
 		status = http.StatusBadRequest
-		k = authDetails.Username
-		msg += "[" + k + "] SignIn error: incorrect credentials, HTTP: " + strconv.Itoa(status)
+		k = authDetails.Email
+		msg += "SignIn error: incorrect credentials, email: {" + k + "},  HTTP: " + strconv.Itoa(status)
 		return err
 	}
 	fmt.Println("DUPA3")
 
 	// check if user exists
-	var authUser auth.Operator
-	authUser, err = GetOperator(authDetails.Username)
+	var authUser auth.User
+	authUser, err = GetUser(authDetails.Email)
 	fmt.Println("DUPA4")
 
-	k = authDetails.Username
+	k = authDetails.Email
 	if err != nil {
 		status = http.StatusInternalServerError
-		msg += "[" + k + "] SignIn error: user doesn't exist, HTTP: " + strconv.Itoa(status)
+		msg += "SignIn error: user doesn't exist, email: {" + k + "},  HTTP: " + strconv.Itoa(status)
 		return err
 	}
 
@@ -196,7 +202,7 @@ func SignIn(c echo.Context) error {
 
 	if !check {
 		status = http.StatusBadRequest
-		msg += "[" + k + "] SignIn error: incorrect password, HTTP: " + strconv.Itoa(status)
+		msg += "SignIn error: incorrect password, email: {" + k + "},  HTTP: " + strconv.Itoa(status)
 		err = errors.New("Incorrect password")
 		return err
 	}
@@ -204,20 +210,21 @@ func SignIn(c echo.Context) error {
 
 	// generate token based on username and role
 	var validToken string
-	validToken, err = auth.GenerateJWT(authDetails.Username, authUser.Role)
+	validToken, err = auth.GenerateJWT(authDetails.Email, authUser.Role)
 	if err != nil {
 		status = http.StatusInternalServerError
-		msg += "[" + k + "] SignIn error: couldn't generate token, HTTP: " + strconv.Itoa(status)
+		msg += "SignIn error: couldn't generate token, email: {" + k + "},  HTTP: " + strconv.Itoa(status)
 		return err
 	}
 	fmt.Println("DUPA6")
 
 	var token auth.Token
-	token.Username = authUser.Username
+	token.Email = authUser.Email
 	token.Role = authUser.Role
 	token.TokenString = validToken
 	status = http.StatusOK
-	msg += "[" + k + "] SignIn completed: user signed in, HTTP: " + strconv.Itoa(status)
+	k = "info"
+	msg = "[INFO] SignIn completed: user signed in, email: {" + k + "}, HTTP: " + strconv.Itoa(status)
 
 	return c.JSON(status, token)
 }

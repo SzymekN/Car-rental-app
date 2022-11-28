@@ -64,7 +64,7 @@ services:
       - MYSQL_PASSWORD=admin
       - MYSQL_HOST=mysql    
       - MYSQL_PORT=3306    
-      - MYSQL_DB_NAME=car-rental 
+      - MYSQL_DB_NAME=car_rental 
 
   # userapi-2:
   #   depends_on:

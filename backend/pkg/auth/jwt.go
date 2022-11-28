@@ -37,16 +37,18 @@ func Validate(auth string, c echo.Context) (interface{}, error) {
 		Secretkey = getKey()
 		return []byte(Secretkey), nil
 	}
-
+	fmt.Println("chyba DUPA1")
 	// claims are of type `jwt.MapClaims` when token is created with `jwt.Parse`
 	token, err := jwt.Parse(auth, remoteKeyFunc)
 	// check if this token is already revoked
 	tokenRevoked, _ := GetToken(token.Raw)
+	fmt.Println("DUPA2")
 
 	if tokenRevoked {
 		producer.ProduceMessage("JWT validation", token.Raw+" REVOKED")
 		return nil, errors.New("Token Revoked")
 	}
+	fmt.Println("DUPA3")
 
 	// check if errors occured during token generation
 	if err != nil {
@@ -84,14 +86,14 @@ func getKey() string {
 }
 
 // generates valid token based on username, role and expire date
-func GenerateJWT(username, role string) (string, error) {
+func GenerateJWT(email, role string) (string, error) {
 	var mySigningKey = []byte(getKey())
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 	expireTime := time.Minute * 2
 
 	claims["authorized"] = true
-	claims["username"] = username
+	claims["email"] = email
 	claims["role"] = role
 	claims["exp"] = time.Now().Add(expireTime).Unix()
 

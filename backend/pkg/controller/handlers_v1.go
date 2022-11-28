@@ -24,7 +24,7 @@ import (
 //
 //	200: userResponse
 //	500: errorResponse
-func SaveUser(c echo.Context) error {
+func OLDSaveUser(c echo.Context) error {
 
 	// user to be saved in the db
 	var u model.User
