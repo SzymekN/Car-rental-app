@@ -5,7 +5,6 @@ import (
 
 	"github.com/SzymekN/Car-rental-app/pkg/controller"
 	"github.com/SzymekN/Car-rental-app/pkg/producer"
-	"github.com/SzymekN/Car-rental-app/pkg/seeder"
 	"github.com/SzymekN/Car-rental-app/pkg/storage"
 )
 
@@ -19,7 +18,7 @@ func main() {
 	// defer storage.CloseAll()
 
 	// Drop old tables, create new and populate them - for test purposes
-	seeder.CreateAndSeed()
+	// seeder.CreateAndSeed()
 
 	// start server at port=API_PORT
 	e.Logger.Fatal(e.Start(":" + os.Getenv("API_PORT")))

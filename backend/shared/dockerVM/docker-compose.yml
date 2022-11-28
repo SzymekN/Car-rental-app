@@ -13,13 +13,13 @@ services:
     restart: always
     environment:
       - MYSQL_ROOT_PASSWORD=admin
-      - MYSQL_DATABASE=car-rental
+      - MYSQL_DATABASE=car_rental
       - MYSQL_USER=admin    
       - MYSQL_PASSWORD=admin
 
     volumes: 
-      - /mysql/data:/var/lib/mysql/data
-      - /vagrant_data:/shared
+      - /mysql/data:/var/lib/mysql
+      - /vagrant_data/shared/dockerVM/mysql_init:/docker-entrypoint-initdb.d
 
   # postgres:
   #   image: postgres

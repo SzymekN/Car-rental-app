@@ -1,3 +1,3 @@
-sudo docker kill userapi-1
+sudo docker kill car-rental
 sudo docker compose build
-sudo docker compose up userapi-1
+sudo docker compose up car-rental

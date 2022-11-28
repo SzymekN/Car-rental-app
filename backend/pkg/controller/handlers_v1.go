@@ -46,7 +46,7 @@ func SaveUser(c echo.Context) error {
 	// try saving data from user request to provided model.User datatype
 	if err = c.Bind(&u); err != nil {
 		status = http.StatusBadRequest
-		msg += "[" + k + "] SaveUser error: incorrect parameters, HTTP: " + strconv.Itoa(status)
+		msg += "[ERROR] SaveUser error: incorrect parameters, User ID: " + k + ", HTTP: " + strconv.Itoa(status)
 		return err
 	}
 
@@ -56,7 +56,7 @@ func SaveUser(c echo.Context) error {
 	// save user in the db
 	if err = db.Create(&u).Error; err != nil {
 		status = http.StatusInternalServerError
-		msg += "[" + k + "] SaveUser error: post query error, HTTP: " + strconv.Itoa(status)
+		msg += "[ERROR] SaveUser error: post query error, User ID: " + k + ", HTTP: " + strconv.Itoa(status)
 		return err
 	}
 
