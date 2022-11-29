@@ -7,7 +7,6 @@ import (
 
 	"github.com/SzymekN/Car-rental-app/pkg/model"
 	"github.com/SzymekN/Car-rental-app/pkg/producer"
-	"github.com/SzymekN/Car-rental-app/pkg/storage"
 
 	"github.com/labstack/echo/v4"
 )
@@ -24,7 +23,20 @@ import (
 //
 //	200: userResponse
 //	500: errorResponse
-func OLDSaveUser(c echo.Context) error {
+
+type UsersController struct {
+	MainController
+}
+
+type UsersHandler interface {
+	SaveUser(c echo.Context) error
+	UpdateUser(c echo.Context) error
+	DeleteUser(c echo.Context) error
+	GetUserById(c echo.Context) error
+	GetUsers(c echo.Context) error
+}
+
+func (uc *UsersController) SaveUser(c echo.Context) error {
 
 	// user to be saved in the db
 	var u model.User
@@ -50,8 +62,8 @@ func OLDSaveUser(c echo.Context) error {
 		return err
 	}
 
-	k = strconv.Itoa(u.Id)
-	db := storage.MysqlConn.GetDBInstance()
+	k = strconv.Itoa(u.ID)
+	db := uc.GetDB()
 
 	// save user in the db
 	if err = db.Create(&u).Error; err != nil {
@@ -79,7 +91,7 @@ func OLDSaveUser(c echo.Context) error {
 //	400: errorResponse
 //	404: errorResponse
 //	500: errorResponse
-func UpdateUser(c echo.Context) error {
+func (uc *UsersController) UpdateUser(c echo.Context) error {
 	// HTTP status code send as a response
 	var status int
 	// id of a user to update
@@ -103,7 +115,7 @@ func UpdateUser(c echo.Context) error {
 	}
 
 	k = strconv.Itoa(id)
-	db := storage.MysqlConn.GetDBInstance()
+	db := uc.GetDB()
 	user := model.User{}
 	result := db.Find(&user, id)
 
@@ -120,7 +132,7 @@ func UpdateUser(c echo.Context) error {
 		return err
 	}
 
-	user.Id = id
+	user.ID = id
 	result = db.Save(&user)
 	if result.RowsAffected < 1 {
 		status = http.StatusInternalServerError
@@ -145,7 +157,7 @@ func UpdateUser(c echo.Context) error {
 //	200: messageResponse
 //	400: errorResponse
 //	404: errorResponse
-func DeleteUser(c echo.Context) error {
+func (uc *UsersController) DeleteUser(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	var status int
 	k, msg := "", "userapi_v1.users"
@@ -165,7 +177,7 @@ func DeleteUser(c echo.Context) error {
 	}
 
 	k = strconv.Itoa(id)
-	db := storage.MysqlConn.GetDBInstance()
+	db := uc.GetDB()
 	result := db.Delete(&model.User{}, id)
 
 	if result.RowsAffected < 1 {
@@ -191,7 +203,7 @@ func DeleteUser(c echo.Context) error {
 //	200: userResponse
 //	400: errorResponse
 //	404: errorResponse
-func GetUserById(c echo.Context) error {
+func (uc *UsersController) GetUserById(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	var status int
 	k, msg := "", "userapi_v1.users"
@@ -211,7 +223,7 @@ func GetUserById(c echo.Context) error {
 	}
 
 	k = strconv.Itoa(id)
-	db := storage.MysqlConn.GetDBInstance()
+	db := uc.GetDB()
 	user := model.User{}
 	result := db.Find(&user, id)
 
@@ -237,8 +249,8 @@ func GetUserById(c echo.Context) error {
 //
 //	200: usersResponse
 //	500: errorResponse
-func GetUsers(c echo.Context) error {
-	db := storage.MysqlConn.GetDBInstance()
+func (uc *UsersController) GetUsers(c echo.Context) error {
+	db := uc.GetDB()
 	users := []model.User{}
 
 	k, msg := "all", "userapi_v1.users"

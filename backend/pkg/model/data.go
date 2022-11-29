@@ -2,55 +2,68 @@ package model
 
 type DataModel interface{}
 
-// swagger:model User
-type OldUser struct {
-	// Id of the user
-	// in: int64
-	// required: false
-	Id int `json:"id" form:"id" query:"id" gorm:"primaryKey;autoIncrement;not null;<-:create"`
-	// Firstname of the user
-	// in: string
-	// required: true
-	// minimum length: 3
-	// maximum length: 30
-	Firstname string `json:"firstname" form:"firstname" query:"firstname" gorm:"size:50"`
-	// Lastname of the user
-	// in: string
-	// required: true
-	// minimum length: 3
-	// maximum length: 30
-	Lastname string `json:"lastname" form:"lastname" query:"lastname" gorm:"size:50"`
-	// Age of the user
-	// in: int64
-	// required: true
-	// minimum: 18
-	// maximum: 99
-	Age int `json:"age" form:"age" query:"age"`
+type Data struct{}
+
+// `Client` belongs to`User`, `UserID` is the foreign key
+// type Client struct {
+// 	ID          int    `json:"id" gorm:"->;primarykey"`
+// 	Name        string `json:"name"`
+// 	Surname     string `json:"surname"`
+// 	PESEL       string `json:"pesel"`
+// 	PhoneNumber string `json:"phoneNumber"`
+// 	UserID      int    `json:"userId;omitempty"`
+// 	User        `json:"user" gorm:"-;foreignKey:UserID;references:ID"`
+// }
+
+type Client struct {
+	ID          int    `json:"id"`
+	Name        string `json:"name"`
+	Surname     string `json:"surname"`
+	PESEL       string `json:"pesel"`
+	PhoneNumber string `json:"phoneNumber"`
+	UserID      int    `json:"userId;omitempty"`
+	User        User   `json:"user"`
 }
 
-// swagger:model User
 type User struct {
-	// Id of the user
-	// in: int64
-	// required: false
-	Id int `json:"id" form:"id" query:"id" gorm:"primaryKey;autoIncrement;not null;<-:create"`
-	// Email of the User
-	// in: string
-	// required: true
-	// minimum length: 3
-	// maximum length: 30
-	Email string `json:"email" form:"email" query:"email" gorm:"size:50"`
-	// Password of the User
-	// in: string
-	// required: true
-	// minimum length: 3
-	// maximum length: 30
-	Password string `json:"password" form:"password" query:"password" gorm:"size:250"`
-	// Role of the User
-	// in: string
-	// required: true
-	Role string `json:"role" form:"role" query:"role"`
+	ID       int    `json:"id"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Role     string `json:"role"`
 }
+
+// type RawJSON struct {
+// 	Payload string `json:"payload"`
+// }
+// https://medium.com/cuddle-ai/building-microservice-using-golang-echo-framework-ff10ba06d508
+// func (f *RawJSON) UnmarshalJSON(b []byte) error {
+// 	type rawJ RawJSON
+// 	newf := (*rawJ)(f)
+// 	err := json.Unmarshal(b, newf)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	var v DataModel
+// 	err = json.Unmarshal([]byte(newf.Payload), &v)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	var i interface{}
+// 	switch v.(type) {
+// 	case "user":
+// 		i = &User{}
+// 	default:
+// 		return errors.New("unknown data type")
+// 	}
+// 	err = json.Unmarshal(raw, i)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	f.Vehicles = append(f.Vehicles, i)
+
+// 	return nil
+// }
 
 // swagger:model GenericError
 type GenericError struct {

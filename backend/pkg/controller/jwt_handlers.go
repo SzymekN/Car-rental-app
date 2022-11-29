@@ -17,9 +17,9 @@ import (
 
 // Checks for the username in the db
 func GetUser(email string) (auth.User, error) {
-	conn := storage.MysqlConn.GetDBInstance()
+	db := storage.MysqlConn.GetDBInstance()
 	u := auth.User{}
-	result := conn.Where(&auth.User{Email: email}).Find(&u)
+	result := db.Where(&auth.User{Email: email}).Find(&u)
 	err := result.Error
 
 	if err != nil {
@@ -35,12 +35,29 @@ func GetUser(email string) (auth.User, error) {
 }
 
 // save signed in user to the db
-func SaveUser(u auth.User) error {
-	pg := storage.MysqlConn.GetDBInstance()
-	if err := pg.Create(&u).Error; err != nil {
+func SignUser(mc model.Client) error {
+	db := storage.MysqlConn.GetDBInstance()
+
+	// result := db.Create(&mc.User)
+	// if err := result.Error; err != nil {
+	// 	fmt.Println(err)
+	// 	return err
+	// }
+
+	// mc.UserID = mc.User.Id
+
+	// if err := db.Create(&mc).Error; err != nil {
+	// 	fmt.Println(err)
+	// 	return err
+	// }
+	fmt.Println(mc)
+
+	fmt.Println(db.Model(&model.Client{}).Association("User").Error)
+	if err := db.Model(&model.Client{}).Preload("User").Debug().Create(&mc).Error; err != nil {
 		fmt.Println(err)
 		return err
 	}
+
 	return nil
 }
 
@@ -48,7 +65,7 @@ func SaveUser(u auth.User) error {
 func SignUp(c echo.Context) error {
 
 	// user to save in the database
-	var u auth.User
+	var mc model.Client
 	// error got while executing
 	var err error
 	// HTTP status code sent as a response
@@ -64,17 +81,17 @@ func SignUp(c echo.Context) error {
 	}()
 
 	// try saving data got in the request to the User datatype
-	if err = c.Bind(&u); err != nil {
+	if err = c.Bind(&mc); err != nil {
 		status = http.StatusBadRequest
-		k = u.Email
+		k = mc.User.Email
 		msg += " SignUp error: incorrect credentials, email: {" + k + "}, HTTP: " + strconv.Itoa(status)
 		return err
 	}
 
 	// check if user already exists
-	_, err = GetUser(u.Email)
+	_, err = GetUser(mc.User.Email)
 
-	k = u.Email
+	k = mc.User.Email
 	if err == nil {
 		status = http.StatusInternalServerError
 		msg += " SignUp error: email in use, email: {" + k + "}, HTTP: " + strconv.Itoa(status)
@@ -83,7 +100,7 @@ func SignUp(c echo.Context) error {
 	}
 
 	// hash password
-	u.Password, err = auth.GeneratehashPassword(u.Password)
+	mc.User.Password, err = auth.GeneratehashPassword(mc.User.Password)
 	if err != nil {
 		status = http.StatusInternalServerError
 		msg += " SignUp error: couldn't generate hash, email: {" + k + "}, HTTP: " + strconv.Itoa(status)
@@ -91,7 +108,7 @@ func SignUp(c echo.Context) error {
 	}
 
 	//insert user details to database
-	err = SaveUser(u)
+	err = SignUser(mc)
 	if err != nil {
 		status = http.StatusInternalServerError
 		msg += " SignUp error: insert query error, email: {" + k + "}, HTTP: " + strconv.Itoa(status)
@@ -101,7 +118,7 @@ func SignUp(c echo.Context) error {
 	status = http.StatusOK
 	k = "info"
 	msg = "[INFO] SignUp completed: user signed up, email: {" + k + "}, HTTP: " + strconv.Itoa(status)
-	return c.JSON(http.StatusOK, u)
+	return c.JSON(http.StatusOK, mc)
 
 }
 
@@ -114,7 +131,7 @@ func SignOut(c echo.Context) error {
 	defer func() {
 		producer.ProduceMessage(k, msg)
 		if err != nil {
-			c.JSON(status, &model.GenericMessage{Message: msg})
+			c.JSON(status, &model.GenericError{Message: msg})
 		}
 	}()
 
@@ -166,15 +183,13 @@ func SignIn(c echo.Context) error {
 	var err error
 	var status int
 	k, msg := "err", "[ERROR]"
-	fmt.Println("DUPA1")
+
 	defer func() {
 		producer.ProduceMessage(k, msg)
 		if err != nil {
 			c.JSON(status, &model.GenericError{Message: msg})
 		}
 	}()
-	fmt.Println("DUPA2")
-	fmt.Println(c)
 
 	if err = c.Bind(&authDetails); err != nil {
 		status = http.StatusBadRequest
@@ -182,12 +197,10 @@ func SignIn(c echo.Context) error {
 		msg += "SignIn error: incorrect credentials, email: {" + k + "},  HTTP: " + strconv.Itoa(status)
 		return err
 	}
-	fmt.Println("DUPA3")
 
 	// check if user exists
 	var authUser auth.User
 	authUser, err = GetUser(authDetails.Email)
-	fmt.Println("DUPA4")
 
 	k = authDetails.Email
 	if err != nil {
@@ -198,7 +211,6 @@ func SignIn(c echo.Context) error {
 
 	// check if password is correct
 	check := auth.CheckPasswordHash(authDetails.Password, authUser.Password)
-	fmt.Println("DUPA5")
 
 	if !check {
 		status = http.StatusBadRequest
@@ -206,7 +218,6 @@ func SignIn(c echo.Context) error {
 		err = errors.New("Incorrect password")
 		return err
 	}
-	fmt.Println("DUPA5")
 
 	// generate token based on username and role
 	var validToken string
@@ -216,7 +227,6 @@ func SignIn(c echo.Context) error {
 		msg += "SignIn error: couldn't generate token, email: {" + k + "},  HTTP: " + strconv.Itoa(status)
 		return err
 	}
-	fmt.Println("DUPA6")
 
 	var token auth.Token
 	token.Email = authUser.Email
