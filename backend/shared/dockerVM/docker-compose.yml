@@ -6,39 +6,20 @@ version: '3'
 #     external: true
 
 services:
-  # cassandra:
-  #   image: cassandra
-  #   container_name: cassandra
-  #   restart: always
-  #   # ports:
-  #     # - 9042:9042
-  #     # - 9160:9160
-  #   volumes:
-  #     - /cassandra/data:/var/lib/cassandra
-  #     - /vagrant_data:/shared
-  #   environment:
-  #     - CASSANDRA_CLUSTER_NAME=userapi
-  #   healthcheck:
-  #     test: ["CMD", "cqlsh", "-e", "describe keyspaces" ]
-  #     interval: 5s
-  #     timeout: 5s
-  #     retries: 5
 
   mysql:
     image: mysql:8.0
     container_name: mysql
     restart: always
     environment:
-      - MYSQL_ROOT_PASSWORD=userapi
-      - MYSQL_DATABASE=userapi
-      - MYSQL_USER=userapi    
-      - MYSQL_PASSWORD=userapi
+      - MYSQL_ROOT_PASSWORD=admin
+      - MYSQL_DATABASE=car_rental
+      - MYSQL_USER=admin    
+      - MYSQL_PASSWORD=admin
 
-    # ports:
-      # - '5432:5432'
     volumes: 
-      - /postgres/data:/var/lib/postgresql/data
-      - /vagrant_data:/shared
+      - /mysql/data:/var/lib/mysql
+      - /vagrant_data/shared/dockerVM/mysql_init:/docker-entrypoint-initdb.d
 
   # postgres:
   #   image: postgres
@@ -63,31 +44,27 @@ services:
     container_name: redis-server
     command: ["redis-server"]
     
-  userapi-1:
+  car-rental:
     depends_on:
       - mysql
       - redis-server
 
     build: /vagrant_data
-    container_name: userapi-1
+    container_name: car-rental
     restart: always
     ports:
       - '8200:8200'
-      - '8300:8300'
     environment:
       - API_PORT=8200
       - REDIS_PORT=6379
-      # - GRPC_PORT=8300
-      # - PG_HOST=postgres
-      - CASSANDRA_HOST=cassandra
       - REDIS_HOST=redis-server
-      - REDIS-PASSWORD=userapi
+      - REDIS-PASSWORD=admin
       - KAFKA_HOST=kafka-1
-      - MYSQL_USER=userapi    
-      - MYSQL_PASSWORD=userapi
+      - MYSQL_USER=admin    
+      - MYSQL_PASSWORD=admin
       - MYSQL_HOST=mysql    
       - MYSQL_PORT=3306    
-      - MYSQL_DB_NAME=userapi 
+      - MYSQL_DB_NAME=car_rental 
 
   # userapi-2:
   #   depends_on:
@@ -128,7 +105,6 @@ services:
       environment:
         - KAFKA_BROKER_ID=1
         - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
-        # teraz ip to adres vm, jeśli producenci i konsumenci będą na dockerze to trzeba będzie zmienić pewnie na nazwy serwisów
         - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka-1:9092
         - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
         - ALLOW_PLAINTEXT_LISTENER=yes
@@ -183,9 +159,11 @@ services:
     container_name: consumer
     restart: always
 
+        # ręczne tworzenie tematów kafki
         # (cd /opt/bitnami/kafka/bin/windows/; ./kafka-topics.sh --create --bootstrap-server kafka-kafka-1:9092 --replication-factor 1 --partitions 1 --topic messages)
         # kafka-topics.sh --create --bootstrap-server kafka-1:9092 --replication-factor 1 --partitions 1 --topic messages
         
+        # ręczne logowanie do redisa 
         # sudo docker run --name redis-server --network redisnet -d redis
         # sudo docker run -it --network redisnet redis bash
         # redis-cli -h redis-server
