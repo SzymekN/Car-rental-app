@@ -21,15 +21,26 @@ type Client struct {
 	Surname     string `json:"surname"`
 	PESEL       string `json:"pesel"`
 	PhoneNumber string `json:"phoneNumber"`
-	UserID      int    `json:"userId;omitempty"`
+	UserID      int    `json:"userId"`
 	User        User   `json:"user"`
 }
 
 type User struct {
 	ID       int    `json:"id"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Role     string `json:"role"`
+	Email    string `json:"email" gorm:"email"`
+	Password string `json:"password" gorm:"password"`
+	Role     string `json:"role" gorm:"role"`
+}
+
+type Vehicle struct {
+	ID                 int     `json:"id"`
+	RegistrationNumber string  `json:"registrationNumber"`
+	Brand              string  `json:"brand"`
+	Model              string  `json:"model"`
+	Type               string  `json:"type"`
+	Color              string  `json:"color"`
+	FuelConsumption    float32 `json:"fuelConsumption"`
+	DailyCost          int     `json:"dailyCost"`
 }
 
 // type RawJSON struct {

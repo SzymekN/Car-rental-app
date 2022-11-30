@@ -250,23 +250,24 @@ func (uc *UsersController) GetUserById(c echo.Context) error {
 //	200: usersResponse
 //	500: errorResponse
 func (uc *UsersController) GetUsers(c echo.Context) error {
-	db := uc.GetDB()
-	users := []model.User{}
+	return GenericGetAll(c, model.User{})
+	// db := uc.GetDB()
+	// users := []model.User{}
 
-	k, msg := "all", "userapi_v1.users"
-	var status int
+	// k, msg := "all", "userapi_v1.users"
+	// var status int
 
-	defer func() {
-		producer.ProduceMessage(k, msg)
-	}()
+	// defer func() {
+	// 	producer.ProduceMessage(k, msg)
+	// }()
 
-	if err := db.Find(&users).Error; err != nil {
-		status = http.StatusNotFound
-		msg += "[" + k + "] GetUsers error: couldn't get users, HTTP: " + strconv.Itoa(status)
-		return err
-	}
+	// if err := db.Find(&users).Error; err != nil {
+	// 	status = http.StatusNotFound
+	// 	msg += "[" + k + "] GetUsers error: couldn't get users, HTTP: " + strconv.Itoa(status)
+	// 	return err
+	// }
 
-	status = http.StatusOK
-	msg += "[" + k + "] GetUsers completed: users read, HTTP: " + strconv.Itoa(status)
-	return c.JSON(status, users)
+	// status = http.StatusOK
+	// msg += "[" + k + "] GetUsers completed: users read, HTTP: " + strconv.Itoa(status)
+	// return c.JSON(status, users)1
 }

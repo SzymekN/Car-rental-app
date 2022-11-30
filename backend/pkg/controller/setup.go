@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/SzymekN/Car-rental-app/pkg/auth"
+	"github.com/SzymekN/Car-rental-app/pkg/model"
 	"github.com/SzymekN/Car-rental-app/pkg/storage"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -37,6 +38,10 @@ func (r Router) registerUserRoutes() {
 
 }
 
+func test(c echo.Context) error {
+	return GenericPost(c, model.User{})
+}
+
 // registers router for the server
 func SetupRouter() *echo.Echo {
 	// r := Router{e: echo.New()}
@@ -67,6 +72,8 @@ func SetupRouter() *echo.Echo {
 	jwt_auth.POST("/api/v1/users/save", uc.SaveUser, auth.IsAdmin)
 	jwt_auth.PUT("/api/v1/users/:id", uc.UpdateUser, auth.IsAdmin)
 	jwt_auth.DELETE("/api/v1/users/:id", uc.DeleteUser, auth.IsAdmin)
+
+	e.POST("/test", test)
 
 	// redoc documentation middleware
 	// doc := redoc.Redoc{

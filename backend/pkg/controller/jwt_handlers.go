@@ -16,22 +16,28 @@ import (
 )
 
 // Checks for the username in the db
-func GetUser(email string) (auth.User, error) {
+func GetUser(email string) (model.User, error) {
 	db := storage.MysqlConn.GetDBInstance()
 	u := auth.User{}
-	result := db.Where(&auth.User{Email: email}).Find(&u)
+	result := db.Debug().Where(&auth.User{Email: email}).Find(&u)
 	err := result.Error
 
+	fmt.Println("GET")
+	fmt.Println(u.Email)
+	// fmt.Println(u.Id)
+	fmt.Println(u.Password)
+	fmt.Println(u.Role)
+	// u = model.User{}
 	if err != nil {
 		fmt.Println(err)
-		return u, err
+		return model.User{}, err
 	}
 
 	if result.RowsAffected < 1 {
-		return u, errors.New("User not found")
+		return model.User{}, errors.New("User not found")
 	}
 
-	return u, nil
+	return model.User{}, nil
 }
 
 // save signed in user to the db
@@ -199,7 +205,7 @@ func SignIn(c echo.Context) error {
 	}
 
 	// check if user exists
-	var authUser auth.User
+	var authUser model.User
 	authUser, err = GetUser(authDetails.Email)
 
 	k = authDetails.Email
@@ -210,6 +216,11 @@ func SignIn(c echo.Context) error {
 	}
 
 	// check if password is correct
+	fmt.Println(authDetails.Password)
+	fmt.Println(authUser.Password)
+	fmt.Println(authUser.Email)
+	res, _ := auth.GeneratehashPassword(authUser.Password)
+	fmt.Println(res)
 	check := auth.CheckPasswordHash(authDetails.Password, authUser.Password)
 
 	if !check {
