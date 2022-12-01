@@ -37,60 +37,9 @@ type UsersHandler interface {
 }
 
 func (uc *UsersController) SaveUser(c echo.Context) error {
-
-	// user to be saved in the db
-	var u model.User
-	// error got while executing function
-	var err error
-	// HTTP  code to send as a response
-	var status int
-	// key for logger and message to save
-	k, msg := "", "userapi_v1.users"
-
-	// before exiting function send message to logs and response to user
-	defer func() {
-		producer.ProduceMessage(k, msg)
-		if err != nil {
-			c.JSON(status, &model.GenericError{Message: msg})
-		}
-	}()
-
-	// try saving data from user request to provided model.User datatype
-	if err = c.Bind(&u); err != nil {
-		status = http.StatusBadRequest
-		msg += "[ERROR] SaveUser error: incorrect parameters, User ID: " + k + ", HTTP: " + strconv.Itoa(status)
-		return err
-	}
-
-	k = strconv.Itoa(u.ID)
-	db := uc.GetDB()
-
-	// save user in the db
-	if err = db.Create(&u).Error; err != nil {
-		status = http.StatusInternalServerError
-		msg += "[ERROR] SaveUser error: post query error, User ID: " + k + ", HTTP: " + strconv.Itoa(status)
-		return err
-	}
-
-	status = http.StatusOK
-	msg += "[" + k + "] SaveUser completed: user added, HTTP: " + strconv.Itoa(status)
-	return c.JSON(status, u)
+	return GenericPost(c, model.User{})
 }
 
-// swagger:route PUT /api/v1/user/{id} users_v1 putUserV1
-// Updates user in  database.
-//
-//		Consumes:
-//	   - application/json
-//	 Produces:
-//	   - application/json
-//
-// responses:
-//
-//	200: userResponse
-//	400: errorResponse
-//	404: errorResponse
-//	500: errorResponse
 func (uc *UsersController) UpdateUser(c echo.Context) error {
 	// HTTP status code send as a response
 	var status int
@@ -146,17 +95,6 @@ func (uc *UsersController) UpdateUser(c echo.Context) error {
 	return c.JSON(status, user)
 }
 
-// swagger:route DELETE /api/v1/user/{id} users_v1 deleteUserV1
-// deletes user from  database.
-//
-//	Produces:
-//	  - application/json
-//
-// responses:
-//
-//	200: messageResponse
-//	400: errorResponse
-//	404: errorResponse
 func (uc *UsersController) DeleteUser(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	var status int
@@ -192,82 +130,10 @@ func (uc *UsersController) DeleteUser(c echo.Context) error {
 	return c.JSON(status, &model.GenericMessage{Message: msg})
 }
 
-// swagger:route GET /api/v1/user/{id} users_v1 getUserV1
-// Gets user from  database.
-//
-//	Produces:
-//	  - application/json
-//
-// responses:
-//
-//	200: userResponse
-//	400: errorResponse
-//	404: errorResponse
 func (uc *UsersController) GetUserById(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
-	var status int
-	k, msg := "", "userapi_v1.users"
-
-	defer func() {
-		producer.ProduceMessage(k, msg)
-		if err != nil {
-			c.JSON(status, &model.GenericError{Message: msg})
-		}
-	}()
-
-	if err != nil {
-		k = "unknown"
-		status = http.StatusBadRequest
-		msg += "[" + k + "] GetUserById error: incorrect id, HTTP: " + strconv.Itoa(status)
-		return err
-	}
-
-	k = strconv.Itoa(id)
-	db := uc.GetDB()
-	user := model.User{}
-	result := db.Find(&user, id)
-
-	if result.RowsAffected < 1 {
-		status = http.StatusNotFound
-		msg += "[" + k + "] GetUserById error: couldn't get user, HTTP: " + strconv.Itoa(status)
-		err = errors.New("couldn't get user")
-		return err
-	}
-
-	status = http.StatusOK
-	msg += "[" + k + "] GetUserById completed: user read, HTTP: " + strconv.Itoa(status)
-	return c.JSON(status, user)
+	return GenericGetById2(c, model.User{})
 }
 
-// swagger:route GET /api/v1/users users_v1 listUsersV1
-// Gets user from  database.
-//
-//	Produces:
-//	  - application/json
-//
-// responses:
-//
-//	200: usersResponse
-//	500: errorResponse
 func (uc *UsersController) GetUsers(c echo.Context) error {
 	return GenericGetAll(c, model.User{})
-	// db := uc.GetDB()
-	// users := []model.User{}
-
-	// k, msg := "all", "userapi_v1.users"
-	// var status int
-
-	// defer func() {
-	// 	producer.ProduceMessage(k, msg)
-	// }()
-
-	// if err := db.Find(&users).Error; err != nil {
-	// 	status = http.StatusNotFound
-	// 	msg += "[" + k + "] GetUsers error: couldn't get users, HTTP: " + strconv.Itoa(status)
-	// 	return err
-	// }
-
-	// status = http.StatusOK
-	// msg += "[" + k + "] GetUsers completed: users read, HTTP: " + strconv.Itoa(status)
-	// return c.JSON(status, users)1
 }

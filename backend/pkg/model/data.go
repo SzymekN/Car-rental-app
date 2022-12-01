@@ -1,5 +1,10 @@
 package model
 
+import (
+	"github.com/SzymekN/Car-rental-app/pkg/producer"
+	"github.com/labstack/echo/v4"
+)
+
 type DataModel interface{}
 
 type Data struct{}
@@ -41,6 +46,35 @@ type Vehicle struct {
 	Color              string  `json:"color"`
 	FuelConsumption    float32 `json:"fuelConsumption"`
 	DailyCost          int     `json:"dailyCost"`
+}
+
+type Log struct {
+	Key  string
+	Msg  string
+	Code int
+	Err  error
+}
+
+type LogProducer interface {
+	Produce(c echo.Context)
+}
+
+func (l Log) Produce(c echo.Context) {
+	producer.ProduceMessage(l.Key, l.Msg)
+	c.JSON(l.Code, &GenericMessage{Message: l.Msg})
+}
+
+type GenericModel interface {
+	User | Client
+	GetId() int
+}
+
+func (d User) GetId() int {
+	return d.ID
+}
+
+func (d Client) GetId() int {
+	return d.ID
 }
 
 // type RawJSON struct {

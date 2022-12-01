@@ -87,7 +87,6 @@ func SetupMysqlConnection() {
 	MysqlConn.DB, err = gorm.Open(mysql.Open(connString), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
 			SingularTable: true,
-			NoLowerCase:   true,
 		},
 	})
 

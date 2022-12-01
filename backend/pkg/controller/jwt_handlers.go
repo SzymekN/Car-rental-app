@@ -18,26 +18,20 @@ import (
 // Checks for the username in the db
 func GetUser(email string) (model.User, error) {
 	db := storage.MysqlConn.GetDBInstance()
-	u := auth.User{}
-	result := db.Debug().Where(&auth.User{Email: email}).Find(&u)
+	u := model.User{}
+	result := db.Debug().Where(&model.User{Email: email}).Find(&u)
 	err := result.Error
 
-	fmt.Println("GET")
-	fmt.Println(u.Email)
-	// fmt.Println(u.Id)
-	fmt.Println(u.Password)
-	fmt.Println(u.Role)
-	// u = model.User{}
 	if err != nil {
 		fmt.Println(err)
-		return model.User{}, err
+		return u, err
 	}
 
 	if result.RowsAffected < 1 {
-		return model.User{}, errors.New("User not found")
+		return u, errors.New("User not found")
 	}
 
-	return model.User{}, nil
+	return u, nil
 }
 
 // save signed in user to the db
@@ -216,11 +210,6 @@ func SignIn(c echo.Context) error {
 	}
 
 	// check if password is correct
-	fmt.Println(authDetails.Password)
-	fmt.Println(authUser.Password)
-	fmt.Println(authUser.Email)
-	res, _ := auth.GeneratehashPassword(authUser.Password)
-	fmt.Println(res)
 	check := auth.CheckPasswordHash(authDetails.Password, authUser.Password)
 
 	if !check {

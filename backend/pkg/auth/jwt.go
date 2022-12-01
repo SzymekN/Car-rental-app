@@ -15,6 +15,7 @@ import (
 var Secretkey string = ""
 
 func GeneratehashPassword(password string) (string, error) {
+	fmt.Printf("HASHED PASSWORD:%s\n", password)
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	return string(bytes), err
 }
@@ -88,7 +89,7 @@ func GenerateJWT(email, role string) (string, error) {
 	var mySigningKey = []byte(getKey())
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
-	expireTime := time.Minute * 2
+	expireTime := time.Minute * 15
 
 	claims["authorized"] = true
 	claims["email"] = email

@@ -1,71 +1,70 @@
-USE car_rental;
-CREATE TABLE Vehicle (
-  ID                 int(10) NOT NULL AUTO_INCREMENT, 
-  registrationNumber varchar(7) NOT NULL UNIQUE, 
-  brand              varchar(50) NOT NULL, 
-  model              varchar(50) NOT NULL, 
-  type               varchar(30) NOT NULL, 
-  color              varchar(20) NOT NULL, 
-  fuelConsumption    float NOT NULL, 
-  dailyCost          int(10) NOT NULL, 
+CREATE TABLE vehicle (
+  ID                  int(10) NOT NULL AUTO_INCREMENT, 
+  registration_number varchar(7) NOT NULL UNIQUE, 
+  brand               varchar(50) NOT NULL, 
+  model               varchar(50) NOT NULL, 
+  type                varchar(30) NOT NULL, 
+  color               varchar(20) NOT NULL, 
+  fuel_consumption    float NOT NULL, 
+  dailyCost           int(10) NOT NULL, 
   PRIMARY KEY (ID)) CHARACTER SET UTF8;
-CREATE TABLE Employee (
+CREATE TABLE employee (
   ID      int(10) NOT NULL AUTO_INCREMENT, 
   name    varchar(30) NOT NULL, 
   surname int(30) NOT NULL, 
-  Salary  int(10) NOT NULL, 
+  salary  int(10) NOT NULL, 
   PESEL   varchar(255) NOT NULL, 
-  userID  int(10) NOT NULL UNIQUE, 
+  user_id int(10) NOT NULL UNIQUE, 
   PRIMARY KEY (ID)) CHARACTER SET UTF8;
-CREATE TABLE Client (
-  ID          int(10) NOT NULL AUTO_INCREMENT, 
-  name        varchar(30) NOT NULL, 
-  surname     varchar(30) NOT NULL, 
-  PESEL       varchar(11) NOT NULL UNIQUE, 
-  phoneNumber varchar(9) NOT NULL UNIQUE, 
-  userID      int(10) NOT NULL UNIQUE, 
+CREATE TABLE client (
+  ID           int(10) NOT NULL AUTO_INCREMENT, 
+  name         varchar(30) NOT NULL, 
+  surname      varchar(30) NOT NULL, 
+  PESEL        varchar(11) NOT NULL UNIQUE, 
+  phone_number varchar(9) NOT NULL UNIQUE, 
+  user_id      int(10) NOT NULL UNIQUE, 
   PRIMARY KEY (ID)) CHARACTER SET UTF8;
-CREATE TABLE Rental (
-  ID            int(10) NOT NULL AUTO_INCREMENT, 
-  driverID      int(10), 
-  clientiID     int(10) NOT NULL, 
-  vehicleID     int(10) NOT NULL, 
-  startDate     date NOT NULL, 
-  endDate       date NOT NULL, 
-  pickupAddress varchar(255), 
-  PRIMARY KEY (ID)) CHARACTER SET UTF8;
-CREATE TABLE Repairs (
+CREATE TABLE rental (
   ID             int(10) NOT NULL AUTO_INCREMENT, 
-  vehicleID      int(10) NOT NULL, 
-  cost           int(10) NOT NULL, 
-  approved       bit(1), 
-  notificationID int(10) UNIQUE, 
+  driver_id      int(10), 
+  client_id      int(10) NOT NULL, 
+  vehicle_id     int(10) NOT NULL, 
+  start_date     date NOT NULL, 
+  end_date       date NOT NULL, 
+  pickup_address varchar(255), 
   PRIMARY KEY (ID)) CHARACTER SET UTF8;
-CREATE TABLE Salary (
-  employeeID int(10) NOT NULL, 
-  `date`     date NOT NULL, 
-  amount     int(10) NOT NULL) CHARACTER SET UTF8;
+CREATE TABLE repairs (
+  ID              int(10) NOT NULL AUTO_INCREMENT, 
+  vehicle_id      int(10) NOT NULL, 
+  cost            int(10) NOT NULL, 
+  approved        bit(1), 
+  notification_id int(10) UNIQUE, 
+  PRIMARY KEY (ID)) CHARACTER SET UTF8;
+CREATE TABLE salary (
+  employee_id int(10) NOT NULL, 
+  `date`      date NOT NULL, 
+  amount      int(10) NOT NULL) CHARACTER SET UTF8;
 CREATE TABLE notification (
   ID          int(10) NOT NULL AUTO_INCREMENT, 
   description varchar(255) NOT NULL UNIQUE, 
-  employeeID  int(10) NOT NULL, 
-  clientID    int(10), 
-  vechicleID  int(10), 
+  employee_id int(10) NOT NULL, 
+  client_id   int(10), 
+  vechicle_id int(10), 
   PRIMARY KEY (ID)) CHARACTER SET UTF8;
-CREATE TABLE `User` (
+CREATE TABLE `user` (
   ID       int(10) NOT NULL AUTO_INCREMENT, 
   email    varchar(50) NOT NULL UNIQUE, 
   password varchar(255) NOT NULL, 
   role     varchar(20) NOT NULL, 
   PRIMARY KEY (ID)) CHARACTER SET UTF8;
-ALTER TABLE Rental ADD CONSTRAINT FKrental327656 FOREIGN KEY (vehicleID) REFERENCES Vehicle (ID);
-ALTER TABLE Rental ADD CONSTRAINT FKrental599429 FOREIGN KEY (clientiID) REFERENCES Client (ID);
-ALTER TABLE notification ADD CONSTRAINT FKnotificati288469 FOREIGN KEY (vechicleID) REFERENCES Vehicle (ID);
-ALTER TABLE notification ADD CONSTRAINT FKnotificati740257 FOREIGN KEY (employeeID) REFERENCES Employee (ID);
-ALTER TABLE notification ADD CONSTRAINT FKnotificati931400 FOREIGN KEY (clientID) REFERENCES Client (ID);
-ALTER TABLE Repairs ADD CONSTRAINT FKrepairs887631 FOREIGN KEY (vehicleID) REFERENCES Vehicle (ID);
-ALTER TABLE Employee ADD CONSTRAINT FKemployee40675 FOREIGN KEY (userID) REFERENCES `User` (ID);
-ALTER TABLE Client ADD CONSTRAINT FKclient827663 FOREIGN KEY (userID) REFERENCES `User` (ID);
-ALTER TABLE Rental ADD CONSTRAINT FKrental369251 FOREIGN KEY (driverID) REFERENCES Employee (ID);
-ALTER TABLE Salary ADD CONSTRAINT FKsalary786655 FOREIGN KEY (employeeID) REFERENCES Employee (ID);
-ALTER TABLE Repairs ADD CONSTRAINT FKrepairs288519 FOREIGN KEY (notificationID) REFERENCES notification (ID);
+ALTER TABLE rental ADD CONSTRAINT FKrental154746 FOREIGN KEY (vehicle_id) REFERENCES vehicle (ID);
+ALTER TABLE rental ADD CONSTRAINT FKrental590843 FOREIGN KEY (client_id) REFERENCES client (ID);
+ALTER TABLE notification ADD CONSTRAINT FKnotificati466077 FOREIGN KEY (vechicle_id) REFERENCES vehicle (ID);
+ALTER TABLE notification ADD CONSTRAINT FKnotificati174904 FOREIGN KEY (employee_id) REFERENCES employee (ID);
+ALTER TABLE notification ADD CONSTRAINT FKnotificati402236 FOREIGN KEY (client_id) REFERENCES client (ID);
+ALTER TABLE repairs ADD CONSTRAINT FKrepairs601556 FOREIGN KEY (vehicle_id) REFERENCES vehicle (ID);
+ALTER TABLE employee ADD CONSTRAINT FKemployee939388 FOREIGN KEY (user_id) REFERENCES `user` (ID);
+ALTER TABLE client ADD CONSTRAINT FKclient245213 FOREIGN KEY (user_id) REFERENCES `user` (ID);
+ALTER TABLE rental ADD CONSTRAINT FKrental398356 FOREIGN KEY (driver_id) REFERENCES employee (ID);
+ALTER TABLE salary ADD CONSTRAINT FKsalary843084 FOREIGN KEY (employee_id) REFERENCES employee (ID);
+ALTER TABLE repairs ADD CONSTRAINT FKrepairs934942 FOREIGN KEY (notification_id) REFERENCES notification (ID);
