@@ -1,11 +1,11 @@
 package auth
 
 // user data type and fields
-type User struct {
-	Email    string `json:"email" form:"email"`
-	Password string `json:"password" form:"password"`
-	Role     string `json:"role" form:"role"`
-}
+// type User struct {
+// 	Email    string `json:"email" form:"email"`
+// 	Password string `json:"password" form:"password"`
+// 	Role     string `json:"role" form:"role"`
+// }
 
 // login credentials
 type Authentication struct {

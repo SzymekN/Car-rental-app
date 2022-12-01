@@ -8,6 +8,11 @@ import (
 	"github.com/SzymekN/Car-rental-app/pkg/storage"
 )
 
+// pobieranie nazwy z headera albo body requesta i tworzenie odpowiedniej zmiennej na jej podstawie
+
+// stwozryć obiekt nadzrędny kontroller - zawiera w sobie mniejsze kontrolery dla każdego z requestów
+// funkcje z klas podrzędnych odwołują się do nadrzędnych
+
 func main() {
 
 	e := controller.SetupRouter()

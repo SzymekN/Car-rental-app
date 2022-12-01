@@ -11,9 +11,13 @@ import (
 
 const (
 	topic = "messages"
-	// brokerAddress = {"kafka-1:9092","kafka-2:9092","kafka-3:9092"}
-	brokerAddress = "kafka-1:9092"
+	// brokerAddress = [3]string{"kafka-1:9092", "kafka-2:9092", "kafka-3:9092"}
+	// brokerAddress = "kafka-1:9092"
 )
+
+func getBrokers() []string {
+	return []string{"kafka-1:9092", "kafka-2:9092", "kafka-3:9092"}
+}
 
 func main() {
 	// create a new context
@@ -32,9 +36,10 @@ func consume(ctx context.Context) {
 	// the groupID identifies the consumer and prevents
 	// it from receiving duplicate messages
 	r := kafka.NewReader(kafka.ReaderConfig{
-		Brokers: []string{brokerAddress},
+		// Brokers: []string{brokerAddress},
+		Brokers: getBrokers(),
 		Topic:   topic,
-		// GroupID: "group1",
+		GroupID: "group1",
 		// assign the logger to the reader
 		// Logger: l,
 	})
