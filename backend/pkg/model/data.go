@@ -1,56 +1,114 @@
 package model
 
+import (
+	"github.com/SzymekN/Car-rental-app/pkg/producer"
+	"github.com/labstack/echo/v4"
+)
+
 type DataModel interface{}
 
-// swagger:model User
-type OldUser struct {
-	// Id of the user
-	// in: int64
-	// required: false
-	Id int `json:"id" form:"id" query:"id" gorm:"primaryKey;autoIncrement;not null;<-:create"`
-	// Firstname of the user
-	// in: string
-	// required: true
-	// minimum length: 3
-	// maximum length: 30
-	Firstname string `json:"firstname" form:"firstname" query:"firstname" gorm:"size:50"`
-	// Lastname of the user
-	// in: string
-	// required: true
-	// minimum length: 3
-	// maximum length: 30
-	Lastname string `json:"lastname" form:"lastname" query:"lastname" gorm:"size:50"`
-	// Age of the user
-	// in: int64
-	// required: true
-	// minimum: 18
-	// maximum: 99
-	Age int `json:"age" form:"age" query:"age"`
+type Data struct{}
+
+// `Client` belongs to`User`, `UserID` is the foreign key
+// type Client struct {
+// 	ID          int    `json:"id" gorm:"->;primarykey"`
+// 	Name        string `json:"name"`
+// 	Surname     string `json:"surname"`
+// 	PESEL       string `json:"pesel"`
+// 	PhoneNumber string `json:"phoneNumber"`
+// 	UserID      int    `json:"userId;omitempty"`
+// 	User        `json:"user" gorm:"-;foreignKey:UserID;references:ID"`
+// }
+
+type Client struct {
+	ID          int    `json:"id"`
+	Name        string `json:"name"`
+	Surname     string `json:"surname"`
+	PESEL       string `json:"pesel"`
+	PhoneNumber string `json:"phone_number"`
+	UserID      int    `json:"userId"`
+	User        User   `json:"user"`
 }
 
-// swagger:model User
 type User struct {
-	// Id of the user
-	// in: int64
-	// required: false
-	Id int `json:"id" form:"id" query:"id" gorm:"primaryKey;autoIncrement;not null;<-:create"`
-	// Email of the User
-	// in: string
-	// required: true
-	// minimum length: 3
-	// maximum length: 30
-	Email string `json:"email" form:"email" query:"email" gorm:"size:50"`
-	// Password of the User
-	// in: string
-	// required: true
-	// minimum length: 3
-	// maximum length: 30
-	Password string `json:"password" form:"password" query:"password" gorm:"size:250"`
-	// Role of the User
-	// in: string
-	// required: true
-	Role string `json:"role" form:"role" query:"role"`
+	ID       int    `json:"id"`
+	Email    string `json:"email" gorm:"email"`
+	Password string `json:"password" gorm:"password"`
+	Role     string `json:"role" gorm:"role"`
 }
+
+type Vehicle struct {
+	ID                 int     `json:"id"`
+	RegistrationNumber string  `json:"registrationNumber"`
+	Brand              string  `json:"brand"`
+	Model              string  `json:"model"`
+	Type               string  `json:"type"`
+	Color              string  `json:"color"`
+	FuelConsumption    float32 `json:"fuelConsumption"`
+	DailyCost          int     `json:"dailyCost"`
+}
+
+type Log struct {
+	Key  string
+	Msg  string
+	Code int
+	Err  error
+}
+
+type LogProducer interface {
+	Produce(c echo.Context)
+}
+
+func (l Log) Produce(c echo.Context) {
+	producer.ProduceMessage(l.Key, l.Msg)
+	c.JSON(l.Code, &GenericMessage{Message: l.Msg})
+}
+
+type GenericModel interface {
+	User | Client
+	GetId() int
+}
+
+func (d User) GetId() int {
+	return d.ID
+}
+
+func (d Client) GetId() int {
+	return d.ID
+}
+
+// type RawJSON struct {
+// 	Payload string `json:"payload"`
+// }
+// https://medium.com/cuddle-ai/building-microservice-using-golang-echo-framework-ff10ba06d508
+// func (f *RawJSON) UnmarshalJSON(b []byte) error {
+// 	type rawJ RawJSON
+// 	newf := (*rawJ)(f)
+// 	err := json.Unmarshal(b, newf)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	var v DataModel
+// 	err = json.Unmarshal([]byte(newf.Payload), &v)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	var i interface{}
+// 	switch v.(type) {
+// 	case "user":
+// 		i = &User{}
+// 	default:
+// 		return errors.New("unknown data type")
+// 	}
+// 	err = json.Unmarshal(raw, i)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	f.Vehicles = append(f.Vehicles, i)
+
+// 	return nil
+// }
 
 // swagger:model GenericError
 type GenericError struct {

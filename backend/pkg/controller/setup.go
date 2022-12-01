@@ -4,12 +4,23 @@ import (
 	"net/http"
 
 	"github.com/SzymekN/Car-rental-app/pkg/auth"
+	"github.com/SzymekN/Car-rental-app/pkg/model"
+	"github.com/SzymekN/Car-rental-app/pkg/storage"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"gorm.io/gorm"
 )
+
+type MainController struct {
+}
+
+type Controller interface {
+	GetDB() *gorm.DB
+}
 
 type Router struct {
 	e *echo.Echo
+	storage.MysqlConnect
 }
 
 type Registrator interface {
@@ -17,11 +28,19 @@ type Registrator interface {
 	registerUserRoutes()
 }
 
+func (mc MainController) GetDB() *gorm.DB {
+	return storage.MysqlConn.GetDBInstance()
+}
+
 func (r Router) registerUserRoutes() {
 	e := r.e
 	e.POST("/api/v1/users/signup", SignUp)
 	e.POST("/api/v1/users/signin", SignIn)
 
+}
+
+func test(c echo.Context) error {
+	return GenericPost(c, model.User{})
 }
 
 // registers router for the server
@@ -48,11 +67,14 @@ func SetupRouter() *echo.Echo {
 
 	jwt_auth.GET("/api/v1/users/signout", SignOut)
 
-	// jwt_auth.GET("/api/v1/users/:id", GetUserById)
-	// jwt_auth.GET("/api/v1/users", GetUsers)
-	// jwt_auth.POST("/api/v1/users/save", OLDSaveUser, auth.IsAdmin)
-	// jwt_auth.PUT("/api/v1/users/:id", UpdateUser, auth.IsAdmin)
-	// jwt_auth.DELETE("/api/v1/users/:id", DeleteUser, auth.IsAdmin)
+	uc := UsersController{}
+	jwt_auth.GET("/api/v1/users", uc.GetUserById)
+	jwt_auth.GET("/api/v1/users/all", uc.GetUsers)
+	jwt_auth.POST("/api/v1/users", uc.SaveUser, auth.IsAdmin)
+	jwt_auth.PUT("/api/v1/users", uc.UpdateUser, auth.IsAdmin)
+	jwt_auth.DELETE("/api/v1/users", uc.DeleteUser, auth.IsAdmin)
+
+	e.POST("/test", test)
 
 	// redoc documentation middleware
 	// doc := redoc.Redoc{

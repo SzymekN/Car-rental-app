@@ -15,6 +15,7 @@ import (
 var Secretkey string = ""
 
 func GeneratehashPassword(password string) (string, error) {
+	fmt.Printf("HASHED PASSWORD:%s\n", password)
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	return string(bytes), err
 }
@@ -37,18 +38,16 @@ func Validate(auth string, c echo.Context) (interface{}, error) {
 		Secretkey = getKey()
 		return []byte(Secretkey), nil
 	}
-	fmt.Println("chyba DUPA1")
+
 	// claims are of type `jwt.MapClaims` when token is created with `jwt.Parse`
 	token, err := jwt.Parse(auth, remoteKeyFunc)
 	// check if this token is already revoked
 	tokenRevoked, _ := GetToken(token.Raw)
-	fmt.Println("DUPA2")
 
 	if tokenRevoked {
 		producer.ProduceMessage("JWT validation", token.Raw+" REVOKED")
 		return nil, errors.New("Token Revoked")
 	}
-	fmt.Println("DUPA3")
 
 	// check if errors occured during token generation
 	if err != nil {
@@ -90,7 +89,7 @@ func GenerateJWT(email, role string) (string, error) {
 	var mySigningKey = []byte(getKey())
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
-	expireTime := time.Minute * 2
+	expireTime := time.Minute * 15
 
 	claims["authorized"] = true
 	claims["email"] = email
@@ -100,7 +99,7 @@ func GenerateJWT(email, role string) (string, error) {
 	// sign created token
 	tokenString, err := token.SignedString(mySigningKey)
 	if err != nil {
-		fmt.Errorf("Something Went Wrong: %s", err.Error())
+		fmt.Printf("Something Went Wrong: %s", err.Error())
 		return "", err
 	}
 

@@ -7,6 +7,7 @@ import (
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 )
 
 type MysqlConnect struct {
@@ -83,7 +84,11 @@ func SetupMysqlConnection() {
 
 	log.Print(connString)
 
-	MysqlConn.DB, err = gorm.Open(mysql.Open(connString), &gorm.Config{})
+	MysqlConn.DB, err = gorm.Open(mysql.Open(connString), &gorm.Config{
+		NamingStrategy: schema.NamingStrategy{
+			SingularTable: true,
+		},
+	})
 
 	if err != nil {
 		log.Panic(err)
