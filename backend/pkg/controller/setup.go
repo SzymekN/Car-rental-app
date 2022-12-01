@@ -20,6 +20,7 @@ type Controller interface {
 
 type Router struct {
 	e *echo.Echo
+	storage.MysqlConnect
 }
 
 type Registrator interface {
@@ -67,11 +68,11 @@ func SetupRouter() *echo.Echo {
 	jwt_auth.GET("/api/v1/users/signout", SignOut)
 
 	uc := UsersController{}
-	jwt_auth.GET("/api/v1/user", uc.GetUserById)
-	jwt_auth.GET("/api/v1/users", uc.GetUsers)
-	jwt_auth.POST("/api/v1/users/save", uc.SaveUser, auth.IsAdmin)
-	jwt_auth.PUT("/api/v1/users/:id", uc.UpdateUser, auth.IsAdmin)
-	jwt_auth.DELETE("/api/v1/users/:id", uc.DeleteUser, auth.IsAdmin)
+	jwt_auth.GET("/api/v1/users", uc.GetUserById)
+	jwt_auth.GET("/api/v1/users/all", uc.GetUsers)
+	jwt_auth.POST("/api/v1/users", uc.SaveUser, auth.IsAdmin)
+	jwt_auth.PUT("/api/v1/users", uc.UpdateUser, auth.IsAdmin)
+	jwt_auth.DELETE("/api/v1/users", uc.DeleteUser, auth.IsAdmin)
 
 	e.POST("/test", test)
 

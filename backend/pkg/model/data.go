@@ -25,7 +25,7 @@ type Client struct {
 	Name        string `json:"name"`
 	Surname     string `json:"surname"`
 	PESEL       string `json:"pesel"`
-	PhoneNumber string `json:"phoneNumber"`
+	PhoneNumber string `json:"phone_number"`
 	UserID      int    `json:"userId"`
 	User        User   `json:"user"`
 }

@@ -6,7 +6,7 @@ CREATE TABLE vehicle (
   type                varchar(30) NOT NULL, 
   color               varchar(20) NOT NULL, 
   fuel_consumption    float NOT NULL, 
-  dailyCost           int(10) NOT NULL, 
+  daily_cost          int(10) NOT NULL, 
   PRIMARY KEY (ID)) CHARACTER SET UTF8;
 CREATE TABLE employee (
   ID      int(10) NOT NULL AUTO_INCREMENT, 
@@ -26,24 +26,24 @@ CREATE TABLE client (
   PRIMARY KEY (ID)) CHARACTER SET UTF8;
 CREATE TABLE rental (
   ID             int(10) NOT NULL AUTO_INCREMENT, 
-  driver_id      int(10), 
-  client_id      int(10) NOT NULL, 
-  vehicle_id     int(10) NOT NULL, 
   start_date     date NOT NULL, 
   end_date       date NOT NULL, 
   pickup_address varchar(255), 
+  driver_id      int(10), 
+  client_id      int(10) NOT NULL, 
+  vehicle_id     int(10) NOT NULL, 
   PRIMARY KEY (ID)) CHARACTER SET UTF8;
 CREATE TABLE repairs (
   ID              int(10) NOT NULL AUTO_INCREMENT, 
-  vehicle_id      int(10) NOT NULL, 
   cost            int(10) NOT NULL, 
   approved        bit(1), 
+  vehicle_id      int(10) NOT NULL, 
   notification_id int(10) UNIQUE, 
   PRIMARY KEY (ID)) CHARACTER SET UTF8;
 CREATE TABLE salary (
-  employee_id int(10) NOT NULL, 
   `date`      date NOT NULL, 
-  amount      int(10) NOT NULL) CHARACTER SET UTF8;
+  amount      int(10) NOT NULL, 
+  employee_id int(10) NOT NULL) CHARACTER SET UTF8;
 CREATE TABLE notification (
   ID          int(10) NOT NULL AUTO_INCREMENT, 
   description varchar(255) NOT NULL UNIQUE, 
@@ -57,14 +57,14 @@ CREATE TABLE `user` (
   password varchar(255) NOT NULL, 
   role     varchar(20) NOT NULL, 
   PRIMARY KEY (ID)) CHARACTER SET UTF8;
-ALTER TABLE rental ADD CONSTRAINT FKrental154746 FOREIGN KEY (vehicle_id) REFERENCES vehicle (ID);
-ALTER TABLE rental ADD CONSTRAINT FKrental590843 FOREIGN KEY (client_id) REFERENCES client (ID);
-ALTER TABLE notification ADD CONSTRAINT FKnotificati466077 FOREIGN KEY (vechicle_id) REFERENCES vehicle (ID);
-ALTER TABLE notification ADD CONSTRAINT FKnotificati174904 FOREIGN KEY (employee_id) REFERENCES employee (ID);
-ALTER TABLE notification ADD CONSTRAINT FKnotificati402236 FOREIGN KEY (client_id) REFERENCES client (ID);
-ALTER TABLE repairs ADD CONSTRAINT FKrepairs601556 FOREIGN KEY (vehicle_id) REFERENCES vehicle (ID);
-ALTER TABLE employee ADD CONSTRAINT FKemployee939388 FOREIGN KEY (user_id) REFERENCES `user` (ID);
-ALTER TABLE client ADD CONSTRAINT FKclient245213 FOREIGN KEY (user_id) REFERENCES `user` (ID);
-ALTER TABLE rental ADD CONSTRAINT FKrental398356 FOREIGN KEY (driver_id) REFERENCES employee (ID);
-ALTER TABLE salary ADD CONSTRAINT FKsalary843084 FOREIGN KEY (employee_id) REFERENCES employee (ID);
-ALTER TABLE repairs ADD CONSTRAINT FKrepairs934942 FOREIGN KEY (notification_id) REFERENCES notification (ID);
+ALTER TABLE rental ADD CONSTRAINT FKrental154746 FOREIGN KEY (vehicle_id) REFERENCES vehicle (ID) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE rental ADD CONSTRAINT FKrental590843 FOREIGN KEY (client_id) REFERENCES client (ID) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE notification ADD CONSTRAINT FKnotificati466077 FOREIGN KEY (vechicle_id) REFERENCES vehicle (ID) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE notification ADD CONSTRAINT FKnotificati174904 FOREIGN KEY (employee_id) REFERENCES employee (ID) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE notification ADD CONSTRAINT FKnotificati402236 FOREIGN KEY (client_id) REFERENCES client (ID) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE repairs ADD CONSTRAINT FKrepairs601556 FOREIGN KEY (vehicle_id) REFERENCES vehicle (ID) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE employee ADD CONSTRAINT FKemployee939388 FOREIGN KEY (user_id) REFERENCES `user` (ID) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE client ADD CONSTRAINT FKclient245213 FOREIGN KEY (user_id) REFERENCES `user` (ID) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE rental ADD CONSTRAINT FKrental398356 FOREIGN KEY (driver_id) REFERENCES employee (ID) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE salary ADD CONSTRAINT FKsalary843084 FOREIGN KEY (employee_id) REFERENCES employee (ID) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE repairs ADD CONSTRAINT FKrepairs934942 FOREIGN KEY (notification_id) REFERENCES notification (ID) ON DELETE CASCADE ON UPDATE CASCADE;
