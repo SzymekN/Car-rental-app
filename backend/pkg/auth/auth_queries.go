@@ -7,16 +7,19 @@ import (
 	"time"
 
 	"github.com/SzymekN/Car-rental-app/pkg/producer"
-	"github.com/SzymekN/Car-rental-app/pkg/storage"
+	"github.com/SzymekN/Car-rental-app/pkg/server"
 )
 
-var ctx = context.Background()
+type JWTQueryExecutor struct {
+	Svr *server.Server
+	Ctx context.Context
+}
 
 // execute querry to Redis ti get the key needed for signing and validating jwt tokens
-func getSigningKey() (string, error) {
-	rdb := storage.GetRDB()
+func (j JWTQueryExecutor) getSigningKey() (string, error) {
+	rdb := j.Svr.GetRedisDB()
 
-	res, err := rdb.Get(ctx, "key").Result()
+	res, err := rdb.Get(j.Ctx, "key").Result()
 
 	if err != nil {
 		producer.ProduceMessage("REDIS read", "ERROR reading key:"+err.Error())
@@ -28,7 +31,7 @@ func getSigningKey() (string, error) {
 }
 
 // generate key for signing jwt tokens
-func generateKey() string {
+func (j JWTQueryExecutor) generateKey() string {
 	//33 - 126 valid ascii characters
 	var min int64 = 33  // '!'
 	var max int64 = 126 // '~'
@@ -42,11 +45,11 @@ func generateKey() string {
 }
 
 // set signing key for intance, try reading it from Redis, if not exists generate new
-func setSigningKey() (string, error) {
-	rdb := storage.GetRDB()
+func (j JWTQueryExecutor) setSigningKey() (string, error) {
+	rdb := j.Svr.GetRedisDB()
 
-	key := generateKey()
-	err := rdb.Set(ctx, "key", key, 0).Err()
+	key := j.generateKey()
+	err := rdb.Set(j.Ctx, "key", key, 0).Err()
 
 	if err != nil {
 		producer.ProduceMessage("REDIS write", "ERROR writing key:"+err.Error())
@@ -60,10 +63,10 @@ func setSigningKey() (string, error) {
 }
 
 // set black listed jwt token in the Redis
-func SetToken(token string, expireTime time.Duration) error {
-	rdb := storage.GetRDB()
+func (j JWTQueryExecutor) SetToken(token string, expireTime time.Duration) error {
+	rdb := j.Svr.GetRedisDB()
 
-	err := rdb.Set(ctx, token, "0", expireTime*time.Second).Err()
+	err := rdb.Set(j.Ctx, token, "0", expireTime*time.Second).Err()
 	if err != nil {
 		producer.ProduceMessage("REDIS write", "ERROR writing token:"+err.Error())
 		return err
@@ -74,12 +77,12 @@ func SetToken(token string, expireTime time.Duration) error {
 }
 
 // try to get jwt token from Redis
-func GetToken(token string) (bool, error) {
+func (j JWTQueryExecutor) GetToken(token string) (bool, error) {
 
-	rdb := storage.GetRDB()
+	rdb := j.Svr.GetRedisDB()
 
 	fmt.Println(rdb)
-	_, err := rdb.Get(ctx, token).Result()
+	_, err := rdb.Get(j.Ctx, token).Result()
 	if err != nil {
 		producer.ProduceMessage("REDIS read", "ERROR reading token:"+token+", err: "+err.Error())
 		return false, err

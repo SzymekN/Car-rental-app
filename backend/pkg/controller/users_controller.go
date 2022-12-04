@@ -2,25 +2,17 @@ package controller
 
 import (
 	"github.com/SzymekN/Car-rental-app/pkg/model"
+	"gorm.io/gorm"
 
 	"github.com/labstack/echo/v4"
 )
 
-// swagger:route POST /api/v1/users/save users_v1 postUserV1
-// Save user to  database.
-//
-//		Consumes:
-//	   - application/json
-//	 Produces:
-//	   - application/json
-//
-// responses:
-//
-//	200: userResponse
-//	500: errorResponse
-
 type UsersController struct {
-	MainController
+	db *gorm.DB
+}
+
+type Registrator interface {
+	RegisterRoutes(e echo.Group, db *gorm.DB)
 }
 
 type UsersHandler interface {
@@ -32,21 +24,21 @@ type UsersHandler interface {
 }
 
 func (uc *UsersController) SaveUser(c echo.Context) error {
-	return GenericPost(c, model.User{})
+	return GenericPost(c, uc.db, model.User{})
 }
 
 func (uc *UsersController) UpdateUser(c echo.Context) error {
-	return GenericUpdate(c, model.User{})
+	return GenericUpdate(c, uc.db, model.User{})
 }
 
 func (uc *UsersController) DeleteUser(c echo.Context) error {
-	return GenericDelete(c, model.User{})
+	return GenericDelete(c, uc.db, model.User{})
 }
 
 func (uc *UsersController) GetUserById(c echo.Context) error {
-	return GenericGetById(c, model.User{})
+	return GenericGetById(c, uc.db, model.User{})
 }
 
 func (uc *UsersController) GetUsers(c echo.Context) error {
-	return GenericGetAll(c, []model.User{})
+	return GenericGetAll(c, uc.db, []model.User{})
 }

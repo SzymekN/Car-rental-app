@@ -5,20 +5,24 @@ import (
 	"net/http"
 
 	"github.com/SzymekN/Car-rental-app/pkg/model"
-	"github.com/SzymekN/Car-rental-app/pkg/storage"
 	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
 )
 
-// to będzie podstawą do dziedziczenia albo i nie
-type BasicHandler interface {
-	Post(c echo.Context) error
-	Update(c echo.Context) error
-	Delete(c echo.Context) error
-	GetById(c echo.Context) error
-	GetAll(c echo.Context) error
-}
+// type BasicControl[T model.GenericModel] struct {
+// 	model T
+// }
 
-func GenericPost[T model.GenericModel](c echo.Context, dataModel T) error {
+// to będzie podstawą do dziedziczenia albo i nie
+// type BasicHandler interface {
+// 	Post(c echo.Context) error
+// 	Update(c echo.Context) error
+// 	Delete(c echo.Context) error
+// 	GetById(c echo.Context) error
+// 	GetAll(c echo.Context) error
+// }
+
+func GenericPost[T model.GenericModel](c echo.Context, db *gorm.DB, dataModel T) error {
 
 	log := model.Log{}
 	prefix := fmt.Sprintf("POST {%T}", dataModel)
@@ -35,8 +39,6 @@ func GenericPost[T model.GenericModel](c echo.Context, dataModel T) error {
 		return log.Err
 	}
 
-	db := storage.MysqlConn.GetDBInstance()
-
 	// save user in the db
 	log = Insert(c, db, dataModel)
 	if log.Err != nil {
@@ -50,7 +52,7 @@ func GenericPost[T model.GenericModel](c echo.Context, dataModel T) error {
 
 }
 
-func GenericGetAll[T any](c echo.Context, dataModel []T) error {
+func GenericGetAll[T any](c echo.Context, db *gorm.DB, dataModel []T) error {
 
 	log := model.Log{}
 	prefix := fmt.Sprintf("GetALL {%T}", dataModel)
@@ -59,8 +61,6 @@ func GenericGetAll[T any](c echo.Context, dataModel []T) error {
 		log.Msg = fmt.Sprintf("%s %s", prefix, log.Msg)
 		log.Produce(c)
 	}()
-
-	db := storage.MysqlConn.GetDBInstance()
 
 	result := db.Find(&dataModel)
 	log = CheckResultError(result)
@@ -76,7 +76,7 @@ func GenericGetAll[T any](c echo.Context, dataModel []T) error {
 }
 
 // tu jeszzce spróbować dodać odbiorcę który będzie se miał bazę danych
-func GenericGetById[T model.GenericModel](c echo.Context, dataModel T) error {
+func GenericGetById[T model.GenericModel](c echo.Context, db *gorm.DB, dataModel T) error {
 
 	log := model.Log{}
 	prefix := fmt.Sprintf("GetByID {%T}", dataModel)
@@ -98,8 +98,6 @@ func GenericGetById[T model.GenericModel](c echo.Context, dataModel T) error {
 		return log.Err
 	}
 
-	db := storage.MysqlConn.GetDBInstance()
-
 	result := db.Find(&dataModel, id)
 	log = CheckResultError(result)
 	if log.Err != nil {
@@ -117,7 +115,7 @@ func GenericGetById[T model.GenericModel](c echo.Context, dataModel T) error {
 	return c.JSON(log.Code, dataModel)
 }
 
-func GenericDelete[T model.GenericModel](c echo.Context, dataModel T) error {
+func GenericDelete[T model.GenericModel](c echo.Context, db *gorm.DB, dataModel T) error {
 
 	log := model.Log{}
 	prefix := fmt.Sprintf("DELETE {%T}", dataModel)
@@ -139,7 +137,6 @@ func GenericDelete[T model.GenericModel](c echo.Context, dataModel T) error {
 		return log.Err
 	}
 
-	db := storage.MysqlConn.GetDBInstance()
 	result := db.Delete(dataModel, id)
 	log = CheckResultError(result)
 	if log.Err != nil {
@@ -157,7 +154,7 @@ func GenericDelete[T model.GenericModel](c echo.Context, dataModel T) error {
 	return nil
 }
 
-func GenericUpdate[T model.GenericModel](c echo.Context, dataModel T) error {
+func GenericUpdate[T model.GenericModel](c echo.Context, db *gorm.DB, dataModel T) error {
 
 	log := model.Log{}
 	prefix := fmt.Sprintf("UPDATE {%T}", dataModel)
@@ -180,7 +177,6 @@ func GenericUpdate[T model.GenericModel](c echo.Context, dataModel T) error {
 		return log.Err
 	}
 
-	db := storage.MysqlConn.GetDBInstance()
 	result := db.Debug().Find(&existingModel, id)
 
 	log = CheckResultError(result)

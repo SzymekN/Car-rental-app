@@ -1,11 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/SzymekN/Car-rental-app/pkg/controller"
 	"github.com/SzymekN/Car-rental-app/pkg/producer"
-	"github.com/SzymekN/Car-rental-app/pkg/storage"
+	"github.com/SzymekN/Car-rental-app/pkg/server"
 )
 
 // pobieranie nazwy z headera albo body requesta i tworzenie odpowiedniej zmiennej na jej podstawie
@@ -14,18 +15,19 @@ import (
 // funkcje z klas podrzędnych odwołują się do nadrzędnych
 
 func main() {
-
-	e := controller.SetupRouter()
-	storage.SetupMysqlConnection()
-	storage.SetupRedisConnection()
-	producer.SetupKafka()
-
+	svr := server.Server{}
+	svr.MysqlConn.SetupConnection()
+	fmt.Println(svr.E)
+	svr.RedisConn.SetupConnection()
+	controller.SetupRouter(&svr)
+	// Close() przyjmuje teraz interfejs bazy danych - polimorfizm
 	// defer storage.CloseAll()
+	producer.SetupKafka()
+	fmt.Println(svr.E)
 
 	// Drop old tables, create new and populate them - for test purposes
 	// seeder.CreateAndSeed()
 
 	// start server at port=API_PORT
-	e.Logger.Fatal(e.Start(":" + os.Getenv("API_PORT")))
-
+	svr.E.Logger.Fatal(svr.E.Start(":" + os.Getenv("API_PORT")))
 }

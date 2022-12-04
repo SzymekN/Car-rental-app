@@ -2,21 +2,24 @@ package storage
 
 import "github.com/SzymekN/Car-rental-app/pkg/producer"
 
-func CloseAll() {
+func Close(d DBConnector) {
 
-	if conn, err := MysqlConn.GetDBInstance().DB(); err != nil {
-		producer.ProduceMessage("CLOSE ALL", "Postgres conn closing error: "+err.Error())
-		if err := conn.Close(); err != nil {
-			producer.ProduceMessage("CLOSE ALL", "Postgres conn closing error: "+err.Error())
+	switch c := d.(type) {
+	case *MysqlConnect:
+		if conn, err := c.GetDBInstance().DB(); err != nil {
+			producer.ProduceMessage("CLOSE ALL", "MYSQL conn closing error: "+err.Error())
+			if err := conn.Close(); err != nil {
+				producer.ProduceMessage("CLOSE ALL", "MYSQL conn closing error: "+err.Error())
+			}
+		} else {
+			producer.ProduceMessage("CLOSE ALL", "MYSQL conn closed")
 		}
-	} else {
-		producer.ProduceMessage("CLOSE ALL", "Postgres conn closed")
+	case *RedisConnect:
+		if err := c.GetRDB().Close(); err != nil {
+			producer.ProduceMessage("CLOSE ALL", "Redis conn closing error: "+err.Error())
+		} else {
+			producer.ProduceMessage("CLOSE ALL", "Redis conn closed")
+		}
 	}
-	// GetCassandraInstance().Close()
-	producer.ProduceMessage("CLOSE ALL", "Cassandra conn closed")
-	if err := GetRDB().Close(); err != nil {
-		producer.ProduceMessage("CLOSE ALL", "Redis conn closing error: "+err.Error())
-	} else {
-		producer.ProduceMessage("CLOSE ALL", "Redis conn closed")
-	}
+
 }
