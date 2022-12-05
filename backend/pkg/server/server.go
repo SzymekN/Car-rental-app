@@ -9,8 +9,8 @@ import (
 
 type Server struct {
 	E         *echo.Echo
-	MysqlConn *storage.MysqlConnect
-	RedisConn *storage.RedisConnect
+	MysqlConn storage.MysqlConnect
+	RedisConn storage.RedisConnect
 }
 
 // var svr Server

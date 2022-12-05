@@ -35,15 +35,16 @@ func (rc *RedisConnect) readEnv() {
 		log.Fatal("Couldn't read REDIS_PORT env variable")
 	}
 
+	// TODO: ustawić w docker compose hasło redisa
 	if os.Getenv("REDIS_PASSWORD") != "" {
-		rc.REDIS_PASSWORD = os.Getenv("REDIS_PASSWORD")
+		// rc.REDIS_PASSWORD = os.Getenv("REDIS_PASSWORD")
 	} else {
 		log.Fatal("Couldn't read REDIS_PASSWORD env variable")
 	}
 }
 
 func (rc *RedisConnect) SetupConnection() {
-	rc = &RedisConnect{}
+	rc.readEnv()
 	rc.RDB = redis.NewClient(&redis.Options{
 		Addr:     rc.REDIS_HOST + ":" + rc.REDIS_PORT,
 		Password: rc.REDIS_PASSWORD,
@@ -52,7 +53,7 @@ func (rc *RedisConnect) SetupConnection() {
 
 	// ping db to check if connection is established
 	pong, err := rc.RDB.Ping(context.Background()).Result()
-
+	fmt.Println(rc)
 	fmt.Println(pong, err)
 
 }

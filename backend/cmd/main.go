@@ -15,11 +15,14 @@ import (
 // funkcje z klas podrzędnych odwołują się do nadrzędnych
 
 func main() {
-	svr := server.Server{}
+	svr := &server.Server{}
+	// svr.MysqlConn = *storage.New()
 	svr.MysqlConn.SetupConnection()
-	fmt.Println(svr.E)
+	fmt.Println(svr.MysqlConn)
 	svr.RedisConn.SetupConnection()
-	controller.SetupRouter(&svr)
+	fmt.Println(svr.RedisConn)
+	controller.SetupRouter(svr)
+
 	// Close() przyjmuje teraz interfejs bazy danych - polimorfizm
 	// defer storage.CloseAll()
 	producer.SetupKafka()

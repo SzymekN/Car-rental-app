@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/SzymekN/Car-rental-app/pkg/model"
 	"github.com/SzymekN/Car-rental-app/pkg/producer"
+	"github.com/SzymekN/Car-rental-app/pkg/server"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
@@ -16,6 +18,19 @@ import (
 
 type JWTHandler struct {
 	JwtC JWTControl
+}
+
+func New(svr *server.Server) *JWTHandler {
+	jwtH := &JWTHandler{
+		JwtC: JWTControl{
+			JwtQE: JWTQueryExecutor{
+				Svr: svr,
+				Ctx: context.Background(),
+			},
+			SecretKey: "",
+		},
+	}
+	return jwtH
 }
 
 func (j JWTHandler) GetMysqlDB() *gorm.DB {

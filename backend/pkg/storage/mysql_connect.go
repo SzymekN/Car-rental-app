@@ -80,7 +80,6 @@ func (c *MysqlConnect) getConnectionString() string {
 // connect to Mysql
 func (mc *MysqlConnect) SetupConnection() {
 	var err error
-	mc = &MysqlConnect{}
 	connString := mc.getConnectionString()
 	fmt.Println(mc)
 	fmt.Println(*mc)
@@ -98,7 +97,6 @@ func (mc *MysqlConnect) SetupConnection() {
 		log.Println("MYSQL CONNECTED")
 	}
 	fmt.Println(mc)
-
 }
 
 func (c *MysqlConnect) GetDBInstance() *gorm.DB {
