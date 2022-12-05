@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/SzymekN/Car-rental-app/pkg/producer"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
@@ -16,6 +15,10 @@ import (
 type JWTControl struct {
 	JwtQE     JWTQueryExecutor
 	SecretKey string
+}
+
+func (j JWTControl) ProduceMessage(k, val string) {
+	j.JwtQE.Svr.Logger.ProduceMessage(k, val)
 }
 
 func (j JWTControl) GeneratehashPassword(password string) (string, error) {
@@ -49,23 +52,23 @@ func (j JWTControl) Validate(auth string, c echo.Context) (interface{}, error) {
 	tokenRevoked, _ := j.JwtQE.GetToken(token.Raw)
 
 	if tokenRevoked {
-		producer.ProduceMessage("JWT validation", token.Raw+" REVOKED")
+		j.ProduceMessage("JWT validation", token.Raw+" REVOKED")
 		return nil, errors.New("Token Revoked")
 	}
 
 	// check if errors occured during token generation
 	if err != nil {
-		producer.ProduceMessage("JWT validation", "JWT validation failed: "+err.Error())
+		j.ProduceMessage("JWT validation", "JWT validation failed: "+err.Error())
 		return nil, err
 	}
 
 	// check if generated token is valid
 	if !token.Valid {
-		producer.ProduceMessage("JWT validation", "JWT validation failed: invalid token")
+		j.ProduceMessage("JWT validation", "JWT validation failed: invalid token")
 		return nil, errors.New("invalid token")
 	}
 
-	producer.ProduceMessage("JWT validation", "JWT validation succesfull")
+	j.ProduceMessage("JWT validation", "JWT validation succesfull")
 	return token, nil
 }
 

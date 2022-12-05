@@ -1,24 +1,24 @@
 package storage
 
-import "github.com/SzymekN/Car-rental-app/pkg/producer"
+import "github.com/SzymekN/Car-rental-app/pkg/model"
 
-func Close(d DBConnector) {
+func Close(d DBConnector, l model.SystemLogger) {
 
 	switch c := d.(type) {
 	case *MysqlConnect:
 		if conn, err := c.GetDBInstance().DB(); err != nil {
-			producer.ProduceMessage("CLOSE ALL", "MYSQL conn closing error: "+err.Error())
+			l.ProduceMessage("CLOSE ALL", "MYSQL conn closing error: "+err.Error())
 			if err := conn.Close(); err != nil {
-				producer.ProduceMessage("CLOSE ALL", "MYSQL conn closing error: "+err.Error())
+				l.ProduceMessage("CLOSE ALL", "MYSQL conn closing error: "+err.Error())
 			}
 		} else {
-			producer.ProduceMessage("CLOSE ALL", "MYSQL conn closed")
+			l.ProduceMessage("CLOSE ALL", "MYSQL conn closed")
 		}
 	case *RedisConnect:
 		if err := c.GetRDB().Close(); err != nil {
-			producer.ProduceMessage("CLOSE ALL", "Redis conn closing error: "+err.Error())
+			l.ProduceMessage("CLOSE ALL", "Redis conn closing error: "+err.Error())
 		} else {
-			producer.ProduceMessage("CLOSE ALL", "Redis conn closed")
+			l.ProduceMessage("CLOSE ALL", "Redis conn closed")
 		}
 	}
 

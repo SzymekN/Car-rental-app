@@ -54,14 +54,17 @@ type Log struct {
 	Code int
 	Err  error
 }
-
+type SystemLogger struct {
+	producer.KafkaLogger
+	Log
+}
 type LogProducer interface {
 	Produce(c echo.Context)
 }
 
-func (l Log) Produce(c echo.Context) {
-	producer.ProduceMessage(l.Key, l.Msg)
-	c.JSON(l.Code, &GenericMessage{Message: l.Msg})
+func (sl SystemLogger) Produce(c echo.Context) {
+	sl.ProduceMessage(sl.Key, sl.Msg)
+	c.JSON(sl.Code, &GenericMessage{Message: sl.Msg})
 }
 
 type GenericModel interface {

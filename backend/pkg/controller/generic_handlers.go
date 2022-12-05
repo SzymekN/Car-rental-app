@@ -6,7 +6,6 @@ import (
 
 	"github.com/SzymekN/Car-rental-app/pkg/model"
 	"github.com/labstack/echo/v4"
-	"gorm.io/gorm"
 )
 
 // type BasicControl[T model.GenericModel] struct {
@@ -22,193 +21,199 @@ import (
 // 	GetAll(c echo.Context) error
 // }
 
-func GenericPost[T model.GenericModel](c echo.Context, db *gorm.DB, dataModel T) error {
+func GenericPost[T model.GenericModel](c echo.Context, so SystemOperator, dataModel T) error {
 
-	log := model.Log{}
+	so.Log = model.Log{}
+	db := so.GetDB()
 	prefix := fmt.Sprintf("POST {%T}", dataModel)
 
 	// before exiting function send message to logs and response to user
 	defer func() {
-		log.Msg = fmt.Sprintf("%s %s", prefix, log.Msg)
-		log.Produce(c)
+		so.Log.Msg = fmt.Sprintf("%s %s", prefix, so.Log.Msg)
+		so.Produce(c)
 	}()
 
 	// try saving data from user request to provided model.User datatype
-	dataModel, log = BindData(c, dataModel)
-	if log.Err != nil {
-		return log.Err
+	dataModel, so.Log = BindData(c, dataModel)
+	if so.Log.Err != nil {
+		return so.Log.Err
 	}
 
 	// save user in the db
-	log = Insert(c, db, dataModel)
-	if log.Err != nil {
-		return log.Err
+	so.Log = Insert(c, db, dataModel)
+	if so.Log.Err != nil {
+		return so.Log.Err
 	}
 
-	log.Code = http.StatusOK
-	log.Key = "info"
-	log.Msg = fmt.Sprintf("[INFO] insert succesful, HTTP: %v", log.Code)
+	so.Log.Code = http.StatusOK
+	so.Log.Key = "info"
+	so.Log.Msg = fmt.Sprintf("[INFO] insert succesful, HTTP: %v", so.Log.Code)
+	fmt.Println(so.Log)
 	return nil
 
 }
 
-func GenericGetAll[T any](c echo.Context, db *gorm.DB, dataModel []T) error {
+func GenericGetAll[T any](c echo.Context, so SystemOperator, dataModel []T) error {
 
-	log := model.Log{}
+	so.Log = model.Log{}
+	db := so.GetDB()
 	prefix := fmt.Sprintf("GetALL {%T}", dataModel)
 
 	defer func() {
-		log.Msg = fmt.Sprintf("%s %s", prefix, log.Msg)
-		log.Produce(c)
+		so.Log.Msg = fmt.Sprintf("%s %s", prefix, so.Log.Msg)
+		so.Produce(c)
 	}()
 
 	result := db.Find(&dataModel)
-	log = CheckResultError(result)
+	so.Log = CheckResultError(result)
 
-	if log.Err != nil {
-		return log.Err
+	if so.Log.Err != nil {
+		return so.Log.Err
 	}
 
-	log.Code = http.StatusOK
-	log.Key = "info"
-	log.Msg = fmt.Sprintf("[INFO] completed, HTTP: %v", log.Code)
-	return c.JSON(log.Code, dataModel)
+	so.Log.Code = http.StatusOK
+	so.Log.Key = "info"
+	so.Log.Msg = fmt.Sprintf("[INFO] completed, HTTP: %v", so.Log.Code)
+	return c.JSON(so.Log.Code, dataModel)
 }
 
 // tu jeszzce spróbować dodać odbiorcę który będzie se miał bazę danych
-func GenericGetById[T model.GenericModel](c echo.Context, db *gorm.DB, dataModel T) error {
+func GenericGetById[T model.GenericModel](c echo.Context, so SystemOperator, dataModel T) error {
 
-	log := model.Log{}
+	so.Log = model.Log{}
+	db := so.GetDB()
 	prefix := fmt.Sprintf("GetByID {%T}", dataModel)
 
 	defer func() {
-		log.Msg = fmt.Sprintf("%s %s", prefix, log.Msg)
-		log.Produce(c)
+		so.Log.Msg = fmt.Sprintf("%s %s", prefix, so.Log.Msg)
+		so.Produce(c)
 	}()
 
-	dataModel, log = BindData(c, dataModel)
-	if log.Err != nil {
-		return log.Err
+	dataModel, so.Log = BindData(c, dataModel)
+	if so.Log.Err != nil {
+		return so.Log.Err
 	}
 
 	id := dataModel.GetId()
 
-	log = CheckID(id)
-	if log.Err != nil {
-		return log.Err
+	so.Log = CheckID(id)
+	if so.Log.Err != nil {
+		return so.Log.Err
 	}
 
 	result := db.Find(&dataModel, id)
-	log = CheckResultError(result)
-	if log.Err != nil {
-		return log.Err
+	so.Log = CheckResultError(result)
+	if so.Log.Err != nil {
+		return so.Log.Err
 	}
 
-	log = CheckIfAffected(result)
-	if log.Err != nil {
-		return log.Err
+	so.Log = CheckIfAffected(result)
+	if so.Log.Err != nil {
+		return so.Log.Err
 	}
 
-	log.Code = http.StatusOK
-	log.Key = "info"
-	log.Msg = fmt.Sprintf("[INFO] read completed, id: {%v} HTTP: %v", id, log.Code)
-	return c.JSON(log.Code, dataModel)
+	so.Log.Code = http.StatusOK
+	so.Log.Key = "info"
+	so.Log.Msg = fmt.Sprintf("[INFO] read completed, id: {%v} HTTP: %v", id, so.Log.Code)
+	return c.JSON(so.Log.Code, dataModel)
 }
 
-func GenericDelete[T model.GenericModel](c echo.Context, db *gorm.DB, dataModel T) error {
+func GenericDelete[T model.GenericModel](c echo.Context, so SystemOperator, dataModel T) error {
 
-	log := model.Log{}
+	so.Log = model.Log{}
+	db := so.GetDB()
 	prefix := fmt.Sprintf("DELETE {%T}", dataModel)
 
 	defer func() {
-		log.Msg = fmt.Sprintf("%s %s", prefix, log.Msg)
-		log.Produce(c)
+		so.Log.Msg = fmt.Sprintf("%s %s", prefix, so.Log.Msg)
+		so.Produce(c)
 	}()
 
-	dataModel, log = BindData(c, dataModel)
-	if log.Err != nil {
-		return log.Err
+	dataModel, so.Log = BindData(c, dataModel)
+	if so.Log.Err != nil {
+		return so.Log.Err
 	}
 
 	id := dataModel.GetId()
 
-	log = CheckID(id)
-	if log.Err != nil {
-		return log.Err
+	so.Log = CheckID(id)
+	if so.Log.Err != nil {
+		return so.Log.Err
 	}
 
 	result := db.Delete(dataModel, id)
-	log = CheckResultError(result)
-	if log.Err != nil {
-		return log.Err
+	so.Log = CheckResultError(result)
+	if so.Log.Err != nil {
+		return so.Log.Err
 	}
 
-	log = CheckIfAffected(result)
-	if log.Err != nil {
-		return log.Err
+	so.Log = CheckIfAffected(result)
+	if so.Log.Err != nil {
+		return so.Log.Err
 	}
 
-	log.Code = http.StatusOK
-	log.Key = "info"
-	log.Msg = fmt.Sprintf("[INFO] delete completed, id: {%v} HTTP: %v", id, log.Code)
+	so.Log.Code = http.StatusOK
+	so.Log.Key = "info"
+	so.Log.Msg = fmt.Sprintf("[INFO] delete completed, id: {%v} HTTP: %v", id, so.Log.Code)
 	return nil
 }
 
-func GenericUpdate[T model.GenericModel](c echo.Context, db *gorm.DB, dataModel T) error {
+func GenericUpdate[T model.GenericModel](c echo.Context, so SystemOperator, dataModel T) error {
 
-	log := model.Log{}
+	so.Log = model.Log{}
+	db := so.GetDB()
 	prefix := fmt.Sprintf("UPDATE {%T}", dataModel)
 	existingModel := dataModel
 
 	defer func() {
-		log.Msg = fmt.Sprintf("%s %s", prefix, log.Msg)
-		log.Produce(c)
+		so.Log.Msg = fmt.Sprintf("%s %s", prefix, so.Log.Msg)
+		so.Produce(c)
 	}()
 
-	dataModel, log = BindData(c, dataModel)
-	if log.Err != nil {
-		return log.Err
+	dataModel, so.Log = BindData(c, dataModel)
+	if so.Log.Err != nil {
+		return so.Log.Err
 	}
 
 	id := dataModel.GetId()
 
-	log = CheckID(id)
-	if log.Err != nil {
-		return log.Err
+	so.Log = CheckID(id)
+	if so.Log.Err != nil {
+		return so.Log.Err
 	}
 
 	result := db.Debug().Find(&existingModel, id)
 
-	log = CheckResultError(result)
-	if log.Err != nil {
+	so.Log = CheckResultError(result)
+	if so.Log.Err != nil {
 		prefix += " get error"
-		return log.Err
+		return so.Log.Err
 	}
 
-	log = CheckIfAffected(result)
-	if log.Err != nil {
+	so.Log = CheckIfAffected(result)
+	if so.Log.Err != nil {
 		prefix += " not found"
-		return log.Err
+		return so.Log.Err
 	}
 
-	// dataModel, log = BindData(c, dataModel)
-	// if log.Err != nil {
-	// 	return log.Err
+	// dataModel, so.Log = BindData(c, dataModel)
+	// if so.Log.Err != nil {
+	// 	return so.Log.Err
 	// }
 
 	result = db.Debug().Save(&dataModel)
-	log = CheckResultError(result)
-	if log.Err != nil {
-		return log.Err
+	so.Log = CheckResultError(result)
+	if so.Log.Err != nil {
+		return so.Log.Err
 	}
 
-	log = CheckIfAffected(result)
-	if log.Err != nil {
-		return log.Err
+	so.Log = CheckIfAffected(result)
+	if so.Log.Err != nil {
+		return so.Log.Err
 	}
 
-	log.Code = http.StatusOK
-	log.Key = "info"
-	log.Msg = fmt.Sprintf("[INFO] update completed, id: {%v} HTTP: %v", id, log.Code)
-	return c.JSON(log.Code, dataModel)
+	so.Log.Code = http.StatusOK
+	so.Log.Key = "info"
+	so.Log.Msg = fmt.Sprintf("[INFO] update completed, id: {%v} HTTP: %v", id, so.Log.Code)
+	return c.JSON(so.Log.Code, dataModel)
 }

@@ -8,7 +8,7 @@ import (
 )
 
 type UsersController struct {
-	db *gorm.DB
+	SystemOperator
 }
 
 type Registrator interface {
@@ -24,21 +24,21 @@ type UsersHandler interface {
 }
 
 func (uc *UsersController) SaveUser(c echo.Context) error {
-	return GenericPost(c, uc.db, model.User{})
+	return GenericPost(c, uc.SystemOperator, model.User{})
 }
 
 func (uc *UsersController) UpdateUser(c echo.Context) error {
-	return GenericUpdate(c, uc.db, model.User{})
+	return GenericUpdate(c, uc.SystemOperator, model.User{})
 }
 
 func (uc *UsersController) DeleteUser(c echo.Context) error {
-	return GenericDelete(c, uc.db, model.User{})
+	return GenericDelete(c, uc.SystemOperator, model.User{})
 }
 
 func (uc *UsersController) GetUserById(c echo.Context) error {
-	return GenericGetById(c, uc.db, model.User{})
+	return GenericGetById(c, uc.SystemOperator, model.User{})
 }
 
 func (uc *UsersController) GetUsers(c echo.Context) error {
-	return GenericGetAll(c, uc.db, []model.User{})
+	return GenericGetAll(c, uc.SystemOperator, []model.User{})
 }

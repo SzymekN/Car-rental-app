@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/SzymekN/Car-rental-app/pkg/controller"
-	"github.com/SzymekN/Car-rental-app/pkg/producer"
 	"github.com/SzymekN/Car-rental-app/pkg/server"
 )
 
@@ -21,16 +20,17 @@ func main() {
 	fmt.Println(svr.MysqlConn)
 	svr.RedisConn.SetupConnection()
 	fmt.Println(svr.RedisConn)
+	svr.Logger.SetupKafka()
+	fmt.Println(svr.Logger.KafkaLogger)
 	controller.SetupRouter(svr)
+	fmt.Println(svr.EchoServ)
 
 	// Close() przyjmuje teraz interfejs bazy danych - polimorfizm
 	// defer storage.CloseAll()
-	producer.SetupKafka()
-	fmt.Println(svr.E)
 
 	// Drop old tables, create new and populate them - for test purposes
 	// seeder.CreateAndSeed()
 
 	// start server at port=API_PORT
-	svr.E.Logger.Fatal(svr.E.Start(":" + os.Getenv("API_PORT")))
+	svr.EchoServ.Logger.Fatal(svr.EchoServ.Start(":" + os.Getenv("API_PORT")))
 }

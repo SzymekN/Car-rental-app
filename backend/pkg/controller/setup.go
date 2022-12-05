@@ -10,24 +10,6 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-// type MainController struct {
-// 	e  *echo.Echo
-// 	uc UsersController
-// }
-
-// type Controller interface {
-// 	RegisterRoutes()
-// 	GetDB() *gorm.DB
-// }
-
-// func (mc MainController) GetDB() *gorm.DB {
-// 	return storage.MysqlConn.GetDBInstance()
-// }
-
-// func (mc MainController) RegisterRoutes() {
-
-// }
-
 // registers router for the server
 func SetupRouter(svr *server.Server) {
 	// r := Router{e: echo.New()}
@@ -45,22 +27,25 @@ func SetupRouter(svr *server.Server) {
 	})
 
 	// group of routes that will be validated with jwt
-	jwt_auth := e.Group("")
-	config := middleware.JWTConfig{
-		SigningKey:     []byte(jwtH.GetSigningKey()),
-		ParseTokenFunc: jwtH.JwtC.Validate,
-	}
+	jwt_auth := e.Group("/api/v1")
+	config := jwtH.CreateJWTConfig()
 
 	jwt_auth.Use(middleware.JWTWithConfig(config))
 
-	jwt_auth.GET("/api/v1/users/signout", jwtH.SignOut)
+	jwt_auth.GET(" /users/signout", jwtH.SignOut)
 
-	uc := UsersController{db: svr.GetMysqlDB()}
-	jwt_auth.GET("/api/v1/users", uc.GetUserById)
-	jwt_auth.GET("/api/v1/users/all", uc.GetUsers)
-	jwt_auth.POST("/api/v1/users", uc.SaveUser, jwtH.JwtC.IsAdmin)
-	jwt_auth.PUT("/api/v1/users", uc.UpdateUser, jwtH.JwtC.IsAdmin)
-	jwt_auth.DELETE("/api/v1/users", uc.DeleteUser, jwtH.JwtC.IsAdmin)
+	uc := UsersController{
+		SystemOperator{
+			DB:           svr.GetMysqlDB(),
+			SystemLogger: svr.Logger,
+		},
+	}
+	fmt.Println("setup", uc.SystemLogger)
+	jwt_auth.GET("/users", uc.GetUserById)
+	jwt_auth.GET("/users/all", uc.GetUsers)
+	jwt_auth.POST("/users", uc.SaveUser, jwtH.JwtC.IsAdmin)
+	jwt_auth.PUT("/users", uc.UpdateUser, jwtH.JwtC.IsAdmin)
+	jwt_auth.DELETE("/users", uc.DeleteUser, jwtH.JwtC.IsAdmin)
 
-	svr.E = e
+	svr.EchoServ = e
 }

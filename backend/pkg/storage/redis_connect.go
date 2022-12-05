@@ -13,13 +13,13 @@ type RedisConnect struct {
 	REDIS_HOST     string
 	REDIS_PORT     string
 	REDIS_PASSWORD string
-	RDB            *redis.Client
+	rdb            *redis.Client
 }
 
 // var RDB *redis.Client
 
 func (rc *RedisConnect) GetRDB() *redis.Client {
-	return rc.RDB
+	return rc.rdb
 }
 func (rc *RedisConnect) readEnv() {
 
@@ -45,14 +45,14 @@ func (rc *RedisConnect) readEnv() {
 
 func (rc *RedisConnect) SetupConnection() {
 	rc.readEnv()
-	rc.RDB = redis.NewClient(&redis.Options{
+	rc.rdb = redis.NewClient(&redis.Options{
 		Addr:     rc.REDIS_HOST + ":" + rc.REDIS_PORT,
 		Password: rc.REDIS_PASSWORD,
 		DB:       0,
 	})
 
 	// ping db to check if connection is established
-	pong, err := rc.RDB.Ping(context.Background()).Result()
+	pong, err := rc.rdb.Ping(context.Background()).Result()
 	fmt.Println(rc)
 	fmt.Println(pong, err)
 

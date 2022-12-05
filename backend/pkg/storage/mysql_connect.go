@@ -16,7 +16,7 @@ type MysqlConnect struct {
 	MYSQL_HOST     string
 	MYSQL_PORT     string
 	MYSQL_DB_NAME  string
-	DB             *gorm.DB
+	db             *gorm.DB
 }
 
 type DBConnector interface {
@@ -26,7 +26,9 @@ type DBConnector interface {
 	// GetDBInstance() *gorm.DB
 }
 
-// var MysqlConn MysqlConnect
+func (c *MysqlConnect) GetDb() *gorm.DB {
+	return c.db
+}
 
 // reads environmental variables needed to connect to the database
 func (c *MysqlConnect) readEnv() {
@@ -85,7 +87,7 @@ func (mc *MysqlConnect) SetupConnection() {
 	fmt.Println(*mc)
 	log.Print(connString)
 
-	mc.DB, err = gorm.Open(mysql.Open(connString), &gorm.Config{
+	mc.db, err = gorm.Open(mysql.Open(connString), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
 			SingularTable: true,
 		},
@@ -100,5 +102,5 @@ func (mc *MysqlConnect) SetupConnection() {
 }
 
 func (c *MysqlConnect) GetDBInstance() *gorm.DB {
-	return c.DB
+	return c.db
 }

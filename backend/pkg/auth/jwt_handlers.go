@@ -9,15 +9,24 @@ import (
 	"time"
 
 	"github.com/SzymekN/Car-rental-app/pkg/model"
-	"github.com/SzymekN/Car-rental-app/pkg/producer"
 	"github.com/SzymekN/Car-rental-app/pkg/server"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"gorm.io/gorm"
 )
 
 type JWTHandler struct {
-	JwtC JWTControl
+	JwtC      JWTControl
+	authGroup *echo.Group
+}
+
+func (j JWTHandler) CreateJWTConfig() middleware.JWTConfig {
+	conf := middleware.JWTConfig{
+		SigningKey:     []byte(j.getSigningKey()),
+		ParseTokenFunc: j.JwtC.Validate,
+	}
+	return conf
 }
 
 func New(svr *server.Server) *JWTHandler {
@@ -33,16 +42,21 @@ func New(svr *server.Server) *JWTHandler {
 	return jwtH
 }
 
-func (j JWTHandler) GetMysqlDB() *gorm.DB {
+// wrapper functions
+func (j JWTHandler) ProduceMessage(k, val string) {
+	j.JwtC.JwtQE.Svr.Logger.ProduceMessage(k, val)
+}
+
+func (j JWTHandler) getMysqlDB() *gorm.DB {
 	return j.JwtC.JwtQE.Svr.GetMysqlDB()
 }
-func (j JWTHandler) GetSigningKey() string {
+func (j JWTHandler) getSigningKey() string {
 	return j.JwtC.SecretKey
 }
 
 // Checks for the username in the db
 func (j JWTHandler) GetUser(email string) (model.User, error) {
-	db := j.GetMysqlDB()
+	db := j.getMysqlDB()
 	u := model.User{}
 	result := db.Debug().Where(&model.User{Email: email}).Find(&u)
 	err := result.Error
@@ -61,7 +75,7 @@ func (j JWTHandler) GetUser(email string) (model.User, error) {
 
 // save signed in user to the db
 func (j JWTHandler) SignUser(mc model.Client) error {
-	db := j.GetMysqlDB()
+	db := j.getMysqlDB()
 
 	fmt.Println(db.Model(&model.Client{}).Association("User").Error)
 	if err := db.Model(&model.Client{}).Preload("User").Debug().Create(&mc).Error; err != nil {
@@ -85,7 +99,7 @@ func (j JWTHandler) SignUp(c echo.Context) error {
 	k, msg := "err", "[ERROR]"
 
 	defer func() {
-		producer.ProduceMessage(k, msg)
+		j.ProduceMessage(k, msg)
 		if err != nil {
 			c.JSON(status, &model.GenericError{Message: msg})
 		}
@@ -140,7 +154,7 @@ func (j JWTHandler) SignOut(c echo.Context) error {
 	k, msg := "err", "[ERROR] "
 
 	defer func() {
-		producer.ProduceMessage(k, msg)
+		j.ProduceMessage(k, msg)
 		if err != nil {
 			c.JSON(status, &model.GenericError{Message: msg})
 		}
@@ -196,7 +210,7 @@ func (j JWTHandler) SignIn(c echo.Context) error {
 	k, msg := "err", "[ERROR]"
 
 	defer func() {
-		producer.ProduceMessage(k, msg)
+		j.ProduceMessage(k, msg)
 		if err != nil {
 			c.JSON(status, &model.GenericError{Message: msg})
 		}
