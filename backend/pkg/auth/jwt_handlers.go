@@ -17,10 +17,23 @@ import (
 )
 
 type JWTHandler struct {
-	JwtC      JWTControl
-	authGroup *echo.Group
+	JwtC     JWTControl
+	echoServ *echo.Echo
+	group    *echo.Group
 }
 
+// Creates JWT configuration and adds middleware to group
+func (j JWTHandler) AddJWTMiddleware() {
+	config := j.CreateJWTConfig()
+	j.group.Use(middleware.JWTWithConfig(config))
+}
+
+func (j JWTHandler) RegisterRoutes() {
+	j.echoServ.POST("/api/v1/users/signup", j.SignUp)
+	j.echoServ.POST("/api/v1/users/signin", j.SignIn)
+	j.group.GET(" /users/signout", j.SignOut)
+
+}
 func (j JWTHandler) CreateJWTConfig() middleware.JWTConfig {
 	conf := middleware.JWTConfig{
 		SigningKey:     []byte(j.getSigningKey()),
@@ -29,7 +42,7 @@ func (j JWTHandler) CreateJWTConfig() middleware.JWTConfig {
 	return conf
 }
 
-func New(svr *server.Server) *JWTHandler {
+func New(svr *server.Server, e *echo.Echo, g *echo.Group) *JWTHandler {
 	jwtH := &JWTHandler{
 		JwtC: JWTControl{
 			JwtQE: JWTQueryExecutor{
@@ -38,6 +51,8 @@ func New(svr *server.Server) *JWTHandler {
 			},
 			SecretKey: "",
 		},
+		echoServ: e,
+		group:    g,
 	}
 	return jwtH
 }

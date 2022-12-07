@@ -112,17 +112,3 @@ func (j JWTControl) GenerateJWT(email, role string) (string, error) {
 
 	return tokenString, nil
 }
-
-// checks for role embedded in the token to get information about privileges
-func (j JWTControl) IsAdmin(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-
-		user := c.Get("user").(*jwt.Token)
-		claims := user.Claims.(jwt.MapClaims)
-		role := claims["role"]
-		if role != "admin" {
-			return echo.ErrUnauthorized
-		}
-		return next(c)
-	}
-}

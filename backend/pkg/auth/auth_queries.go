@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/SzymekN/Car-rental-app/pkg/server"
+	"github.com/go-redis/redis/v8"
 )
 
 type JWTQueryExecutor struct {
@@ -24,7 +25,11 @@ func (j JWTQueryExecutor) getSigningKey() (string, error) {
 
 	res, err := rdb.Get(j.Ctx, "key").Result()
 
-	if err != nil {
+	if err == redis.Nil {
+		j.ProduceMessage("REDIS read", "ERROR key doesn't exist:"+err.Error())
+		fmt.Println("ERROR key doesn't exist:", err.Error())
+		return "", err
+	} else if err != nil {
 		j.ProduceMessage("REDIS read", "ERROR reading key:"+err.Error())
 		fmt.Println("ERROR reading key:", err.Error())
 		return "", err

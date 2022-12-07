@@ -2,7 +2,6 @@ package controller
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/SzymekN/Car-rental-app/pkg/auth"
 	"github.com/SzymekN/Car-rental-app/pkg/server"
@@ -12,40 +11,31 @@ import (
 
 // registers router for the server
 func SetupRouter(svr *server.Server) {
-	// r := Router{e: echo.New()}
+
 	e := echo.New()
+	svr.EchoServ = e
+
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORS())
-	// registerUserRoutes()
-
-	jwtH := auth.New(svr)
-	fmt.Println(jwtH)
-	e.POST("/api/v1/users/signup", jwtH.SignUp)
-	e.POST("/api/v1/users/signin", jwtH.SignIn)
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, `{"message":"Car sharing Welcome page!"}`)
-	})
-
-	// group of routes that will be validated with jwt
 	jwt_auth := e.Group("/api/v1")
-	config := jwtH.CreateJWTConfig()
 
-	jwt_auth.Use(middleware.JWTWithConfig(config))
+	// e.GET("/", func(c echo.Context) error {
+	// 	return c.String(http.StatusOK, `{"message":"Car sharing Welcome page!"}`)
+	// })
 
-	jwt_auth.GET(" /users/signout", jwtH.SignOut)
+	// create JWT handler and JWT validator config
+	jwtH := auth.New(svr, svr.EchoServ, jwt_auth)
+	jwtH.AddJWTMiddleware()
 
-	uc := UsersController{
-		SystemOperator{
-			DB:           svr.GetMysqlDB(),
-			SystemLogger: svr.Logger,
-		},
-	}
-	fmt.Println("setup", uc.SystemLogger)
-	jwt_auth.GET("/users", uc.GetUserById)
-	jwt_auth.GET("/users/all", uc.GetUsers)
-	jwt_auth.POST("/users", uc.SaveUser, jwtH.JwtC.IsAdmin)
-	jwt_auth.PUT("/users", uc.UpdateUser, jwtH.JwtC.IsAdmin)
-	jwt_auth.DELETE("/users", uc.DeleteUser, jwtH.JwtC.IsAdmin)
+	// create all needed handlers
+	authConf := auth.NewAuthConfig()
+	uh := NewUserHandler(svr.GetMysqlDB(), svr.Logger, authConf, jwt_auth)
 
-	svr.EchoServ = e
+	// register all routes
+	jwtH.RegisterRoutes()
+	uh.RegisterRoutes()
+
+	fmt.Println(jwtH)
+	fmt.Println("setup", uh.SystemLogger)
+
 }
