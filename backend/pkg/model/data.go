@@ -1,26 +1,20 @@
 package model
 
-import (
-	"github.com/SzymekN/Car-rental-app/pkg/producer"
-	"github.com/labstack/echo/v4"
-)
-
 type DataModel interface{}
 
 type Data struct{}
 
-// `Client` belongs to`User`, `UserID` is the foreign key
-// type Client struct {
-// 	ID          int    `json:"id" gorm:"->;primarykey"`
-// 	Name        string `json:"name"`
-// 	Surname     string `json:"surname"`
-// 	PESEL       string `json:"pesel"`
-// 	PhoneNumber string `json:"phoneNumber"`
-// 	UserID      int    `json:"userId;omitempty"`
-// 	User        `json:"user" gorm:"-;foreignKey:UserID;references:ID"`
-// }
-
 type Client struct {
+	ID          int    `json:"id"`
+	Name        string `json:"name"`
+	Surname     string `json:"surname"`
+	PESEL       string `json:"pesel"`
+	PhoneNumber string `json:"phone_number"`
+	UserID      int    `json:"userId"`
+	User        User   `json:"user"`
+}
+
+type Employee struct {
 	ID          int    `json:"id"`
 	Name        string `json:"name"`
 	Surname     string `json:"surname"`
@@ -39,33 +33,17 @@ type User struct {
 
 type Vehicle struct {
 	ID                 int     `json:"id"`
-	RegistrationNumber string  `json:"registrationNumber"`
-	Brand              string  `json:"brand"`
-	Model              string  `json:"model"`
-	Type               string  `json:"type"`
-	Color              string  `json:"color"`
-	FuelConsumption    float32 `json:"fuelConsumption"`
-	DailyCost          int     `json:"dailyCost"`
-}
-
-type Log struct {
-	Key  string
-	Msg  string
-	Code int
-	Err  error
-}
-
-type LogProducer interface {
-	Produce(c echo.Context)
-}
-
-func (l Log) Produce(c echo.Context) {
-	producer.ProduceMessage(l.Key, l.Msg)
-	c.JSON(l.Code, &GenericMessage{Message: l.Msg})
+	RegistrationNumber string  `json:"registrationNumber,omitempty"`
+	Brand              string  `json:"brand,omitempty"`
+	Model              string  `json:"model,omitempty"`
+	Type               string  `json:"type,omitempty"`
+	Color              string  `json:"color,omitempty"`
+	FuelConsumption    float32 `json:"fuelConsumption,omitempty"`
+	DailyCost          int     `json:"dailyCost,omitempty"`
 }
 
 type GenericModel interface {
-	User | Client
+	User | Client | Employee | Vehicle
 	GetId() int
 }
 
@@ -74,6 +52,14 @@ func (d User) GetId() int {
 }
 
 func (d Client) GetId() int {
+	return d.ID
+}
+
+func (d Employee) GetId() int {
+	return d.ID
+}
+
+func (d Vehicle) GetId() int {
 	return d.ID
 }
 
@@ -109,19 +95,3 @@ func (d Client) GetId() int {
 
 // 	return nil
 // }
-
-// swagger:model GenericError
-type GenericError struct {
-	// Response message
-	// in: string
-	// required: true
-	Message string `json:"message"`
-}
-
-// swagger:model GenericMessage
-type GenericMessage struct {
-	// Response error with message
-	// in: string
-	// required: true
-	Message string `json:"message"`
-}
