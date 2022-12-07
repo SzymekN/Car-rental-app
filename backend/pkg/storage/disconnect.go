@@ -1,8 +1,8 @@
 package storage
 
-import "github.com/SzymekN/Car-rental-app/pkg/model"
+import "github.com/SzymekN/Car-rental-app/pkg/producer"
 
-func Close(d DBConnector, l model.SystemLogger) {
+func Close(d DBConnector, l producer.SystemLogger) {
 
 	switch c := d.(type) {
 	case *MysqlConnect:

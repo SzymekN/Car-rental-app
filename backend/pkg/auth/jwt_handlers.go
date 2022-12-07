@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/SzymekN/Car-rental-app/pkg/model"
+	"github.com/SzymekN/Car-rental-app/pkg/producer"
 	"github.com/SzymekN/Car-rental-app/pkg/server"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
@@ -116,7 +117,7 @@ func (j JWTHandler) SignUp(c echo.Context) error {
 	defer func() {
 		j.ProduceMessage(k, msg)
 		if err != nil {
-			c.JSON(status, &model.GenericError{Message: msg})
+			c.JSON(status, &producer.GenericError{Message: msg})
 		}
 	}()
 
@@ -171,7 +172,7 @@ func (j JWTHandler) SignOut(c echo.Context) error {
 	defer func() {
 		j.ProduceMessage(k, msg)
 		if err != nil {
-			c.JSON(status, &model.GenericError{Message: msg})
+			c.JSON(status, &producer.GenericError{Message: msg})
 		}
 	}()
 
@@ -213,7 +214,7 @@ func (j JWTHandler) SignOut(c echo.Context) error {
 	fmt.Println("SIGNED  OUT")
 	k = "info"
 	msg = "[INFO] SignOut completed, HTTP: " + strconv.Itoa(status)
-	return c.JSON(status, &model.GenericMessage{Message: msg})
+	return c.JSON(status, &producer.GenericMessage{Message: msg})
 }
 
 // sign in a user
@@ -227,7 +228,7 @@ func (j JWTHandler) SignIn(c echo.Context) error {
 	defer func() {
 		j.ProduceMessage(k, msg)
 		if err != nil {
-			c.JSON(status, &model.GenericError{Message: msg})
+			c.JSON(status, &producer.GenericError{Message: msg})
 		}
 	}()
 
@@ -268,13 +269,22 @@ func (j JWTHandler) SignIn(c echo.Context) error {
 		return err
 	}
 
-	var token Token
-	token.Email = authUser.Email
-	token.Role = authUser.Role
-	token.TokenString = validToken
+	db := j.getMysqlDB()
+
+	var usrResponse SignInResponse
+	switch authUser.Role {
+	case "client":
+		db.Debug().Table("client").Where("user_id = ?", authUser.ID).Find(&usrResponse)
+	default:
+		db.Debug().Table("employee").Where("user_id = ?", authUser.ID).Find(&usrResponse)
+	}
+
+	usrResponse.Email = authUser.Email
+	usrResponse.Role = authUser.Role
+	usrResponse.TokenString = validToken
 	status = http.StatusOK
 	k = "info"
 	msg = "[INFO] SignIn completed: user signed in, email: {" + k + "}, HTTP: " + strconv.Itoa(status)
 
-	return c.JSON(status, token)
+	return c.JSON(status, usrResponse)
 }

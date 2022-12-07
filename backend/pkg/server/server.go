@@ -1,7 +1,7 @@
 package server
 
 import (
-	"github.com/SzymekN/Car-rental-app/pkg/model"
+	"github.com/SzymekN/Car-rental-app/pkg/producer"
 	"github.com/SzymekN/Car-rental-app/pkg/storage"
 	"github.com/go-redis/redis/v8"
 	"github.com/labstack/echo/v4"
@@ -12,7 +12,7 @@ type Server struct {
 	EchoServ  *echo.Echo
 	MysqlConn storage.MysqlConnect
 	RedisConn storage.RedisConnect
-	Logger    model.SystemLogger
+	Logger    producer.SystemLogger
 }
 
 // var svr Server

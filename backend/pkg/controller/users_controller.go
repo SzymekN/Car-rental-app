@@ -1,28 +1,29 @@
 package controller
 
 import (
+	"fmt"
+
 	"github.com/SzymekN/Car-rental-app/pkg/auth"
+	"github.com/SzymekN/Car-rental-app/pkg/executor"
 	"github.com/SzymekN/Car-rental-app/pkg/model"
-	"gorm.io/gorm"
+	"github.com/SzymekN/Car-rental-app/pkg/producer"
 
 	"github.com/labstack/echo/v4"
 )
 
 type UserHandler struct {
-	SystemOperator
-	authConf auth.AuthConfig
-	group    *echo.Group
+	sysOperator producer.SystemOperator
+	authConf    auth.AuthConfig
+	group       *echo.Group
 }
 
-func NewUserHandler(db *gorm.DB, l model.SystemLogger, ac auth.AuthConfig, g *echo.Group) UserHandler {
+func NewUserHandler(sysOp producer.SystemOperator, ac auth.AuthConfig, g *echo.Group) UserHandler {
 	uh := UserHandler{
-		SystemOperator: SystemOperator{
-			DB:           db,
-			SystemLogger: l,
-		},
-		authConf: ac,
-		group:    g,
+		sysOperator: sysOp,
+		group:       g,
+		authConf:    ac,
 	}
+	fmt.Println(sysOp)
 	return uh
 }
 
@@ -35,21 +36,21 @@ func (uh *UserHandler) RegisterRoutes() {
 }
 
 func (uh *UserHandler) Save(c echo.Context) error {
-	return GenericPost(c, uh.SystemOperator, model.User{})
+	return executor.GenericPost(c, uh.sysOperator, model.User{})
 }
 
 func (uh *UserHandler) Update(c echo.Context) error {
-	return GenericUpdate(c, uh.SystemOperator, model.User{})
+	return executor.GenericUpdate(c, uh.sysOperator, model.User{})
 }
 
 func (uh *UserHandler) Delete(c echo.Context) error {
-	return GenericDelete(c, uh.SystemOperator, model.User{})
+	return executor.GenericDelete(c, uh.sysOperator, model.User{})
 }
 
 func (uh *UserHandler) GetById(c echo.Context) error {
-	return GenericGetById(c, uh.SystemOperator, model.User{})
+	return executor.GenericGetById(c, uh.sysOperator, model.User{})
 }
 
 func (uh *UserHandler) GetAll(c echo.Context) error {
-	return GenericGetAll(c, uh.SystemOperator, []model.User{})
+	return executor.GenericGetAll(c, uh.sysOperator, []model.User{})
 }
