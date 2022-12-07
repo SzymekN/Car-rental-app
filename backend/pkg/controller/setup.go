@@ -1,91 +1,45 @@
 package controller
 
 import (
-	"net/http"
+	"fmt"
 
 	"github.com/SzymekN/Car-rental-app/pkg/auth"
-	"github.com/SzymekN/Car-rental-app/pkg/model"
-	"github.com/SzymekN/Car-rental-app/pkg/storage"
+	"github.com/SzymekN/Car-rental-app/pkg/producer"
+	"github.com/SzymekN/Car-rental-app/pkg/server"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"gorm.io/gorm"
 )
 
-type MainController struct {
-}
-
-type Controller interface {
-	GetDB() *gorm.DB
-}
-
-type Router struct {
-	e *echo.Echo
-	storage.MysqlConnect
-}
-
-type Registrator interface {
-	GetEcho() *echo.Echo
-	registerUserRoutes()
-}
-
-func (mc MainController) GetDB() *gorm.DB {
-	return storage.MysqlConn.GetDBInstance()
-}
-
-func (r Router) registerUserRoutes() {
-	e := r.e
-	e.POST("/api/v1/users/signup", SignUp)
-	e.POST("/api/v1/users/signin", SignIn)
-
-}
-
-func test(c echo.Context) error {
-	return GenericPost(c, model.User{})
-}
-
 // registers router for the server
-func SetupRouter() *echo.Echo {
-	// r := Router{e: echo.New()}
+func SetupRouter(svr *server.Server) {
+
 	e := echo.New()
+	svr.EchoServ = e
+
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORS())
-	// registerUserRoutes()
-	e.POST("/api/v1/users/signup", SignUp)
-	e.POST("/api/v1/users/signin", SignIn)
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, `{"message":"Car sharing Welcome page!"}`)
-	})
+	jwt_auth := e.Group("/api/v1")
 
-	// group of routes that will be validated with jwt
-	jwt_auth := e.Group("")
-	config := middleware.JWTConfig{
-		SigningKey:     []byte(auth.Secretkey),
-		ParseTokenFunc: auth.Validate,
-	}
+	systemOperator := producer.NewSystemOperator(svr.GetMysqlDB(), svr.Logger)
+	// e.GET("/", func(c echo.Context) error {
+	// 	return c.String(http.StatusOK, `{"message":"Car sharing Welcome page!"}`)
+	// })
 
-	jwt_auth.Use(middleware.JWTWithConfig(config))
+	// create JWT handler and JWT validator config
+	jwtH := auth.New(svr, svr.EchoServ, jwt_auth)
+	jwtH.AddJWTMiddleware()
 
-	jwt_auth.GET("/api/v1/users/signout", SignOut)
+	// create all needed handlers
+	authConf := auth.NewAuthConfig()
+	uh := NewUserHandler(systemOperator, authConf, jwt_auth)
+	vh := NewVehicleHandler(systemOperator, authConf, jwt_auth)
 
-	uc := UsersController{}
-	jwt_auth.GET("/api/v1/users", uc.GetUserById)
-	jwt_auth.GET("/api/v1/users/all", uc.GetUsers)
-	jwt_auth.POST("/api/v1/users", uc.SaveUser, auth.IsAdmin)
-	jwt_auth.PUT("/api/v1/users", uc.UpdateUser, auth.IsAdmin)
-	jwt_auth.DELETE("/api/v1/users", uc.DeleteUser, auth.IsAdmin)
+	// register all routes
+	jwtH.RegisterRoutes()
+	uh.RegisterRoutes()
+	vh.RegisterRoutes()
 
-	e.POST("/test", test)
+	fmt.Println(jwtH)
+	fmt.Println("setup", uh.sysOperator.SystemLogger)
 
-	// redoc documentation middleware
-	// doc := redoc.Redoc{
-	// 	Title:       "User API",
-	// 	Description: "API for interactions with database",
-	// 	SpecFile:    "docs/swagger.json",
-	// 	SpecPath:    "docs/swagger.json",
-	// 	DocsPath:    "/docs",
-	// }
-
-	// e.Use(echoredoc.New(doc))
-
-	return e
 }

@@ -1,52 +1,56 @@
 package controller
 
 import (
+	"fmt"
+
+	"github.com/SzymekN/Car-rental-app/pkg/auth"
+	"github.com/SzymekN/Car-rental-app/pkg/executor"
 	"github.com/SzymekN/Car-rental-app/pkg/model"
+	"github.com/SzymekN/Car-rental-app/pkg/producer"
 
 	"github.com/labstack/echo/v4"
 )
 
-// swagger:route POST /api/v1/users/save users_v1 postUserV1
-// Save user to  database.
-//
-//		Consumes:
-//	   - application/json
-//	 Produces:
-//	   - application/json
-//
-// responses:
-//
-//	200: userResponse
-//	500: errorResponse
-
-type UsersController struct {
-	MainController
+type UserHandler struct {
+	sysOperator producer.SystemOperator
+	authConf    auth.AuthConfig
+	group       *echo.Group
 }
 
-type UsersHandler interface {
-	SaveUser(c echo.Context) error
-	UpdateUser(c echo.Context) error
-	DeleteUser(c echo.Context) error
-	GetUserById(c echo.Context) error
-	GetUsers(c echo.Context) error
+func NewUserHandler(sysOp producer.SystemOperator, ac auth.AuthConfig, g *echo.Group) UserHandler {
+	uh := UserHandler{
+		sysOperator: sysOp,
+		group:       g,
+		authConf:    ac,
+	}
+	fmt.Println(sysOp)
+	return uh
 }
 
-func (uc *UsersController) SaveUser(c echo.Context) error {
-	return GenericPost(c, model.User{})
+func (uh *UserHandler) RegisterRoutes() {
+	uh.group.GET("/users", uh.GetById)
+	uh.group.GET("/users/all", uh.GetAll)
+	uh.group.POST("/users", uh.Save, uh.authConf.IsAuthorized)
+	uh.group.PUT("/users", uh.Update, uh.authConf.IsAuthorized)
+	uh.group.DELETE("/users", uh.Delete, uh.authConf.IsAuthorized)
 }
 
-func (uc *UsersController) UpdateUser(c echo.Context) error {
-	return GenericUpdate(c, model.User{})
+func (uh *UserHandler) Save(c echo.Context) error {
+	return executor.GenericPost(c, uh.sysOperator, model.User{})
 }
 
-func (uc *UsersController) DeleteUser(c echo.Context) error {
-	return GenericDelete(c, model.User{})
+func (uh *UserHandler) Update(c echo.Context) error {
+	return executor.GenericUpdate(c, uh.sysOperator, model.User{})
 }
 
-func (uc *UsersController) GetUserById(c echo.Context) error {
-	return GenericGetById(c, model.User{})
+func (uh *UserHandler) Delete(c echo.Context) error {
+	return executor.GenericDelete(c, uh.sysOperator, model.User{})
 }
 
-func (uc *UsersController) GetUsers(c echo.Context) error {
-	return GenericGetAll(c, []model.User{})
+func (uh *UserHandler) GetById(c echo.Context) error {
+	return executor.GenericGetById(c, uh.sysOperator, model.User{})
+}
+
+func (uh *UserHandler) GetAll(c echo.Context) error {
+	return executor.GenericGetAll(c, uh.sysOperator, []model.User{})
 }

@@ -17,31 +17,52 @@ import (
 // 	brokerAddress = os.Getenv("KAFKA_HOST") + ":" + os.Getenv("KAFKA_PORT")
 // )
 
-const (
-	topic = "messages"
-	// brokerAddress = {"kafka-1:9092","kafka-2:9092","kafka-3:9092"}
-	brokerAddress = "kafka-1:9092"
-)
-
-var (
+type KafkaLogger struct {
+	topic           string
+	brokerAddresses []string
 	// context for creating messages
-	KafkaCtx context.Context
+	kafkaCtx context.Context
 	// object on which behalf messages are sent
-	KafkaWriter *kafka.Writer
-)
-
-func getKafkaWriter() *kafka.Writer {
-	return KafkaWriter
+	kafkaWriter *kafka.Writer
 }
 
-func getKafkaCtx() context.Context {
-	return KafkaCtx
+type KafkaLoggerInterface interface {
+	SetupKafka()
+	ProduceMessage(k, val string) error
+}
+
+// const (
+// 	topic = "messages"
+// 	// brokerAddress = {"kafka-1:9092","kafka-2:9092","kafka-3:9092"}
+// 	brokerAddress = "kafka-1:9092"
+// )
+
+// var ()
+
+// TODO odczyt zmiennych środowiskowych zamiast hardocoded stałych
+func (kl *KafkaLogger) SetupKafka() {
+
+	kl.topic = "messages"
+	kl.brokerAddresses = []string{"kafka-1:9092", "kafka-2:9092", "kafka-3:9092"}
+	kl.kafkaCtx = context.Background()
+
+	l := log.New(os.Stdout, "kafka writer: ", 0)
+
+	kWriter := kafka.NewWriter(kafka.WriterConfig{
+		Brokers: kl.brokerAddresses,
+		Topic:   kl.topic,
+		// assign the logger to the writer
+		Logger: l,
+	})
+
+	kl.kafkaWriter = kWriter
+	fmt.Println(kl)
 }
 
 // sends message to kafka
-func ProduceMessage(k, val string) error {
-	w := getKafkaWriter()
-	ctx := getKafkaCtx()
+func (kl *KafkaLogger) ProduceMessage(k, val string) error {
+	w := kl.kafkaWriter
+	ctx := kl.kafkaCtx
 
 	err := w.WriteMessages(ctx, kafka.Message{
 		Key: []byte(k),
@@ -56,15 +77,7 @@ func ProduceMessage(k, val string) error {
 	return nil
 }
 
-func SetupKafka() {
-	KafkaCtx = context.Background()
+// func SetupKafka() {
+// 	KafkaCtx = context.Background()
 
-	l := log.New(os.Stdout, "kafka writer: ", 0)
-
-	KafkaWriter = kafka.NewWriter(kafka.WriterConfig{
-		Brokers: []string{brokerAddress},
-		Topic:   topic,
-		// assign the logger to the writer
-		Logger: l,
-	})
-}
+// }

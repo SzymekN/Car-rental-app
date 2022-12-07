@@ -58,7 +58,7 @@ services:
       - API_PORT=8200
       - REDIS_PORT=6379
       - REDIS_HOST=redis-server
-      - REDIS-PASSWORD=admin
+      - REDIS_PASSWORD=admin
       - KAFKA_HOST=kafka-1
       - MYSQL_USER=admin    
       - MYSQL_PASSWORD=admin

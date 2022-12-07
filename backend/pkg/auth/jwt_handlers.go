@@ -1,23 +1,78 @@
-package controller
+package auth
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 
-	"github.com/SzymekN/Car-rental-app/pkg/auth"
 	"github.com/SzymekN/Car-rental-app/pkg/model"
 	"github.com/SzymekN/Car-rental-app/pkg/producer"
-	"github.com/SzymekN/Car-rental-app/pkg/storage"
+	"github.com/SzymekN/Car-rental-app/pkg/server"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"gorm.io/gorm"
 )
 
+type JWTHandler struct {
+	JwtC     JWTControl
+	echoServ *echo.Echo
+	group    *echo.Group
+}
+
+// Creates JWT configuration and adds middleware to group
+func (j JWTHandler) AddJWTMiddleware() {
+	config := j.CreateJWTConfig()
+	j.group.Use(middleware.JWTWithConfig(config))
+}
+
+func (j JWTHandler) RegisterRoutes() {
+	j.echoServ.POST("/api/v1/users/signup", j.SignUp)
+	j.echoServ.POST("/api/v1/users/signin", j.SignIn)
+	j.group.GET(" /users/signout", j.SignOut)
+
+}
+func (j JWTHandler) CreateJWTConfig() middleware.JWTConfig {
+	conf := middleware.JWTConfig{
+		SigningKey:     []byte(j.getSigningKey()),
+		ParseTokenFunc: j.JwtC.Validate,
+	}
+	return conf
+}
+
+func New(svr *server.Server, e *echo.Echo, g *echo.Group) *JWTHandler {
+	jwtH := &JWTHandler{
+		JwtC: JWTControl{
+			JwtQE: JWTQueryExecutor{
+				Svr: svr,
+				Ctx: context.Background(),
+			},
+			SecretKey: "",
+		},
+		echoServ: e,
+		group:    g,
+	}
+	return jwtH
+}
+
+// wrapper functions
+func (j JWTHandler) ProduceMessage(k, val string) {
+	j.JwtC.JwtQE.Svr.Logger.ProduceMessage(k, val)
+}
+
+func (j JWTHandler) getMysqlDB() *gorm.DB {
+	return j.JwtC.JwtQE.Svr.GetMysqlDB()
+}
+func (j JWTHandler) getSigningKey() string {
+	return j.JwtC.SecretKey
+}
+
 // Checks for the username in the db
-func GetUser(email string) (model.User, error) {
-	db := storage.MysqlConn.GetDBInstance()
+func (j JWTHandler) GetUser(email string) (model.User, error) {
+	db := j.getMysqlDB()
 	u := model.User{}
 	result := db.Debug().Where(&model.User{Email: email}).Find(&u)
 	err := result.Error
@@ -35,22 +90,8 @@ func GetUser(email string) (model.User, error) {
 }
 
 // save signed in user to the db
-func SignUser(mc model.Client) error {
-	db := storage.MysqlConn.GetDBInstance()
-
-	// result := db.Create(&mc.User)
-	// if err := result.Error; err != nil {
-	// 	fmt.Println(err)
-	// 	return err
-	// }
-
-	// mc.UserID = mc.User.Id
-
-	// if err := db.Create(&mc).Error; err != nil {
-	// 	fmt.Println(err)
-	// 	return err
-	// }
-	fmt.Println(mc)
+func (j JWTHandler) SignUser(mc model.Client) error {
+	db := j.getMysqlDB()
 
 	fmt.Println(db.Model(&model.Client{}).Association("User").Error)
 	if err := db.Model(&model.Client{}).Preload("User").Debug().Create(&mc).Error; err != nil {
@@ -62,7 +103,7 @@ func SignUser(mc model.Client) error {
 }
 
 // Checks all passed credentials and saves user to the database
-func SignUp(c echo.Context) error {
+func (j JWTHandler) SignUp(c echo.Context) error {
 
 	// user to save in the database
 	var mc model.Client
@@ -74,9 +115,9 @@ func SignUp(c echo.Context) error {
 	k, msg := "err", "[ERROR]"
 
 	defer func() {
-		producer.ProduceMessage(k, msg)
+		j.ProduceMessage(k, msg)
 		if err != nil {
-			c.JSON(status, &model.GenericError{Message: msg})
+			c.JSON(status, &producer.GenericError{Message: msg})
 		}
 	}()
 
@@ -89,7 +130,7 @@ func SignUp(c echo.Context) error {
 	}
 
 	// check if user already exists
-	_, err = GetUser(mc.User.Email)
+	_, err = j.GetUser(mc.User.Email)
 
 	k = mc.User.Email
 	if err == nil {
@@ -100,7 +141,7 @@ func SignUp(c echo.Context) error {
 	}
 
 	// hash password
-	mc.User.Password, err = auth.GeneratehashPassword(mc.User.Password)
+	mc.User.Password, err = j.JwtC.GeneratehashPassword(mc.User.Password)
 	if err != nil {
 		status = http.StatusInternalServerError
 		msg += " SignUp error: couldn't generate hash, email: {" + k + "}, HTTP: " + strconv.Itoa(status)
@@ -108,7 +149,7 @@ func SignUp(c echo.Context) error {
 	}
 
 	//insert user details to database
-	err = SignUser(mc)
+	err = j.SignUser(mc)
 	if err != nil {
 		status = http.StatusInternalServerError
 		msg += " SignUp error: insert query error, email: {" + k + "}, HTTP: " + strconv.Itoa(status)
@@ -123,15 +164,15 @@ func SignUp(c echo.Context) error {
 }
 
 // revokes valid jwt token. Sends the token to Redis
-func SignOut(c echo.Context) error {
+func (j JWTHandler) SignOut(c echo.Context) error {
 	var err error
 	var status int = 200
 	k, msg := "err", "[ERROR] "
 
 	defer func() {
-		producer.ProduceMessage(k, msg)
+		j.ProduceMessage(k, msg)
 		if err != nil {
-			c.JSON(status, &model.GenericError{Message: msg})
+			c.JSON(status, &producer.GenericError{Message: msg})
 		}
 	}()
 
@@ -163,7 +204,7 @@ func SignOut(c echo.Context) error {
 	}
 
 	// save token in Redis in order to blacklist it
-	err = auth.SetToken(token, time.Duration(duration))
+	err = j.JwtC.JwtQE.SetToken(token, time.Duration(duration))
 	if err != nil {
 		status = http.StatusInternalServerError
 		msg += "SignOut error: couldn't write to Redis, HTTP: " + strconv.Itoa(status)
@@ -173,21 +214,21 @@ func SignOut(c echo.Context) error {
 	fmt.Println("SIGNED  OUT")
 	k = "info"
 	msg = "[INFO] SignOut completed, HTTP: " + strconv.Itoa(status)
-	return c.JSON(status, &model.GenericMessage{Message: msg})
+	return c.JSON(status, &producer.GenericMessage{Message: msg})
 }
 
 // sign in a user
-func SignIn(c echo.Context) error {
+func (j JWTHandler) SignIn(c echo.Context) error {
 
-	var authDetails auth.Authentication
+	var authDetails Authentication
 	var err error
 	var status int
 	k, msg := "err", "[ERROR]"
 
 	defer func() {
-		producer.ProduceMessage(k, msg)
+		j.ProduceMessage(k, msg)
 		if err != nil {
-			c.JSON(status, &model.GenericError{Message: msg})
+			c.JSON(status, &producer.GenericError{Message: msg})
 		}
 	}()
 
@@ -200,7 +241,7 @@ func SignIn(c echo.Context) error {
 
 	// check if user exists
 	var authUser model.User
-	authUser, err = GetUser(authDetails.Email)
+	authUser, err = j.GetUser(authDetails.Email)
 
 	k = authDetails.Email
 	if err != nil {
@@ -210,7 +251,7 @@ func SignIn(c echo.Context) error {
 	}
 
 	// check if password is correct
-	check := auth.CheckPasswordHash(authDetails.Password, authUser.Password)
+	check := j.JwtC.CheckPasswordHash(authDetails.Password, authUser.Password)
 
 	if !check {
 		status = http.StatusBadRequest
@@ -221,20 +262,29 @@ func SignIn(c echo.Context) error {
 
 	// generate token based on username and role
 	var validToken string
-	validToken, err = auth.GenerateJWT(authDetails.Email, authUser.Role)
+	validToken, err = j.JwtC.GenerateJWT(authDetails.Email, authUser.Role)
 	if err != nil {
 		status = http.StatusInternalServerError
 		msg += "SignIn error: couldn't generate token, email: {" + k + "},  HTTP: " + strconv.Itoa(status)
 		return err
 	}
 
-	var token auth.Token
-	token.Email = authUser.Email
-	token.Role = authUser.Role
-	token.TokenString = validToken
+	db := j.getMysqlDB()
+
+	var usrResponse SignInResponse
+	switch authUser.Role {
+	case "client":
+		db.Debug().Table("client").Where("user_id = ?", authUser.ID).Find(&usrResponse)
+	default:
+		db.Debug().Table("employee").Where("user_id = ?", authUser.ID).Find(&usrResponse)
+	}
+
+	usrResponse.Email = authUser.Email
+	usrResponse.Role = authUser.Role
+	usrResponse.TokenString = validToken
 	status = http.StatusOK
 	k = "info"
 	msg = "[INFO] SignIn completed: user signed in, email: {" + k + "}, HTTP: " + strconv.Itoa(status)
 
-	return c.JSON(status, token)
+	return c.JSON(status, usrResponse)
 }
