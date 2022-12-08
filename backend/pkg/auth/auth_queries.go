@@ -26,11 +26,11 @@ func (j JWTQueryExecutor) getSigningKey() (string, error) {
 	res, err := rdb.Get(j.Ctx, "key").Result()
 
 	if err == redis.Nil {
-		j.ProduceMessage("REDIS read", "ERROR key doesn't exist:"+err.Error())
+		go j.ProduceMessage("REDIS read", "ERROR key doesn't exist:"+err.Error())
 		fmt.Println("ERROR key doesn't exist:", err.Error())
 		return "", err
 	} else if err != nil {
-		j.ProduceMessage("REDIS read", "ERROR reading key:"+err.Error())
+		go j.ProduceMessage("REDIS read", "ERROR reading key:"+err.Error())
 		fmt.Println("ERROR reading key:", err.Error())
 		return "", err
 	}
@@ -60,13 +60,13 @@ func (j JWTQueryExecutor) setSigningKey() (string, error) {
 	err := rdb.Set(j.Ctx, "key", key, 0).Err()
 
 	if err != nil {
-		j.ProduceMessage("REDIS write", "ERROR writing key:"+err.Error())
+		go j.ProduceMessage("REDIS write", "ERROR writing key:"+err.Error())
 		fmt.Println("ERROR writing key:", err.Error())
 		return "", err
 
 	}
 
-	j.ProduceMessage("REDIS write", "Key set:"+key)
+	go j.ProduceMessage("REDIS write", "Key set:"+key)
 	return key, nil
 }
 
@@ -76,11 +76,11 @@ func (j JWTQueryExecutor) SetToken(token string, expireTime time.Duration) error
 
 	err := rdb.Set(j.Ctx, token, "0", expireTime*time.Second).Err()
 	if err != nil {
-		j.ProduceMessage("REDIS write", "ERROR writing token:"+err.Error())
+		go j.ProduceMessage("REDIS write", "ERROR writing token:"+err.Error())
 		return err
 	}
 
-	j.ProduceMessage("REDIS write", "Token:"+token+" set")
+	go j.ProduceMessage("REDIS write", "Token:"+token+" set")
 	return nil
 }
 
@@ -92,10 +92,10 @@ func (j JWTQueryExecutor) GetToken(token string) (bool, error) {
 	fmt.Println(rdb)
 	_, err := rdb.Get(j.Ctx, token).Result()
 	if err != nil {
-		j.ProduceMessage("REDIS read", "ERROR reading token:"+token+", err: "+err.Error())
+		go j.ProduceMessage("REDIS read", "ERROR reading token:"+token+", err: "+err.Error())
 		return false, err
 	}
 
-	j.ProduceMessage("REDIS write", "Token: "+token+" get")
+	go j.ProduceMessage("REDIS write", "Token: "+token+" get")
 	return true, nil
 }

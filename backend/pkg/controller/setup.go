@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/SzymekN/Car-rental-app/pkg/auth"
 	"github.com/SzymekN/Car-rental-app/pkg/producer"
@@ -21,9 +22,9 @@ func SetupRouter(svr *server.Server) {
 	jwt_auth := e.Group("/api/v1")
 
 	systemOperator := producer.NewSystemOperator(svr.GetMysqlDB(), svr.Logger)
-	// e.GET("/", func(c echo.Context) error {
-	// 	return c.String(http.StatusOK, `{"message":"Car sharing Welcome page!"}`)
-	// })
+	e.GET("/", func(c echo.Context) error {
+		return c.String(http.StatusOK, `{"message":"Car sharing Welcome page!"}`)
+	})
 
 	// create JWT handler and JWT validator config
 	jwtH := auth.New(svr, svr.EchoServ, jwt_auth)

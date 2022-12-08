@@ -52,5 +52,6 @@ func (uh *UserHandler) GetById(c echo.Context) error {
 }
 
 func (uh *UserHandler) GetAll(c echo.Context) error {
-	return executor.GenericGetAll(c, uh.sysOperator, []model.User{})
+	cos := executor.GenericGetAll(c, uh.sysOperator, []model.User{})
+	return cos
 }

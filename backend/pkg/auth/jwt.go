@@ -3,8 +3,10 @@ package auth
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
+	"github.com/SzymekN/Car-rental-app/pkg/producer"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
@@ -13,23 +15,45 @@ import (
 // key used for singing jwt tokens
 
 type JWTControl struct {
-	JwtQE     JWTQueryExecutor
-	SecretKey string
+	JwtQE         JWTQueryExecutor
+	revokedTokens []string
+	SecretKey     string
 }
 
+func (j JWTControl) checkToken(val string) (bool, error) {
+
+	for _, revokedToken := range j.revokedTokens {
+		if revokedToken == val {
+			return true, nil
+		}
+	}
+
+	// revoked, _ := j.JwtQE.GetToken(val)
+	return false, nil
+}
 func (j JWTControl) ProduceMessage(k, val string) {
 	j.JwtQE.Svr.Logger.ProduceMessage(k, val)
 }
 
-func (j JWTControl) GeneratehashPassword(password string) (string, error) {
-	fmt.Printf("HASHED PASSWORD:%s\n", password)
+func (j JWTControl) GeneratehashPassword(password string) (string, producer.Log) {
+	log := producer.Log{}
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	return string(bytes), err
+	if err != nil {
+		code := http.StatusInternalServerError
+		msg := fmt.Sprintf("[ERROR]: password hashing failure, HTTP: %v", code)
+		log.Populate("err", msg, code, err)
+	}
+	return string(bytes), log
 }
 
-func (j JWTControl) CheckPasswordHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
+func (j JWTControl) CheckPasswordHash(password, hash string) producer.Log {
+	log := producer.Log{}
+	if err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)); err != nil {
+		code := http.StatusUnauthorized
+		msg := fmt.Sprintf("[ERROR]: wrong password, HTTP: %v", code)
+		log.Populate("err", msg, code, err)
+	}
+	return log
 }
 
 // check if token is correct
@@ -49,26 +73,25 @@ func (j JWTControl) Validate(auth string, c echo.Context) (interface{}, error) {
 	// claims are of type `jwt.MapClaims` when token is created with `jwt.Parse`
 	token, err := jwt.Parse(auth, remoteKeyFunc)
 	// check if this token is already revoked
-	tokenRevoked, _ := j.JwtQE.GetToken(token.Raw)
+	tokenRevoked, _ := j.checkToken(token.Raw)
 
 	if tokenRevoked {
-		j.ProduceMessage("JWT validation", token.Raw+" REVOKED")
+		go j.ProduceMessage("JWT validation", token.Raw+" REVOKED")
 		return nil, errors.New("Token Revoked")
 	}
 
 	// check if errors occured during token generation
 	if err != nil {
-		j.ProduceMessage("JWT validation", "JWT validation failed: "+err.Error())
+		go j.ProduceMessage("JWT validation", "JWT validation failed: "+err.Error())
 		return nil, err
 	}
 
 	// check if generated token is valid
 	if !token.Valid {
-		j.ProduceMessage("JWT validation", "JWT validation failed: invalid token")
+		go j.ProduceMessage("JWT validation", "JWT validation failed: invalid token")
 		return nil, errors.New("invalid token")
 	}
-
-	j.ProduceMessage("JWT validation", "JWT validation succesfull")
+	go j.ProduceMessage("JWT validation", "JWT validation succesfull")
 	return token, nil
 }
 
@@ -92,11 +115,12 @@ func (j JWTControl) getKey() string {
 }
 
 // generates valid token based on username, role and expire date
-func (j JWTControl) GenerateJWT(email, role string) (string, error) {
+func (j JWTControl) GenerateJWT(email, role string) (string, producer.Log) {
 	var mySigningKey = []byte(j.getKey())
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 	expireTime := time.Minute * 15
+	log := producer.Log{}
 
 	claims["authorized"] = true
 	claims["email"] = email
@@ -106,9 +130,9 @@ func (j JWTControl) GenerateJWT(email, role string) (string, error) {
 	// sign created token
 	tokenString, err := token.SignedString(mySigningKey)
 	if err != nil {
-		fmt.Printf("Something Went Wrong: %s", err.Error())
-		return "", err
+		code := http.StatusInternalServerError
+		msg := fmt.Sprintf("[ERROR]: JWT generation failure, HTTP: %v", code)
+		log.Populate("err", msg, code, err)
 	}
-
-	return tokenString, nil
+	return tokenString, log
 }
