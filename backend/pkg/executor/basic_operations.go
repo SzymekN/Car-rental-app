@@ -40,7 +40,7 @@ func BindData[T model.GenericModel](c echo.Context, d T) (T, producer.Log) {
 
 	if err := c.Bind(&d); err != nil {
 		status := http.StatusBadRequest
-		msg := fmt.Sprintf("[ERROR]: couldn't get id from request, HTTP: %v", status)
+		msg := fmt.Sprintf("[ERROR]: couldn't bind data from request, HTTP: %v", status)
 		log := producer.Log{
 			Key:  "err",
 			Msg:  msg,
@@ -73,7 +73,7 @@ func CheckIfAffected(result *gorm.DB) producer.Log {
 
 	if result.RowsAffected < 1 {
 		status := http.StatusBadRequest
-		msg := fmt.Sprintf("[ERROR]: no rows affected, HTTP: %v", status)
+		msg := fmt.Sprintf("[ERROR]: not found / no rows affected, HTTP: %v", status)
 		err := fmt.Errorf("no rows affected")
 		log := producer.Log{
 			Key:  "err",

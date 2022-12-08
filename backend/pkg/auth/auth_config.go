@@ -42,6 +42,7 @@ func NewAuthConfig() AuthConfig {
 // checks for role embedded in the token to get information about privileges
 func (ac AuthConfig) IsAuthorized(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
+
 		path := c.Path()
 		fmt.Println(c.Path())
 		user := c.Get("user").(*jwt.Token)
