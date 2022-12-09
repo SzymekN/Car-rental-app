@@ -5,7 +5,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type JWTWrappwer interface {
+type JWTHWrapper interface {
 	getLogger() producer.SystemLogger
 	ProduceMessage(k, val string)
 	getMysqlDB() *gorm.DB

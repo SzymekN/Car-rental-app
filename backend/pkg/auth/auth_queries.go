@@ -22,7 +22,6 @@ type JWTQueryExecutorInterface interface {
 	SetToken(token string, expireTime time.Duration) error
 	setSigningKey() (string, error)
 	getSigningKey() (string, error)
-	ProduceMessage(k, val string)
 }
 
 func (j JWTQueryExecutor) ProduceMessage(k, val string) {

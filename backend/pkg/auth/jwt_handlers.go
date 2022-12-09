@@ -15,29 +15,27 @@ import (
 )
 
 type JWTHandler struct {
-	JwtC     JWTControl
-	echoServ *echo.Echo
-	group    *echo.Group
+	JwtC  JWTControl
+	group *echo.Group
 }
 
 type JWTHandlerInterface interface {
 	RegisterRoutes()
 	SignIn(c echo.Context) error
-	revokeToken(token string, dur time.Duration)
 	SignUp(c echo.Context) error
-	SignUser(mc model.Client) producer.Log
-	GetUser(email string) (model.User, producer.Log)
+	SignOut(c echo.Context) error
+	revokeToken(token string, dur time.Duration)
 }
 
 func (j JWTHandler) RegisterRoutes() {
-	j.echoServ.POST("/api/v1/users/signup", j.SignUp)
-	j.echoServ.POST("/api/v1/users/signin", j.SignIn)
+	j.JwtC.JwtQE.Svr.EchoServ.POST("/api/v1/users/signup", j.SignUp)
+	j.JwtC.JwtQE.Svr.EchoServ.POST("/api/v1/users/signin", j.SignIn)
 	j.group.GET(" /users/signout", j.SignOut)
 
 }
 
 // Checks for the username in the db
-func (j JWTHandler) GetUser(email string) (model.User, producer.Log) {
+func (j JWTHandler) getUser(email string) (model.User, producer.Log) {
 
 	db := j.getMysqlDB()
 	u := model.User{}
@@ -94,7 +92,7 @@ func (j JWTHandler) SignUp(c echo.Context) error {
 	}
 
 	// check if user already exists
-	_, logger.Log = j.GetUser(mc.User.Email)
+	_, logger.Log = j.getUser(mc.User.Email)
 	if logger.Err != nil && logger.Err.Error() != "no rows affected" {
 		return logger.Err
 	}
@@ -134,7 +132,7 @@ func (j JWTHandler) SignUp(c echo.Context) error {
 }
 
 func (j JWTHandler) revokeToken(token string, dur time.Duration) {
-	j.JwtC.revokedTokens = append(j.JwtC.revokedTokens, token)
+	// j.JwtC.revokedTokens = append(j.JwtC.revokedTokens, token)
 	go j.JwtC.JwtQE.SetToken(token, dur)
 }
 
@@ -215,7 +213,7 @@ func (j JWTHandler) SignIn(c echo.Context) error {
 	}
 	// check if user exists
 	var authUser model.User
-	authUser, logger.Log = j.GetUser(authDetails.Email)
+	authUser, logger.Log = j.getUser(authDetails.Email)
 
 	if logger.Err != nil {
 		return logger.Err

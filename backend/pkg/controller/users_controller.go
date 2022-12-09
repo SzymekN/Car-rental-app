@@ -17,8 +17,8 @@ type UserHandler struct {
 	group       *echo.Group
 }
 
-func NewUserHandler(sysOp producer.SystemOperator, ac auth.AuthConfig, g *echo.Group) UserHandler {
-	uh := UserHandler{
+func NewUserHandler(sysOp producer.SystemOperator, ac auth.AuthConfig, g *echo.Group) *UserHandler {
+	uh := &UserHandler{
 		sysOperator: sysOp,
 		group:       g,
 		authConf:    ac,

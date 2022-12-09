@@ -9,12 +9,11 @@ import (
 )
 
 type JWTConfigurer interface {
-	NewJWTHanlder(svr *server.Server, e *echo.Echo, g *echo.Group) *JWTHandler
 	CreateJWTConfig() middleware.JWTConfig
 	AddJWTMiddleware()
 }
 
-func NewJWTHanlder(svr *server.Server, e *echo.Echo, g *echo.Group) *JWTHandler {
+func NewJWTHandler(svr *server.Server, g *echo.Group) *JWTHandler {
 	jwtH := &JWTHandler{
 		JwtC: JWTControl{
 			JwtQE: JWTQueryExecutor{
@@ -23,8 +22,7 @@ func NewJWTHanlder(svr *server.Server, e *echo.Echo, g *echo.Group) *JWTHandler 
 			},
 			SecretKey: "",
 		},
-		echoServ: e,
-		group:    g,
+		group: g,
 	}
 	return jwtH
 }
