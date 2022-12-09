@@ -27,7 +27,7 @@ func SetupRouter(svr *server.Server) {
 	})
 
 	// create JWT handler and JWT validator config
-	jwtH := auth.New(svr, svr.EchoServ, jwt_auth)
+	jwtH := auth.NewJWTHanlder(svr, svr.EchoServ, jwt_auth)
 	jwtH.AddJWTMiddleware()
 
 	// create all needed handlers

@@ -12,11 +12,6 @@ import (
 	kafka "github.com/segmentio/kafka-go"
 )
 
-// var (
-// 	topic         = os.Getenv("KAFKA_TOPIC")
-// 	brokerAddress = os.Getenv("KAFKA_HOST") + ":" + os.Getenv("KAFKA_PORT")
-// )
-
 type KafkaLogger struct {
 	topic           string
 	brokerAddresses []string
@@ -30,14 +25,6 @@ type KafkaLoggerInterface interface {
 	SetupKafka()
 	ProduceMessage(k, val string) error
 }
-
-// const (
-// 	topic = "messages"
-// 	// brokerAddress = {"kafka-1:9092","kafka-2:9092","kafka-3:9092"}
-// 	brokerAddress = "kafka-1:9092"
-// )
-
-// var ()
 
 // TODO odczyt zmiennych środowiskowych zamiast hardocoded stałych
 func (kl *KafkaLogger) SetupKafka() {
@@ -76,8 +63,3 @@ func (kl *KafkaLogger) ProduceMessage(k, val string) error {
 	}
 	return nil
 }
-
-// func SetupKafka() {
-// 	KafkaCtx = context.Background()
-
-// }
