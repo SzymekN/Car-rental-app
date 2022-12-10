@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/css/Navbar-With-Button-icons.css">
     <link rel="stylesheet" href="assets/css/vehicle.css">
+<script src="product-page.js">getFilterCars()</script>
 </head>
 
 <body style="color: var(--bs-black);background: var(--bs-gray-800);">
@@ -37,8 +38,8 @@
             </div>
         </div>
     </nav>
-    <div style="height: 76px;background: #ffffff;margin:20px"></div><button class="btn btn-primary" type="button" onclick="test()">Button</button><template id="vehicleTemp" >
-    <div style="height: 168px;width: 50%;float: left;background: var(--bs-gray-100);border: 10px solid var(--bs-gray-800);"><img id="image" class="img-fluid" src="assets/img/maluch.jpg" height="151" width="196" style="padding: 16px;position: Absolute;border-color: var(--bs-border-color-translucent);" />
+    <div style="height: 76px;background: #ffffff;margin:20px"></div><button class="btn btn-primary" type="button" onclick="filterChange()">Button</button><template id="vehicleTemp" >
+    <div id="vehicle" style="height: 168px;width: 50%;float: left;background: var(--bs-gray-100);border: 10px solid var(--bs-gray-800);"><img id="image" class="img-fluid" src="assets/img/maluch.jpg" height="151" width="196" style="padding: 16px;position: Absolute;border-color: var(--bs-border-color-translucent);" />
         <h3 id="name" style="margin-left: 216px;padding-top: 8px;">Name</h3>
         <p id="daily_cost" style="margin-left: 216px;width: 30%;float: left;">Paragraph</p>
         <p id="fuel_consumption" style="margin-left: 216px;width: 30%;float: left;">Paragraph</p><button class="btn btn-primary" type="button" style="float: right;margin-top: 5px;margin-right: 15px;" onclick="test()">Wynajmij</button>

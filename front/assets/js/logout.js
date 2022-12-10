@@ -1,7 +1,7 @@
 function chkLogout(target, times, delay) {
 
     return new Promise((res, rej) => {                       // return a promise
-        fetch(target, {method: "GET",mode: 'cors',body: JSON.stringify(login),
+        fetch(target, {method: "GET",mode: 'cors',
         headers: {
           "Content-Type": "application/json; charset=UTF-8",
           "Content-Length":"217",
