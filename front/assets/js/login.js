@@ -38,37 +38,56 @@ async function loginSuccess(){
   }
 }
 
-async function getAllCars(){
-  var res="http://192.168.33.50:8200/api/v1/vehicles/all";
-  //event.preventDefault();
-  const fetchPromise=getCars(res, 3, 1000).then((response) => response.json())
-  .then((data) => {
-    
+//async function getAllCars(){
+  // var res="http://192.168.33.50:8200/api/v1/vehicles/all";
+  // //event.preventDefault();
+  // const fetchPromise=await getCars(res, 3, 1000).then(async response =>{
+  //   const data=await response.body.json();
    // const map = new Map(Object.entries(JSON.stringify(data))); //We first convert the string to an object and then to an array, because we can’t parse a JSON string to a Map directly. 
-    localStorage.setItem("allCars",data)
-    console.log(data)
-    loginSuccess()
-  }).catch( err => {
-      console.log('error: '+ err)
-  });
-  fetchPromise;
-}
+    // localStorage.setItem("allCars",await data)
+    // console.log(await data)
+    // loginSuccess()
+  // }).catch( err => {
+  //     console.log('error: '+ err)
+  // });
+  // fetchPromise;
+//}
 
-function getCars(target, times, delay) {
+function getAllCars() {
   // const login = {
   //   email: document.getElementById('email').value,
   //   password: document.getElementById('password').value
   // }
-  return new Promise((res, rej) => {                       // return a promise
-    fetch(target, {method: "GET",mode: 'cors',
+  var target="http://192.168.33.50:8200/api/v1/vehicles/all";
+  const getData=new Promise(async (res, rej) => {                       // return a promise
+    await fetch(target, {method: "GET",mode: 'cors',
     headers: {
       "Content-Type": "application/json; charset=UTF-8",
       "Content-Length":"217",
       "Authorization":"Bearer "+localStorage.getItem("token")
-    }}).then((r) => {   // fetch the resourse
-        res(r);                                      // resolve promise if success
+    }}).then(async (r) => {   // fetch the resourse
+      // const isJson = r.headers.get('content-type')?.includes('application/json')
+      const data =  await r.json();
+      if(!r.ok)
+      {
+        const error = (data && data.message) || r.status;
+        return Promise.reject(error);
+      }
+        //res(r);                                      // resolve promise if success
+        return res(data);
     }).then(res.toString).catch( err => {
         return rej(err);                         // don't try again 
     });                                              // again until no more tries
 });
+
+getData.then(data=>{
+  localStorage.setItem("allCars",JSON.stringify(data))
+  console.log(JSON.stringify(data))
+  loginSuccess();
+  makeFilters();
+}).catch(err=>console.log(err));
+}
+
+function makeFilters(){
+
 }
