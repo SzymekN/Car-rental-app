@@ -100,5 +100,5 @@ function makeFilters(data){
   map1.set('type',type);
   map1.set('color',color);
   console.log(map1.get('brand'));
-  localStorage.setItem('allFilters',map1);
+  localStorage.setItem('allFilters',JSON.stringify(Array.from(map1.entries())));
 }
