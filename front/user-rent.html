@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="assets/css/vehicle.css">
 <script>window.onload = function() {
   getFilterCars();
+createFilterOptions();
 };</script>
 </head>
 
@@ -42,8 +43,8 @@
     </nav>
     <div style="height: 130px;background: var(--bs-gray-900);margin: 0px 0px 0px 0px;width: 100%;padding: 20px;margin-bottom: 20px;color: rgb(255,255,255);border-bottom: 0.5px solid rgb(0,0,0) ;">
         <div style="width: 188.8px;margin-bottom: 15px;"><small class="form-text" style="color: rgb(255,255,255);font-size: 18px;">Marka</small>
-            <div class="dropdown" style="border-radius: 0px;"><button class="btn btn-primary dropdown-toggle" aria-expanded="false" data-bs-toggle="dropdown" id="activeOption" type="button" style="border-radius: 0px;background: rgb(255,255,255);border-style: solid;border-color: rgb(0,0,0);color: rgb(0,0,0);">Dropdown </button>
-                <div class="dropdown-menu" id="brand"></div>
+            <div class="dropdown" id="brand" style="border-radius: 0px;"><button class="btn btn-primary dropdown-toggle" aria-expanded="false" data-bs-toggle="dropdown" id="activeOption" type="button" style="border-radius: 0px;background: rgb(255,255,255);border-style: solid;border-color: rgb(0,0,0);color: rgb(0,0,0);">Dropdown </button>
+                <div class="dropdown-menu"></div>
             </div>
         </div>
     </div><template id="vehicleTemp" >

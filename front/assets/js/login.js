@@ -84,10 +84,21 @@ getData.then(data=>{
   localStorage.setItem("allCars",JSON.stringify(data))
   console.log(JSON.stringify(data))
   loginSuccess();
-  makeFilters();
+  makeFilters(data);
 }).catch(err=>console.log(err));
 }
 
-function makeFilters(){
-
+function makeFilters(data){
+  //const data = new Map(Object.entries(JSON.parse(jsonData)));
+  const brand = [...new Set(data.map(item => item.brand))];
+  const model = [...new Set(data.map(item => item.model))];
+  const type = [...new Set(data.map(item => item.type))]; 
+  const color = [...new Set(data.map(item => item.color))];
+  const map1= new Map();
+  map1.set('brand',brand);
+  map1.set('model',model);
+  map1.set('type',type);
+  map1.set('color',color);
+  console.log(map1.get('brand'));
+  localStorage.setItem('allFilters',map1);
 }
