@@ -64,29 +64,24 @@ function filterCars(filters){
 
 async function createFilterOptions(){
     
-    let item=document.getElementById("activeBrand");
+    const filterMap=new Map(JSON.parse(localStorage.getItem("allFilters")));
+    createFOption(filterMap,"activeBrand","brand","brandList");
+}
+
+function createFOption(filterMap,buttonName,name,listName){
+    let item=document.getElementById(buttonName);
     
-    if(localStorage.getItem("brand"))
-        item.innerText=localStorage.getItem("brand")
+    if(localStorage.getItem(name))
+        item.innerText=localStorage.getItem(name)
     else
         item.innerText="Wszystkie";
-    item=document.getElementById("filterList");
-
-
+    //item=document.getElementById("filterList");
 
     let i=0;
-    const filterMap=new Map(JSON.parse(localStorage.getItem("allFilters")));
-    console.log(filterMap.get('model').length);
-    for(i;i<filterMap.get('brand').length;i++){
+    for(i;i<filterMap.get(name).length;i++){
         a=document.createElement("li");
-        //var text=document.createTextNode(filterMap.get('brand'));
-        a.appendChild(document.createTextNode(filterMap.get('brand')[i]));
-        //console.log(a);
+        a.appendChild(document.createTextNode(filterMap.get(name)[i]));
         a.classList.add("dropdown-item");
-        document.getElementById("filterList").appendChild(a);
+        document.getElementById(listName).appendChild(a);
     }
-    //document.getElementById("filterList").appendChild()
-    //item=temp.content.querySelector("ul")
-
-
 }
