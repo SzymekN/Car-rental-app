@@ -15,23 +15,29 @@ import (
 // key used for singing jwt tokens
 
 type JWTControl struct {
-	JwtQE         JWTQueryExecutor
-	revokedTokens []string
-	SecretKey     string
+	JwtQE     JWTQueryExecutor
+	SecretKey string
 }
 
-func (j JWTControl) checkToken(val string) (bool, error) {
-
-	for _, revokedToken := range j.revokedTokens {
-		if revokedToken == val {
-			return true, nil
-		}
-	}
-
-	// revoked, _ := j.JwtQE.GetToken(val)
-	return false, nil
+type JWTControllerInterface interface {
+	GeneratehashPassword(password string) (string, producer.Log)
+	CheckPasswordHash(password, hash string) producer.Log
+	Validate(auth string, c echo.Context) (interface{}, error)
+	GenerateJWT(email, role string) (string, producer.Log)
 }
-func (j JWTControl) ProduceMessage(k, val string) {
+
+// func (j JWTControl) checkToken(val string) (bool, error) {
+
+// 	for _, revokedToken := range j.revokedTokens {
+// 		if revokedToken == val {
+// 			return true, nil
+// 		}
+// 	}
+
+//		// revoked, _ := j.JwtQE.GetToken(val)
+//		return false, nil
+//	}
+func (j JWTControl) produceMessage(k, val string) {
 	j.JwtQE.Svr.Logger.ProduceMessage(k, val)
 }
 
@@ -73,25 +79,26 @@ func (j JWTControl) Validate(auth string, c echo.Context) (interface{}, error) {
 	// claims are of type `jwt.MapClaims` when token is created with `jwt.Parse`
 	token, err := jwt.Parse(auth, remoteKeyFunc)
 	// check if this token is already revoked
-	tokenRevoked, _ := j.checkToken(token.Raw)
+	// error possible
+	tokenRevoked, _ := j.JwtQE.GetToken(token.Raw)
 
 	if tokenRevoked {
-		go j.ProduceMessage("JWT validation", token.Raw+" REVOKED")
+		go j.produceMessage("JWT validation", token.Raw+" REVOKED")
 		return nil, errors.New("Token Revoked")
 	}
 
 	// check if errors occured during token generation
 	if err != nil {
-		go j.ProduceMessage("JWT validation", "JWT validation failed: "+err.Error())
+		go j.produceMessage("JWT validation", "JWT validation failed: "+err.Error())
 		return nil, err
 	}
 
 	// check if generated token is valid
 	if !token.Valid {
-		go j.ProduceMessage("JWT validation", "JWT validation failed: invalid token")
+		go j.produceMessage("JWT validation", "JWT validation failed: invalid token")
 		return nil, errors.New("invalid token")
 	}
-	go j.ProduceMessage("JWT validation", "JWT validation succesfull")
+	go j.produceMessage("JWT validation", "JWT validation succesfull")
 	return token, nil
 }
 

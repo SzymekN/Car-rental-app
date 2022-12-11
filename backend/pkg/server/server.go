@@ -15,8 +15,6 @@ type Server struct {
 	Logger    producer.SystemLogger
 }
 
-// var svr Server
-
 func (svr Server) GetMysqlDB() *gorm.DB {
 	return svr.MysqlConn.GetDb()
 }

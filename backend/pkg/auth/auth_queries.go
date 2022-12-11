@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"net/http"
 	"time"
 
+	"github.com/SzymekN/Car-rental-app/pkg/producer"
 	"github.com/SzymekN/Car-rental-app/pkg/server"
 	"github.com/go-redis/redis/v8"
 )
@@ -15,6 +17,13 @@ type JWTQueryExecutor struct {
 	Ctx context.Context
 }
 
+type JWTQueryExecutorInterface interface {
+	GetToken(token string) (bool, error)
+	SetToken(token string, expireTime time.Duration) error
+	setSigningKey() (string, error)
+	getSigningKey() (string, error)
+}
+
 func (j JWTQueryExecutor) ProduceMessage(k, val string) {
 	j.Svr.Logger.ProduceMessage(k, val)
 }
@@ -22,19 +31,32 @@ func (j JWTQueryExecutor) ProduceMessage(k, val string) {
 // execute querry to Redis ti get the key needed for signing and validating jwt tokens
 func (j JWTQueryExecutor) getSigningKey() (string, error) {
 	rdb := j.Svr.GetRedisDB()
+	logger := j.Svr.Logger
+	logger.Log = producer.Log{}
+	prefix := fmt.Sprintf("REDIS Read  ")
 
 	res, err := rdb.Get(j.Ctx, "key").Result()
 
+	defer func() {
+		logger.Log.Msg = fmt.Sprintf("%s %s", prefix, logger.Log.Msg)
+		logger.ProduceLog()
+	}()
+
 	if err == redis.Nil {
-		go j.ProduceMessage("REDIS read", "ERROR key doesn't exist:"+err.Error())
-		fmt.Println("ERROR key doesn't exist:", err.Error())
+		code := http.StatusNotFound
+		msg := fmt.Sprintf("[ERROR]: key doesn't exist, HTTP: %v", code)
+		logger.Log.Populate("err", msg, code, err)
 		return "", err
 	} else if err != nil {
-		go j.ProduceMessage("REDIS read", "ERROR reading key:"+err.Error())
-		fmt.Println("ERROR reading key:", err.Error())
+		code := http.StatusInternalServerError
+		msg := fmt.Sprintf("[ERROR]: unexpected error reading key, HTTP: %v", code)
+		logger.Log.Populate("err", msg, code, err)
 		return "", err
 	}
 
+	code := http.StatusOK
+	msg := fmt.Sprintf("[INFO]: signing key retrieved, HTTP: %v", code)
+	logger.Log.Populate("info", msg, code, err)
 	return res, nil
 }
 
@@ -55,47 +77,81 @@ func (j JWTQueryExecutor) generateKey() string {
 // set signing key for intance, try reading it from Redis, if not exists generate new
 func (j JWTQueryExecutor) setSigningKey() (string, error) {
 	rdb := j.Svr.GetRedisDB()
+	logger := j.Svr.Logger
+	logger.Log = producer.Log{}
+	prefix := fmt.Sprintf("REDIS Write  ")
 
 	key := j.generateKey()
 	err := rdb.Set(j.Ctx, "key", key, 0).Err()
 
-	if err != nil {
-		go j.ProduceMessage("REDIS write", "ERROR writing key:"+err.Error())
-		fmt.Println("ERROR writing key:", err.Error())
-		return "", err
+	defer func() {
+		logger.Log.Msg = fmt.Sprintf("%s %s", prefix, logger.Log.Msg)
+		logger.ProduceLog()
+	}()
 
+	if err != nil {
+		code := http.StatusInternalServerError
+		msg := fmt.Sprintf("[ERROR]: Signing key sending failure , HTTP: %v", code)
+		logger.Log.Populate("err", msg, code, err)
+		return "", err
 	}
 
-	go j.ProduceMessage("REDIS write", "Key set:"+key)
+	code := http.StatusOK
+	msg := fmt.Sprintf("[INFO]: Signing key set {%s}, HTTP: %v", key, code)
+	logger.Log.Populate("info", msg, code, err)
 	return key, nil
 }
 
 // set black listed jwt token in the Redis
 func (j JWTQueryExecutor) SetToken(token string, expireTime time.Duration) error {
 	rdb := j.Svr.GetRedisDB()
+	logger := j.Svr.Logger
+	logger.Log = producer.Log{}
+	prefix := fmt.Sprintf("REDIS Write  ")
+
+	defer func() {
+		logger.Log.Msg = fmt.Sprintf("%s %s", prefix, logger.Log.Msg)
+		logger.ProduceLog()
+	}()
 
 	err := rdb.Set(j.Ctx, token, "0", expireTime*time.Second).Err()
 	if err != nil {
-		go j.ProduceMessage("REDIS write", "ERROR writing token:"+err.Error())
+		code := http.StatusInternalServerError
+		msg := fmt.Sprintf("[ERROR]: Sending token failure , HTTP: %v", code)
+		logger.Log.Populate("err", msg, code, err)
 		return err
 	}
 
+	code := http.StatusOK
+	msg := fmt.Sprintf("[INFO]: Token sent {%s}, HTTP: %v", token, code)
+	logger.Log.Populate("info", msg, code, err)
 	go j.ProduceMessage("REDIS write", "Token:"+token+" set")
 	return nil
 }
 
 // try to get jwt token from Redis
 func (j JWTQueryExecutor) GetToken(token string) (bool, error) {
-
 	rdb := j.Svr.GetRedisDB()
+	logger := j.Svr.Logger
+	logger.Log = producer.Log{}
+	prefix := fmt.Sprintf("REDIS Read  ")
+
+	defer func() {
+		logger.Log.Msg = fmt.Sprintf("%s %s", prefix, logger.Log.Msg)
+		logger.ProduceLog()
+	}()
 
 	fmt.Println(rdb)
 	_, err := rdb.Get(j.Ctx, token).Result()
 	if err != nil {
-		go j.ProduceMessage("REDIS read", "ERROR reading token:"+token+", err: "+err.Error())
+		code := http.StatusInternalServerError
+		msg := fmt.Sprintf("[ERROR]: Sending token failure , HTTP: %v", code)
+		logger.Log.Populate("err", msg, code, err)
 		return false, err
 	}
 
-	go j.ProduceMessage("REDIS write", "Token: "+token+" get")
+	code := http.StatusOK
+	msg := fmt.Sprintf("[INFO]: Token read {%s}, HTTP: %v", token, code)
+	logger.Log.Populate("info", msg, code, err)
 	return true, nil
 }

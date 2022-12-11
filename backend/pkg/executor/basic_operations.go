@@ -10,6 +10,12 @@ import (
 	"gorm.io/gorm"
 )
 
+// type BasicOperationsInterface interface {
+// 	CheckResultError(result *gorm.DB) producer.Log
+// 	CheckIfAffected(result *gorm.DB) producer.Log
+// 	CheckID(id int) producer.Log
+// }
+
 func Insert[T model.GenericModel](c echo.Context, db *gorm.DB, d T) producer.Log {
 
 	log := producer.Log{}
