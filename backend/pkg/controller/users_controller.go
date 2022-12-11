@@ -17,8 +17,8 @@ type UserHandler struct {
 	group       *echo.Group
 }
 
-func NewUserHandler(sysOp producer.SystemOperator, ac auth.AuthConfig, g *echo.Group) UserHandler {
-	uh := UserHandler{
+func NewUserHandler(sysOp producer.SystemOperator, ac auth.AuthConfig, g *echo.Group) *UserHandler {
+	uh := &UserHandler{
 		sysOperator: sysOp,
 		group:       g,
 		authConf:    ac,
@@ -52,5 +52,6 @@ func (uh *UserHandler) GetById(c echo.Context) error {
 }
 
 func (uh *UserHandler) GetAll(c echo.Context) error {
-	return executor.GenericGetAll(c, uh.sysOperator, []model.User{})
+	cos := executor.GenericGetAll(c, uh.sysOperator, []model.User{})
+	return cos
 }

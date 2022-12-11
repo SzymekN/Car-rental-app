@@ -1,179 +1,165 @@
 package auth
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 
+	"github.com/SzymekN/Car-rental-app/pkg/executor"
 	"github.com/SzymekN/Car-rental-app/pkg/model"
 	"github.com/SzymekN/Car-rental-app/pkg/producer"
-	"github.com/SzymekN/Car-rental-app/pkg/server"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
-	"gorm.io/gorm"
 )
 
 type JWTHandler struct {
-	JwtC     JWTControl
-	echoServ *echo.Echo
-	group    *echo.Group
+	JwtC  JWTControl
+	group *echo.Group
 }
 
-// Creates JWT configuration and adds middleware to group
-func (j JWTHandler) AddJWTMiddleware() {
-	config := j.CreateJWTConfig()
-	j.group.Use(middleware.JWTWithConfig(config))
+type JWTHandlerInterface interface {
+	RegisterRoutes()
+	SignIn(c echo.Context) error
+	SignUp(c echo.Context) error
+	SignOut(c echo.Context) error
+	revokeToken(token string, dur time.Duration)
 }
 
 func (j JWTHandler) RegisterRoutes() {
-	j.echoServ.POST("/api/v1/users/signup", j.SignUp)
-	j.echoServ.POST("/api/v1/users/signin", j.SignIn)
+	j.JwtC.JwtQE.Svr.EchoServ.POST("/api/v1/users/signup", j.SignUp)
+	j.JwtC.JwtQE.Svr.EchoServ.POST("/api/v1/users/signin", j.SignIn)
 	j.group.GET(" /users/signout", j.SignOut)
 
 }
-func (j JWTHandler) CreateJWTConfig() middleware.JWTConfig {
-	conf := middleware.JWTConfig{
-		SigningKey:     []byte(j.getSigningKey()),
-		ParseTokenFunc: j.JwtC.Validate,
-	}
-	return conf
-}
-
-func New(svr *server.Server, e *echo.Echo, g *echo.Group) *JWTHandler {
-	jwtH := &JWTHandler{
-		JwtC: JWTControl{
-			JwtQE: JWTQueryExecutor{
-				Svr: svr,
-				Ctx: context.Background(),
-			},
-			SecretKey: "",
-		},
-		echoServ: e,
-		group:    g,
-	}
-	return jwtH
-}
-
-// wrapper functions
-func (j JWTHandler) ProduceMessage(k, val string) {
-	j.JwtC.JwtQE.Svr.Logger.ProduceMessage(k, val)
-}
-
-func (j JWTHandler) getMysqlDB() *gorm.DB {
-	return j.JwtC.JwtQE.Svr.GetMysqlDB()
-}
-func (j JWTHandler) getSigningKey() string {
-	return j.JwtC.SecretKey
-}
 
 // Checks for the username in the db
-func (j JWTHandler) GetUser(email string) (model.User, error) {
+func (j JWTHandler) getUser(email string) (model.User, producer.Log) {
+
 	db := j.getMysqlDB()
 	u := model.User{}
+	log := producer.Log{}
+
 	result := db.Debug().Where(&model.User{Email: email}).Find(&u)
-	err := result.Error
 
-	if err != nil {
-		fmt.Println(err)
-		return u, err
+	if err := result.Error; err != nil {
+		code := http.StatusInternalServerError
+		msg := fmt.Sprintf("[ERROR]: couldn't retrieve user, HTTP: %v", code)
+		log.Populate("err", msg, code, err)
+		return u, log
 	}
+	log = executor.CheckIfAffected(result)
 
-	if result.RowsAffected < 1 {
-		return u, errors.New("User not found")
-	}
-
-	return u, nil
+	return u, log
 }
 
 // save signed in user to the db
-func (j JWTHandler) SignUser(mc model.Client) error {
+func (j JWTHandler) SignUser(mc model.Client) producer.Log {
 	db := j.getMysqlDB()
+	log := producer.Log{}
 
 	fmt.Println(db.Model(&model.Client{}).Association("User").Error)
-	if err := db.Model(&model.Client{}).Preload("User").Debug().Create(&mc).Error; err != nil {
-		fmt.Println(err)
-		return err
+	result := db.Model(&model.Client{}).Preload("User").Debug().Create(&mc)
+	if err := result.Error; err != nil {
+		code := http.StatusBadRequest
+		msg := fmt.Sprintf("[ERROR]: couldn't create user, HTTP: %v", code)
+		log.Populate("err", msg, code, err)
 	}
+	log = executor.CheckIfAffected(result)
+	return log
+}
 
-	return nil
+func createSignUpResponse(mc model.Client, token string) SignInResponse {
+	sir := SignInResponse{
+		Email:       mc.User.Email,
+		Name:        mc.Name,
+		Surname:     mc.Surname,
+		PhoneNumber: mc.PhoneNumber,
+		Role:        "client",
+		TokenString: token,
+	}
+	return sir
 }
 
 // Checks all passed credentials and saves user to the database
 func (j JWTHandler) SignUp(c echo.Context) error {
 
+	var validToken string
+	logger := j.getLogger()
+	logger.Log = producer.Log{}
+	prefix := fmt.Sprintf("SignUp ")
+
 	// user to save in the database
 	var mc model.Client
-	// error got while executing
-	var err error
-	// HTTP status code sent as a response
-	var status int
-	// key and message sent to kafka brokers
-	k, msg := "err", "[ERROR]"
 
 	defer func() {
-		j.ProduceMessage(k, msg)
-		if err != nil {
-			c.JSON(status, &producer.GenericError{Message: msg})
-		}
+		logger.Log.Msg = fmt.Sprintf("%s %s", prefix, logger.Log.Msg)
+		logger.Produce(c)
 	}()
 
 	// try saving data got in the request to the User datatype
-	if err = c.Bind(&mc); err != nil {
-		status = http.StatusBadRequest
-		k = mc.User.Email
-		msg += " SignUp error: incorrect credentials, email: {" + k + "}, HTTP: " + strconv.Itoa(status)
-		return err
+	mc, logger.Log = executor.BindData(c, mc)
+	if logger.Log.Err != nil {
+		return logger.Log.Err
 	}
 
 	// check if user already exists
-	_, err = j.GetUser(mc.User.Email)
-
-	k = mc.User.Email
-	if err == nil {
-		status = http.StatusInternalServerError
-		msg += " SignUp error: email in use, email: {" + k + "}, HTTP: " + strconv.Itoa(status)
-		err = errors.New("user exists")
-		return err
+	_, logger.Log = j.getUser(mc.User.Email)
+	if logger.Err != nil && logger.Err.Error() != "no rows affected" {
+		return logger.Err
 	}
 
 	// hash password
-	mc.User.Password, err = j.JwtC.GeneratehashPassword(mc.User.Password)
-	if err != nil {
-		status = http.StatusInternalServerError
-		msg += " SignUp error: couldn't generate hash, email: {" + k + "}, HTTP: " + strconv.Itoa(status)
-		return err
+	mc.User.Password, logger.Log = j.JwtC.GeneratehashPassword(mc.User.Password)
+	if logger.Err != nil {
+		return logger.Err
+	}
+
+	validToken, logger.Log = j.JwtC.GenerateJWT(mc.User.Email, mc.User.Role)
+
+	if logger.Err != nil {
+		return logger.Err
 	}
 
 	//insert user details to database
-	err = j.SignUser(mc)
-	if err != nil {
-		status = http.StatusInternalServerError
-		msg += " SignUp error: insert query error, email: {" + k + "}, HTTP: " + strconv.Itoa(status)
-		return err
+	logger.Log = j.SignUser(mc)
+
+	if logger.Err != nil {
+		if logger.Err.Error() == "no rows affected" {
+			code := http.StatusBadRequest
+			msg := fmt.Sprintf("[ERROR]: duplicate entry - user exists, HTTP: %v", code)
+			err := errors.New("duplicate entry")
+			logger.Log.Populate("err", msg, code, err)
+			return logger.Err
+		} else {
+			return logger.Err
+		}
 	}
 
-	status = http.StatusOK
-	k = "info"
-	msg = "[INFO] SignUp completed: user signed up, email: {" + k + "}, HTTP: " + strconv.Itoa(status)
-	return c.JSON(http.StatusOK, mc)
+	userResp := createSignUpResponse(mc, validToken)
+	code := http.StatusOK
+	k := "info"
+	msg := "[INFO] SignUp completed: user signed up, email: {" + mc.User.Email + "}, HTTP: " + strconv.Itoa(code)
+	logger.Populate(k, msg, code, nil)
+	return c.JSON(code, userResp)
 
+}
+
+func (j JWTHandler) revokeToken(token string, dur time.Duration) {
+	// j.JwtC.revokedTokens = append(j.JwtC.revokedTokens, token)
+	go j.JwtC.JwtQE.SetToken(token, dur)
 }
 
 // revokes valid jwt token. Sends the token to Redis
 func (j JWTHandler) SignOut(c echo.Context) error {
-	var err error
-	var status int = 200
-	k, msg := "err", "[ERROR] "
+	logger := j.getLogger()
+	logger.Log = producer.Log{}
+	prefix := fmt.Sprintf("SignOut ")
 
 	defer func() {
-		j.ProduceMessage(k, msg)
-		if err != nil {
-			c.JSON(status, &producer.GenericError{Message: msg})
-		}
+		logger.Log.Msg = fmt.Sprintf("%s %s", prefix, logger.Log.Msg)
+		logger.Produce(c)
 	}()
 
 	// retrieve token from the request header
@@ -190,83 +176,78 @@ func (j JWTHandler) SignOut(c echo.Context) error {
 	if expFloat, ok := exp.(float64); ok && token != "" {
 		duration = expFloat - float64(time.Now().Unix())
 	} else {
-		status = http.StatusBadRequest
-		msg += "SignOut error: couldn't retrieve token, HTTP: " + strconv.Itoa(status)
-		err = errors.New(msg)
+		code := http.StatusBadRequest
+		msg := "SignOut error: couldn't parse token, HTTP: " + strconv.Itoa(code)
+		err := errors.New(msg)
+		logger.Log.Populate("err", msg, code, err)
 		return err
 	}
 
 	// token already not valid
-	if duration < 1 {
-		msg += "SignOut error: duration lesser than 0, HTTP: " + strconv.Itoa(status)
-		err = errors.New(msg)
+	if duration > 1 {
+		code := http.StatusBadRequest
+		msg := "SignOut error: duration lesser than 0, HTTP: " + strconv.Itoa(code)
+		err := errors.New(msg)
+		logger.Log.Populate("err", msg, code, err)
 		return err
 	}
 
 	// save token in Redis in order to blacklist it
-	err = j.JwtC.JwtQE.SetToken(token, time.Duration(duration))
-	if err != nil {
-		status = http.StatusInternalServerError
-		msg += "SignOut error: couldn't write to Redis, HTTP: " + strconv.Itoa(status)
-		return err
-	}
+	j.revokeToken(token, time.Duration(duration))
+
+	// if err != nil {
+	// 	status = http.StatusInternalServerError
+	// 	msg += "SignOut error: couldn't write to Redis, HTTP: " + strconv.Itoa(status)
+	// 	return err
+	// }
 
 	fmt.Println("SIGNED  OUT")
-	k = "info"
-	msg = "[INFO] SignOut completed, HTTP: " + strconv.Itoa(status)
-	return c.JSON(status, &producer.GenericMessage{Message: msg})
+	code := http.StatusOK
+	msg := "[INFO] SignOut completed, HTTP: " + strconv.Itoa(code)
+	logger.Log.Populate("info", msg, code, nil)
+	return c.JSON(code, &producer.GenericMessage{Message: msg})
 }
 
 // sign in a user
 func (j JWTHandler) SignIn(c echo.Context) error {
 
 	var authDetails Authentication
-	var err error
-	var status int
-	k, msg := "err", "[ERROR]"
-
+	logger := j.getLogger()
+	logger.Log = producer.Log{}
+	prefix := fmt.Sprintf("SignIn ")
 	defer func() {
-		j.ProduceMessage(k, msg)
-		if err != nil {
-			c.JSON(status, &producer.GenericError{Message: msg})
-		}
+		logger.Log.Msg = fmt.Sprintf("%s %s", prefix, logger.Log.Msg)
+		logger.Produce(c)
 	}()
 
-	if err = c.Bind(&authDetails); err != nil {
-		status = http.StatusBadRequest
-		k = authDetails.Email
-		msg += "SignIn error: incorrect credentials, email: {" + k + "},  HTTP: " + strconv.Itoa(status)
-		return err
+	if err := c.Bind(&authDetails); err != nil {
+		code := http.StatusBadRequest
+		msg := fmt.Sprintf("[ERROR]: couldn't bind data from request, HTTP: %v", code)
+		logger.Populate("err", msg, code, err)
+		return logger.Err
 	}
-
 	// check if user exists
 	var authUser model.User
-	authUser, err = j.GetUser(authDetails.Email)
+	authUser, logger.Log = j.getUser(authDetails.Email)
 
-	k = authDetails.Email
-	if err != nil {
-		status = http.StatusInternalServerError
-		msg += "SignIn error: user doesn't exist, email: {" + k + "},  HTTP: " + strconv.Itoa(status)
-		return err
+	if logger.Err != nil {
+		return logger.Err
 	}
 
 	// check if password is correct
-	check := j.JwtC.CheckPasswordHash(authDetails.Password, authUser.Password)
+	logger.Log = j.JwtC.CheckPasswordHash(authDetails.Password, authUser.Password)
 
-	if !check {
-		status = http.StatusBadRequest
-		msg += "SignIn error: incorrect password, email: {" + k + "},  HTTP: " + strconv.Itoa(status)
-		err = errors.New("Incorrect password")
-		return err
+	if logger.Err != nil {
+		return logger.Err
 	}
 
 	// generate token based on username and role
 	var validToken string
-	validToken, err = j.JwtC.GenerateJWT(authDetails.Email, authUser.Role)
-	if err != nil {
-		status = http.StatusInternalServerError
-		msg += "SignIn error: couldn't generate token, email: {" + k + "},  HTTP: " + strconv.Itoa(status)
-		return err
+
+	validToken, logger.Log = j.JwtC.GenerateJWT(authDetails.Email, authUser.Role)
+
+	if logger.Err != nil {
+		return logger.Err
 	}
 
 	db := j.getMysqlDB()
@@ -276,15 +257,17 @@ func (j JWTHandler) SignIn(c echo.Context) error {
 	case "client":
 		db.Debug().Table("client").Where("user_id = ?", authUser.ID).Find(&usrResponse)
 	default:
-		db.Debug().Table("employee").Where("user_id = ?", authUser.ID).Find(&usrResponse)
+		//TODO zmienić na employee
+		db.Debug().Table("client").Where("user_id = ?", authUser.ID).Find(&usrResponse)
+		// db.Debug().Table("employee").Where("user_id = ?", authUser.ID).Find(&usrResponse)
 	}
 
 	usrResponse.Email = authUser.Email
 	usrResponse.Role = authUser.Role
 	usrResponse.TokenString = validToken
-	status = http.StatusOK
-	k = "info"
-	msg = "[INFO] SignIn completed: user signed in, email: {" + k + "}, HTTP: " + strconv.Itoa(status)
 
-	return c.JSON(status, usrResponse)
+	code := http.StatusOK
+	msg := "[INFO] SignIn completed: user signed in, email: {" + usrResponse.Email + "}, HTTP: " + strconv.Itoa(code)
+	logger.Log.Populate("info", msg, code, nil)
+	return c.JSON(code, usrResponse)
 }

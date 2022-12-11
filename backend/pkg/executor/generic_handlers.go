@@ -76,6 +76,7 @@ func GenericGetAll[T any](c echo.Context, so producer.SystemOperator, dataModel 
 	so.Log.Code = http.StatusOK
 	so.Log.Key = "info"
 	so.Log.Msg = fmt.Sprintf("[INFO] completed, HTTP: %v", so.Log.Code)
+
 	return c.JSON(so.Log.Code, dataModel)
 }
 

@@ -17,8 +17,8 @@ type VehicleHandler struct {
 	group       *echo.Group
 }
 
-func NewVehicleHandler(sysOp producer.SystemOperator, ac auth.AuthConfig, g *echo.Group) VehicleHandler {
-	uh := VehicleHandler{
+func NewVehicleHandler(sysOp producer.SystemOperator, ac auth.AuthConfig, g *echo.Group) *VehicleHandler {
+	uh := &VehicleHandler{
 		sysOperator: sysOp,
 		group:       g,
 		authConf:    ac,
