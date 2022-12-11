@@ -126,7 +126,7 @@ func (j JWTControl) GenerateJWT(email, role string) (string, producer.Log) {
 	var mySigningKey = []byte(j.getKey())
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
-	expireTime := time.Minute * 15
+	expireTime := time.Minute * 60
 	log := producer.Log{}
 
 	claims["authorized"] = true

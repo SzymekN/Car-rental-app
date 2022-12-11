@@ -70,9 +70,22 @@ func (j JWTHandler) SignUser(mc model.Client) producer.Log {
 	return log
 }
 
+func createSignUpResponse(mc model.Client, token string) SignInResponse {
+	sir := SignInResponse{
+		Email:       mc.User.Email,
+		Name:        mc.Name,
+		Surname:     mc.Surname,
+		PhoneNumber: mc.PhoneNumber,
+		Role:        "client",
+		TokenString: token,
+	}
+	return sir
+}
+
 // Checks all passed credentials and saves user to the database
 func (j JWTHandler) SignUp(c echo.Context) error {
 
+	var validToken string
 	logger := j.getLogger()
 	logger.Log = producer.Log{}
 	prefix := fmt.Sprintf("SignUp ")
@@ -96,13 +109,6 @@ func (j JWTHandler) SignUp(c echo.Context) error {
 	if logger.Err != nil && logger.Err.Error() != "no rows affected" {
 		return logger.Err
 	}
-	// k = mc.User.Email
-	// if err == nil {
-	// 	status = http.StatusInternalServerError
-	// 	msg += " SignUp error: email in use, email: {" + k + "}, HTTP: " + strconv.Itoa(status)
-	// 	err = errors.New("user exists")
-	// 	return err
-	// }
 
 	// hash password
 	mc.User.Password, logger.Log = j.JwtC.GeneratehashPassword(mc.User.Password)
@@ -110,24 +116,33 @@ func (j JWTHandler) SignUp(c echo.Context) error {
 		return logger.Err
 	}
 
-	//insert user details to database
-	logger.Log = j.SignUser(mc)
+	validToken, logger.Log = j.JwtC.GenerateJWT(mc.User.Email, mc.User.Role)
 
-	if logger.Err.Error() == "no rows affected" {
-		code := http.StatusBadRequest
-		msg := fmt.Sprintf("[ERROR]: duplicate entry - user exists, HTTP: %v", code)
-		err := errors.New("duplicate entry")
-		logger.Log.Populate("err", msg, code, err)
-		return logger.Err
-	} else if logger.Err != nil {
+	if logger.Err != nil {
 		return logger.Err
 	}
 
+	//insert user details to database
+	logger.Log = j.SignUser(mc)
+
+	if logger.Err != nil {
+		if logger.Err.Error() == "no rows affected" {
+			code := http.StatusBadRequest
+			msg := fmt.Sprintf("[ERROR]: duplicate entry - user exists, HTTP: %v", code)
+			err := errors.New("duplicate entry")
+			logger.Log.Populate("err", msg, code, err)
+			return logger.Err
+		} else {
+			return logger.Err
+		}
+	}
+
+	userResp := createSignUpResponse(mc, validToken)
 	code := http.StatusOK
 	k := "info"
 	msg := "[INFO] SignUp completed: user signed up, email: {" + mc.User.Email + "}, HTTP: " + strconv.Itoa(code)
 	logger.Populate(k, msg, code, nil)
-	return c.JSON(code, mc)
+	return c.JSON(code, userResp)
 
 }
 
