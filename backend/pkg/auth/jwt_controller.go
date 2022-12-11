@@ -30,7 +30,7 @@ type JWTHandlerInterface interface {
 func (j JWTHandler) RegisterRoutes() {
 	j.JwtC.JwtQE.Svr.EchoServ.POST("/api/v1/users/signup", j.SignUp)
 	j.JwtC.JwtQE.Svr.EchoServ.POST("/api/v1/users/signin", j.SignIn)
-	j.group.GET(" /users/signout", j.SignOut)
+	j.group.GET("/users/signout", j.SignOut)
 
 }
 
@@ -175,7 +175,7 @@ func (j JWTHandler) SignOut(c echo.Context) error {
 	// check if token is populated and try reflecting to float
 	if expFloat, ok := exp.(float64); ok && token != "" {
 		duration = expFloat - float64(time.Now().Unix())
-	} else {
+	} else if !ok {
 		code := http.StatusBadRequest
 		msg := "SignOut error: couldn't parse token, HTTP: " + strconv.Itoa(code)
 		err := errors.New(msg)
@@ -184,7 +184,7 @@ func (j JWTHandler) SignOut(c echo.Context) error {
 	}
 
 	// token already not valid
-	if duration > 1 {
+	if duration < 1 {
 		code := http.StatusBadRequest
 		msg := "SignOut error: duration lesser than 0, HTTP: " + strconv.Itoa(code)
 		err := errors.New(msg)
