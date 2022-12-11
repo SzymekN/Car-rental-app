@@ -1,34 +1,30 @@
 package model
 
-type DataModel interface{}
-
-type Data struct{}
-
 type Client struct {
-	ID          int    `json:"id"`
-	Name        string `json:"name"`
-	Surname     string `json:"surname"`
-	PESEL       string `json:"pesel"`
-	PhoneNumber string `json:"phone_number"`
-	UserID      int    `json:"userId"`
-	User        User   `json:"user"`
+	ID          int    `json:"id,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Surname     string `json:"surname,omitempty"`
+	PESEL       string `json:"pesel,omitempty"`
+	PhoneNumber string `json:"phone_number,omitempty"`
+	UserID      int    `json:"userId,omitempty"`
+	User        User   `json:"user,omitempty"`
 }
 
 type Employee struct {
-	ID          int    `json:"id"`
-	Name        string `json:"name"`
-	Surname     string `json:"surname"`
-	PESEL       string `json:"pesel"`
-	PhoneNumber string `json:"phone_number"`
-	UserID      int    `json:"userId"`
-	User        User   `json:"user"`
+	ID          int    `json:"id,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Surname     string `json:"surname,omitempty"`
+	PESEL       string `json:"pesel,omitempty"`
+	PhoneNumber string `json:"phone_number,omitempty"`
+	UserID      int    `json:"userId,omitempty"`
+	User        User   `json:"user,omitempty"`
 }
 
 type User struct {
-	ID       int    `json:"id"`
-	Email    string `json:"email" gorm:"email"`
-	Password string `json:"password" gorm:"password"`
-	Role     string `json:"role" gorm:"role"`
+	ID       int    `json:"id,omitempty"`
+	Email    string `json:"email,omitempty" gorm:"email"`
+	Password string `json:"password,omitempty" gorm:"password"`
+	Role     string `json:"role,omitempty" gorm:"role"`
 }
 
 type Vehicle struct {
@@ -42,8 +38,30 @@ type Vehicle struct {
 	DailyCost          int     `json:"dailyCost,omitempty"`
 }
 
+type Salary struct {
+	ID         int `json:"id"`
+	Amount     int `json:"amount,omitempty"`
+	EmployeeID int `json:"employee_id,omitempty"`
+}
+
+type Repairs struct {
+	ID             int  `json:"id"`
+	Cost           int  `json:"cost,omitempty"`
+	Approved       bool `json:"approved,omitempty"`
+	NotificationID int  `json:"notification_id,omitempty"`
+	VehicleID      int  `json:"vehicle_id,omitempty"`
+}
+
+type Notification struct {
+	ID          int    `json:"id"`
+	Description string `json:"description,omitempty"`
+	EmployeeID  int    `json:"employee_id,omitempty"`
+	ClientID    int    `json:"client_id,omitempty"`
+	VehicleID   int    `json:"vehicle_id,omitempty"`
+}
+
 type GenericModel interface {
-	User | Client | Employee | Vehicle
+	User | Client | Employee | Vehicle | Salary | Rental | Repairs | Notification
 	GetId() int
 }
 
@@ -63,35 +81,10 @@ func (d Vehicle) GetId() int {
 	return d.ID
 }
 
-// type RawJSON struct {
-// 	Payload string `json:"payload"`
-// }
-// https://medium.com/cuddle-ai/building-microservice-using-golang-echo-framework-ff10ba06d508
-// func (f *RawJSON) UnmarshalJSON(b []byte) error {
-// 	type rawJ RawJSON
-// 	newf := (*rawJ)(f)
-// 	err := json.Unmarshal(b, newf)
-// 	if err != nil {
-// 		return err
-// 	}
+func (d Salary) GetId() int {
+	return d.ID
+}
 
-// 	var v DataModel
-// 	err = json.Unmarshal([]byte(newf.Payload), &v)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	var i interface{}
-// 	switch v.(type) {
-// 	case "user":
-// 		i = &User{}
-// 	default:
-// 		return errors.New("unknown data type")
-// 	}
-// 	err = json.Unmarshal(raw, i)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	f.Vehicles = append(f.Vehicles, i)
-
-// 	return nil
-// }
+func (d Notification) GetId() int {
+	return d.ID
+}
