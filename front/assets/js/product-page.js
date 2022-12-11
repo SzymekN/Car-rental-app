@@ -66,6 +66,10 @@ async function createFilterOptions(){
     
     const filterMap=new Map(JSON.parse(localStorage.getItem("allFilters")));
     createFOption(filterMap,"activeBrand","brand","brandList");
+    createFOption(filterMap,"activeModel","model","modelList");
+    createFOption(filterMap,"activeType","type","typeList");
+    createFOption(filterMap,"activeColor","color","colorList");
+
 }
 
 function createFOption(filterMap,buttonName,name,listName){
