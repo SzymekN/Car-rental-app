@@ -36,7 +36,7 @@ function chkRegister(target, times, delay) {
   fetchPromise;
 }
 
-  async function registerSuccess(){
+  async function registrationSuccess(){
     if(localStorage.getItem("token")!="undefined"){
       document.location.href = "user-menu.html";
     }
