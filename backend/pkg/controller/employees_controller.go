@@ -28,29 +28,34 @@ func NewEmployeeHandler(sysOp producer.SystemOperator, ac auth.AuthConfig, g *ec
 }
 
 func (uh *EmployeeHandler) RegisterRoutes() {
-	uh.group.GET("/employees", uh.GetById)
-	uh.group.GET("/employees/all", uh.GetAll)
+	uh.group.GET("/employees", uh.GetById, uh.authConf.IsAuthorized)
+	uh.group.GET("/employees/all", uh.GetAll, uh.authConf.IsAuthorized)
 	uh.group.POST("/employees", uh.Save, uh.authConf.IsAuthorized)
 	uh.group.PUT("/employees", uh.Update, uh.authConf.IsAuthorized)
 	uh.group.DELETE("/employees", uh.Delete, uh.authConf.IsAuthorized)
 }
 
 func (uh *EmployeeHandler) Save(c echo.Context) error {
-	return executor.GenericPost(c, uh.sysOperator, model.Employee{})
+	d, l := executor.GenericPost(c, uh.sysOperator, model.Employee{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *EmployeeHandler) Update(c echo.Context) error {
-	return executor.GenericUpdate(c, uh.sysOperator, model.Employee{})
+	d, l := executor.GenericUpdate(c, uh.sysOperator, model.Employee{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *EmployeeHandler) Delete(c echo.Context) error {
-	return executor.GenericDelete(c, uh.sysOperator, model.Employee{})
+	d, l := executor.GenericDelete(c, uh.sysOperator, model.Employee{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *EmployeeHandler) GetById(c echo.Context) error {
-	return executor.GenericGetById(c, uh.sysOperator, model.Employee{})
+	d, l := executor.GenericGetById(c, uh.sysOperator, model.Employee{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *EmployeeHandler) GetAll(c echo.Context) error {
-	return executor.GenericGetAll(c, uh.sysOperator, []model.Employee{})
+	d, l := executor.GenericGetAll(c, uh.sysOperator, []model.Employee{})
+	return HandleRequestResult(c, d, l)
 }

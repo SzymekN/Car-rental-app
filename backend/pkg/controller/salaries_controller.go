@@ -28,29 +28,34 @@ func NewSalaryHandler(sysOp producer.SystemOperator, ac auth.AuthConfig, g *echo
 }
 
 func (uh *SalaryHandler) RegisterRoutes() {
-	uh.group.GET("/salaries", uh.GetById)
-	uh.group.GET("/salaries/all", uh.GetAll)
+	uh.group.GET("/salaries", uh.GetById, uh.authConf.IsAuthorized)
+	uh.group.GET("/salaries/all", uh.GetAll, uh.authConf.IsAuthorized)
 	uh.group.POST("/salaries", uh.Save, uh.authConf.IsAuthorized)
 	uh.group.PUT("/salaries", uh.Update, uh.authConf.IsAuthorized)
 	uh.group.DELETE("/salaries", uh.Delete, uh.authConf.IsAuthorized)
 }
 
 func (uh *SalaryHandler) Save(c echo.Context) error {
-	return executor.GenericPost(c, uh.sysOperator, model.Salary{})
+	d, l := executor.GenericPost(c, uh.sysOperator, model.Salary{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *SalaryHandler) Update(c echo.Context) error {
-	return executor.GenericUpdate(c, uh.sysOperator, model.Salary{})
+	d, l := executor.GenericUpdate(c, uh.sysOperator, model.Salary{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *SalaryHandler) Delete(c echo.Context) error {
-	return executor.GenericDelete(c, uh.sysOperator, model.Salary{})
+	d, l := executor.GenericDelete(c, uh.sysOperator, model.Salary{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *SalaryHandler) GetById(c echo.Context) error {
-	return executor.GenericGetById(c, uh.sysOperator, model.Salary{})
+	d, l := executor.GenericGetById(c, uh.sysOperator, model.Salary{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *SalaryHandler) GetAll(c echo.Context) error {
-	return executor.GenericGetAll(c, uh.sysOperator, []model.Salary{})
+	d, l := executor.GenericGetAll(c, uh.sysOperator, []model.Salary{})
+	return HandleRequestResult(c, d, l)
 }

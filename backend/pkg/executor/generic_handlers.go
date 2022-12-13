@@ -23,7 +23,7 @@ import (
 // 	GetAll(c echo.Context) error
 // }
 
-func GenericPost[T model.GenericModel](c echo.Context, so producer.SystemOperator, dataModel T) error {
+func GenericPost[T model.GenericModel](c echo.Context, so producer.SystemOperator, dataModel T) (T, producer.Log) {
 
 	so.Log = producer.Log{}
 	db := so.GetDB()
@@ -32,30 +32,30 @@ func GenericPost[T model.GenericModel](c echo.Context, so producer.SystemOperato
 	// before exiting function send message to logs and response to user
 	defer func() {
 		so.Log.Msg = fmt.Sprintf("%s %s", prefix, so.Log.Msg)
-		so.Produce(c)
+		so.Produce()
 	}()
 
 	// try saving data from user request to provided model.User datatype
 	dataModel, so.Log = BindData(c, dataModel)
-	if so.Log.Err != nil {
-		return so.Log.Err
+	if so.Log.Err != nil && dataModel.GetId() < 0 {
+		return dataModel, so.Log
 	}
 
 	// save user in the db
 	so.Log = Insert(c, db, dataModel)
 	if so.Log.Err != nil {
-		return so.Log.Err
+		return dataModel, so.Log
 	}
 
 	so.Log.Code = http.StatusOK
 	so.Log.Key = "info"
 	so.Log.Msg = fmt.Sprintf("[INFO] insert succesful, HTTP: %v", so.Log.Code)
 	fmt.Println(so.Log)
-	return nil
+	return dataModel, so.Log
 
 }
 
-func GenericGetAll[T any](c echo.Context, so producer.SystemOperator, dataModel []T) error {
+func GenericGetAll[T any](c echo.Context, so producer.SystemOperator, dataModel []T) ([]T, producer.Log) {
 
 	so.Log = producer.Log{}
 	db := so.GetDB()
@@ -63,25 +63,26 @@ func GenericGetAll[T any](c echo.Context, so producer.SystemOperator, dataModel 
 
 	defer func() {
 		so.Log.Msg = fmt.Sprintf("%s %s", prefix, so.Log.Msg)
-		so.Produce(c)
+		so.Produce()
 	}()
 
 	result := db.Find(&dataModel)
 	so.Log = CheckResultError(result)
 
 	if so.Log.Err != nil {
-		return so.Log.Err
+		return dataModel, so.Log
 	}
 
 	so.Log.Code = http.StatusOK
 	so.Log.Key = "info"
 	so.Log.Msg = fmt.Sprintf("[INFO] completed, HTTP: %v", so.Log.Code)
 
-	return c.JSON(so.Log.Code, dataModel)
+	return dataModel, so.Log
+	// return c.JSON(so.Log.Code, dataModel)
 }
 
 // tu jeszzce spróbować dodać odbiorcę który będzie se miał bazę danych
-func GenericGetById[T model.GenericModel](c echo.Context, so producer.SystemOperator, dataModel T) error {
+func GenericGetById[T model.GenericModel](c echo.Context, so producer.SystemOperator, dataModel T) (T, producer.Log) {
 
 	so.Log = producer.Log{}
 	db := so.GetDB()
@@ -89,39 +90,40 @@ func GenericGetById[T model.GenericModel](c echo.Context, so producer.SystemOper
 
 	defer func() {
 		so.Log.Msg = fmt.Sprintf("%s %s", prefix, so.Log.Msg)
-		so.Produce(c)
+		so.Produce()
 	}()
 
 	dataModel, so.Log = BindData(c, dataModel)
-	if so.Log.Err != nil {
-		return so.Log.Err
+	if so.Log.Err != nil && dataModel.GetId() < 0 {
+		return dataModel, so.Log
 	}
 
 	id := dataModel.GetId()
 
 	so.Log = CheckID(id)
 	if so.Log.Err != nil {
-		return so.Log.Err
+		return dataModel, so.Log
 	}
 
 	result := db.Debug().Find(&dataModel, id)
 	so.Log = CheckResultError(result)
 	if so.Log.Err != nil {
-		return so.Log.Err
+		return dataModel, so.Log
 	}
 
 	so.Log = CheckIfAffected(result)
 	if so.Log.Err != nil {
-		return so.Log.Err
+		return dataModel, so.Log
 	}
 
 	so.Log.Code = http.StatusOK
 	so.Log.Key = "info"
 	so.Log.Msg = fmt.Sprintf("[INFO] read completed, id: {%v} HTTP: %v", id, so.Log.Code)
-	return c.JSON(so.Log.Code, dataModel)
+	return dataModel, so.Log
+	// return c.JSON(so.Log.Code, dataModel)
 }
 
-func GenericDelete[T model.GenericModel](c echo.Context, so producer.SystemOperator, dataModel T) error {
+func GenericDelete[T model.GenericModel](c echo.Context, so producer.SystemOperator, dataModel T) (T, producer.Log) {
 
 	so.Log = producer.Log{}
 	db := so.GetDB()
@@ -129,39 +131,39 @@ func GenericDelete[T model.GenericModel](c echo.Context, so producer.SystemOpera
 
 	defer func() {
 		so.Log.Msg = fmt.Sprintf("%s %s", prefix, so.Log.Msg)
-		so.Produce(c)
+		so.Produce()
 	}()
 
 	dataModel, so.Log = BindData(c, dataModel)
-	if so.Log.Err != nil {
-		return so.Log.Err
+	if so.Log.Err != nil && dataModel.GetId() < 0 {
+		return dataModel, so.Log
 	}
 
 	id := dataModel.GetId()
 
 	so.Log = CheckID(id)
 	if so.Log.Err != nil {
-		return so.Log.Err
+		return dataModel, so.Log
 	}
 
 	result := db.Delete(dataModel, id)
 	so.Log = CheckResultError(result)
 	if so.Log.Err != nil {
-		return so.Log.Err
+		return dataModel, so.Log
 	}
 
 	so.Log = CheckIfAffected(result)
 	if so.Log.Err != nil {
-		return so.Log.Err
+		return dataModel, so.Log
 	}
 
 	so.Log.Code = http.StatusOK
 	so.Log.Key = "info"
 	so.Log.Msg = fmt.Sprintf("[INFO] delete completed, id: {%v} HTTP: %v", id, so.Log.Code)
-	return nil
+	return dataModel, so.Log
 }
 
-func GenericUpdate[T model.GenericModel](c echo.Context, so producer.SystemOperator, dataModel T) error {
+func GenericUpdate[T model.GenericModel](c echo.Context, so producer.SystemOperator, dataModel T) (T, producer.Log) {
 
 	so.Log = producer.Log{}
 	db := so.GetDB()
@@ -170,19 +172,19 @@ func GenericUpdate[T model.GenericModel](c echo.Context, so producer.SystemOpera
 
 	defer func() {
 		so.Log.Msg = fmt.Sprintf("%s %s", prefix, so.Log.Msg)
-		so.Produce(c)
+		so.Produce()
 	}()
 
 	dataModel, so.Log = BindData(c, dataModel)
-	if so.Log.Err != nil {
-		return so.Log.Err
+	if so.Log.Err != nil && dataModel.GetId() < 0 {
+		return dataModel, so.Log
 	}
 
 	id := dataModel.GetId()
 
 	so.Log = CheckID(id)
 	if so.Log.Err != nil {
-		return so.Log.Err
+		return dataModel, so.Log
 	}
 
 	result := db.Debug().Find(&existingModel, id)
@@ -190,39 +192,40 @@ func GenericUpdate[T model.GenericModel](c echo.Context, so producer.SystemOpera
 	so.Log = CheckResultError(result)
 	if so.Log.Err != nil {
 		prefix += " get error"
-		return so.Log.Err
+		return dataModel, so.Log
 	}
 
 	so.Log = CheckIfAffected(result)
 	if so.Log.Err != nil {
 		prefix += " not found"
-		return so.Log.Err
+		return dataModel, so.Log
 	}
 
 	// dataModel, so.Log = BindData(c, dataModel)
-	// if so.Log.Err != nil {
-	// 	return so.Log.Err
+	// if so.Log.Err != nil  && dataModel.GetId() < 0 {
+	// 	return dataModel, so.Log
 	// }
 
 	result = db.Debug().Updates(&dataModel)
 	so.Log = CheckResultError(result)
 	if so.Log.Err != nil {
-		return so.Log.Err
+		return dataModel, so.Log
 	}
 
 	so.Log = CheckIfAffected(result)
 	if so.Log.Err != nil {
-		return so.Log.Err
+		return dataModel, so.Log
 	}
 
 	so.Log.Code = http.StatusOK
 	so.Log.Key = "info"
 	so.Log.Msg = fmt.Sprintf("[INFO] update completed, id: {%v} HTTP: %v", id, so.Log.Code)
-	return c.JSON(so.Log.Code, dataModel)
+	return dataModel, so.Log
+	// return c.JSON(so.Log.Code, dataModel)
 }
 
 // tu jeszzce spróbować dodać odbiorcę który będzie se miał bazę danych
-func GenericGetWithConstraint[T model.GenericModel](c echo.Context, so producer.SystemOperator, dataModel T, constraint string, values ...string) error {
+func GenericGetWithConstraint[T model.GenericModel](c echo.Context, so producer.SystemOperator, dataModel T, constraint string, values ...string) (T, producer.Log) {
 
 	so.Log = producer.Log{}
 	db := so.GetDB()
@@ -230,34 +233,35 @@ func GenericGetWithConstraint[T model.GenericModel](c echo.Context, so producer.
 
 	defer func() {
 		so.Log.Msg = fmt.Sprintf("%s %s", prefix, so.Log.Msg)
-		so.Produce(c)
+		so.Produce()
 	}()
 
 	dataModel, so.Log = BindData(c, dataModel)
-	if so.Log.Err != nil {
-		return so.Log.Err
+	if so.Log.Err != nil && dataModel.GetId() < 0 {
+		return dataModel, so.Log
 	}
 
-	// id := dataModel.GetId()
+	id := dataModel.GetId()
 
-	// so.Log = CheckID(id)
-	// if so.Log.Err != nil {
-	// 	return so.Log.Err
-	// }
+	so.Log = CheckID(id)
+	if so.Log.Err != nil {
+		return dataModel, so.Log
+	}
 
 	result := db.Debug().Where(constraint, values).Find(&dataModel)
 	so.Log = CheckResultError(result)
 	if so.Log.Err != nil {
-		return so.Log.Err
+		return dataModel, so.Log
 	}
 
 	so.Log = CheckIfAffected(result)
 	if so.Log.Err != nil {
-		return so.Log.Err
+		return dataModel, so.Log
 	}
 
 	so.Log.Code = http.StatusOK
 	so.Log.Key = "info"
 	so.Log.Msg = fmt.Sprintf("[INFO] read completed, constraint: {%s}, values: {"+strings.Join(values, ", ")+"} HTTP: %v", constraint, so.Log.Code)
-	return c.JSON(so.Log.Code, dataModel)
+	return dataModel, so.Log
+	// return c.JSON(so.Log.Code, dataModel)
 }
