@@ -34,7 +34,7 @@ function chkLogin(target, times, delay) {
 
 async function loginSuccess(){
   if(localStorage.getItem("token")){//!="undefined"
-    document.location.href = "user-menu.html";
+    document.location.href = "user-rent.html";
   }
 }
 
