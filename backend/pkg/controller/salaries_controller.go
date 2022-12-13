@@ -36,21 +36,26 @@ func (uh *SalaryHandler) RegisterRoutes() {
 }
 
 func (uh *SalaryHandler) Save(c echo.Context) error {
-	return executor.GenericPost(c, uh.sysOperator, model.Salary{})
+	d, l := executor.GenericPost(c, uh.sysOperator, model.Salary{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *SalaryHandler) Update(c echo.Context) error {
-	return executor.GenericUpdate(c, uh.sysOperator, model.Salary{})
+	d, l := executor.GenericUpdate(c, uh.sysOperator, model.Salary{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *SalaryHandler) Delete(c echo.Context) error {
-	return executor.GenericDelete(c, uh.sysOperator, model.Salary{})
+	d, l := executor.GenericDelete(c, uh.sysOperator, model.Salary{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *SalaryHandler) GetById(c echo.Context) error {
-	return executor.GenericGetById(c, uh.sysOperator, model.Salary{})
+	d, l := executor.GenericGetById(c, uh.sysOperator, model.Salary{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *SalaryHandler) GetAll(c echo.Context) error {
-	return executor.GenericGetAll(c, uh.sysOperator, []model.Salary{})
+	d, l := executor.GenericGetAll(c, uh.sysOperator, []model.Salary{})
+	return HandleRequestResult(c, d, l)
 }

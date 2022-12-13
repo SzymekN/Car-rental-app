@@ -36,21 +36,26 @@ func (uh *RepairHandler) RegisterRoutes() {
 }
 
 func (uh *RepairHandler) Save(c echo.Context) error {
-	return executor.GenericPost(c, uh.sysOperator, model.Repair{})
+	d, l := executor.GenericPost(c, uh.sysOperator, model.Repair{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *RepairHandler) Update(c echo.Context) error {
-	return executor.GenericUpdate(c, uh.sysOperator, model.Repair{})
+	d, l := executor.GenericUpdate(c, uh.sysOperator, model.Repair{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *RepairHandler) Delete(c echo.Context) error {
-	return executor.GenericDelete(c, uh.sysOperator, model.Repair{})
+	d, l := executor.GenericDelete(c, uh.sysOperator, model.Repair{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *RepairHandler) GetById(c echo.Context) error {
-	return executor.GenericGetById(c, uh.sysOperator, model.Repair{})
+	d, l := executor.GenericGetById(c, uh.sysOperator, model.Repair{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *RepairHandler) GetAll(c echo.Context) error {
-	return executor.GenericGetAll(c, uh.sysOperator, []model.Repair{})
+	d, l := executor.GenericGetAll(c, uh.sysOperator, []model.Repair{})
+	return HandleRequestResult(c, d, l)
 }

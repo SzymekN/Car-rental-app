@@ -60,7 +60,7 @@ func BindData[T model.GenericModel](c echo.Context, d T) (T, producer.Log) {
 
 func CheckID(id int) producer.Log {
 
-	if id < 1 {
+	if id < 0 {
 		status := http.StatusBadRequest
 		msg := fmt.Sprintf("[ERROR] invalid id: {%v}, HTTP: %v", id, status)
 		err := fmt.Errorf("invalid id: {%v}", id)

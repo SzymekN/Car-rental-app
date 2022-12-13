@@ -95,7 +95,7 @@ func (j JWTHandler) SignUp(c echo.Context) error {
 
 	defer func() {
 		logger.Log.Msg = fmt.Sprintf("%s %s", prefix, logger.Log.Msg)
-		logger.Produce(c)
+		logger.ProduceWithJSON(c)
 	}()
 
 	// try saving data got in the request to the User datatype
@@ -116,13 +116,14 @@ func (j JWTHandler) SignUp(c echo.Context) error {
 		return logger.Err
 	}
 
-	validToken, logger.Log = j.JwtC.GenerateJWT(mc.User.Email, mc.User.Role)
+	validToken, logger.Log = j.JwtC.GenerateJWT(mc.User.ID, mc.User.Email, mc.User.Role)
 
 	if logger.Err != nil {
 		return logger.Err
 	}
 
 	//insert user details to database
+	mc.User.Role = "client"
 	logger.Log = j.SignUser(mc)
 
 	if logger.Err != nil {
@@ -159,7 +160,7 @@ func (j JWTHandler) SignOut(c echo.Context) error {
 
 	defer func() {
 		logger.Log.Msg = fmt.Sprintf("%s %s", prefix, logger.Log.Msg)
-		logger.Produce(c)
+		logger.ProduceWithJSON(c)
 	}()
 
 	// retrieve token from the request header
@@ -217,7 +218,7 @@ func (j JWTHandler) SignIn(c echo.Context) error {
 	prefix := fmt.Sprintf("SignIn ")
 	defer func() {
 		logger.Log.Msg = fmt.Sprintf("%s %s", prefix, logger.Log.Msg)
-		logger.Produce(c)
+		logger.ProduceWithJSON(c)
 	}()
 
 	if err := c.Bind(&authDetails); err != nil {
@@ -235,7 +236,7 @@ func (j JWTHandler) SignIn(c echo.Context) error {
 	}
 
 	// check if password is correct
-	logger.Log = j.JwtC.CheckPasswordHash(authDetails.Password, authUser.Password)
+	logger.Log = CheckPasswordHash(authDetails.Password, authUser.Password)
 
 	if logger.Err != nil {
 		return logger.Err
@@ -244,7 +245,7 @@ func (j JWTHandler) SignIn(c echo.Context) error {
 	// generate token based on username and role
 	var validToken string
 
-	validToken, logger.Log = j.JwtC.GenerateJWT(authDetails.Email, authUser.Role)
+	validToken, logger.Log = j.JwtC.GenerateJWT(authUser.ID, authDetails.Email, authUser.Role)
 
 	if logger.Err != nil {
 		return logger.Err

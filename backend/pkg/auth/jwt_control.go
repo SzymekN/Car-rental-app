@@ -21,9 +21,8 @@ type JWTControl struct {
 
 type JWTControllerInterface interface {
 	GeneratehashPassword(password string) (string, producer.Log)
-	CheckPasswordHash(password, hash string) producer.Log
 	Validate(auth string, c echo.Context) (interface{}, error)
-	GenerateJWT(email, role string) (string, producer.Log)
+	GenerateJWT(id int, email, role string) (string, producer.Log)
 }
 
 func (j JWTControl) produceMessage(k, val string) {
@@ -37,11 +36,12 @@ func (j JWTControl) GeneratehashPassword(password string) (string, producer.Log)
 		code := http.StatusInternalServerError
 		msg := fmt.Sprintf("[ERROR]: password hashing failure, HTTP: %v", code)
 		log.Populate("err", msg, code, err)
+		fmt.Println(log)
 	}
 	return string(bytes), log
 }
 
-func (j JWTControl) CheckPasswordHash(password, hash string) producer.Log {
+func CheckPasswordHash(password, hash string) producer.Log {
 	log := producer.Log{}
 	if err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)); err != nil {
 		code := http.StatusUnauthorized
@@ -111,7 +111,7 @@ func (j JWTControl) getKey() string {
 }
 
 // generates valid token based on username, role and expire date
-func (j JWTControl) GenerateJWT(email, role string) (string, producer.Log) {
+func (j JWTControl) GenerateJWT(id int, email, role string) (string, producer.Log) {
 	var mySigningKey = []byte(j.getKey())
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
@@ -119,6 +119,7 @@ func (j JWTControl) GenerateJWT(email, role string) (string, producer.Log) {
 	log := producer.Log{}
 
 	claims["authorized"] = true
+	claims["id"] = id
 	claims["email"] = email
 	claims["role"] = role
 	claims["exp"] = float64(time.Now().Add(expireTime).Unix())

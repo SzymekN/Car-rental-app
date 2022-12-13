@@ -36,21 +36,26 @@ func (uh *NotificationHandler) RegisterRoutes() {
 }
 
 func (uh *NotificationHandler) Save(c echo.Context) error {
-	return executor.GenericPost(c, uh.sysOperator, model.Notification{})
+	d, l := executor.GenericPost(c, uh.sysOperator, model.Notification{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *NotificationHandler) Update(c echo.Context) error {
-	return executor.GenericUpdate(c, uh.sysOperator, model.Notification{})
+	d, l := executor.GenericUpdate(c, uh.sysOperator, model.Notification{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *NotificationHandler) Delete(c echo.Context) error {
-	return executor.GenericDelete(c, uh.sysOperator, model.Notification{})
+	d, l := executor.GenericDelete(c, uh.sysOperator, model.Notification{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *NotificationHandler) GetById(c echo.Context) error {
-	return executor.GenericGetById(c, uh.sysOperator, model.Notification{})
+	d, l := executor.GenericGetById(c, uh.sysOperator, model.Notification{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *NotificationHandler) GetAll(c echo.Context) error {
-	return executor.GenericGetAll(c, uh.sysOperator, []model.Notification{})
+	d, l := executor.GenericGetAll(c, uh.sysOperator, []model.Notification{})
+	return HandleRequestResult(c, d, l)
 }

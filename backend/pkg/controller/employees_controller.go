@@ -36,21 +36,26 @@ func (uh *EmployeeHandler) RegisterRoutes() {
 }
 
 func (uh *EmployeeHandler) Save(c echo.Context) error {
-	return executor.GenericPost(c, uh.sysOperator, model.Employee{})
+	d, l := executor.GenericPost(c, uh.sysOperator, model.Employee{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *EmployeeHandler) Update(c echo.Context) error {
-	return executor.GenericUpdate(c, uh.sysOperator, model.Employee{})
+	d, l := executor.GenericUpdate(c, uh.sysOperator, model.Employee{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *EmployeeHandler) Delete(c echo.Context) error {
-	return executor.GenericDelete(c, uh.sysOperator, model.Employee{})
+	d, l := executor.GenericDelete(c, uh.sysOperator, model.Employee{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *EmployeeHandler) GetById(c echo.Context) error {
-	return executor.GenericGetById(c, uh.sysOperator, model.Employee{})
+	d, l := executor.GenericGetById(c, uh.sysOperator, model.Employee{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *EmployeeHandler) GetAll(c echo.Context) error {
-	return executor.GenericGetAll(c, uh.sysOperator, []model.Employee{})
+	d, l := executor.GenericGetAll(c, uh.sysOperator, []model.Employee{})
+	return HandleRequestResult(c, d, l)
 }

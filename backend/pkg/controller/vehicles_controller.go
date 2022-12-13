@@ -36,21 +36,26 @@ func (uh *VehicleHandler) RegisterRoutes() {
 }
 
 func (uh *VehicleHandler) Save(c echo.Context) error {
-	return executor.GenericPost(c, uh.sysOperator, model.Vehicle{})
+	d, l := executor.GenericPost(c, uh.sysOperator, model.Vehicle{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *VehicleHandler) Update(c echo.Context) error {
-	return executor.GenericUpdate(c, uh.sysOperator, model.Vehicle{})
+	d, l := executor.GenericUpdate(c, uh.sysOperator, model.Vehicle{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *VehicleHandler) Delete(c echo.Context) error {
-	return executor.GenericDelete(c, uh.sysOperator, model.Vehicle{})
+	d, l := executor.GenericDelete(c, uh.sysOperator, model.Vehicle{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *VehicleHandler) GetById(c echo.Context) error {
-	return executor.GenericGetById(c, uh.sysOperator, model.Vehicle{})
+	d, l := executor.GenericGetById(c, uh.sysOperator, model.Vehicle{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *VehicleHandler) GetAll(c echo.Context) error {
-	return executor.GenericGetAll(c, uh.sysOperator, []model.Vehicle{})
+	d, l := executor.GenericGetAll(c, uh.sysOperator, []model.Vehicle{})
+	return HandleRequestResult(c, d, l)
 }
