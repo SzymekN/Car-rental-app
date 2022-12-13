@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/SzymekN/Car-rental-app/pkg/auth"
@@ -9,19 +11,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
-
-// type MainController struct {
-// 	jwtH     *auth.JWTHandler
-// 	// uH       *UserHandler
-// 	// vH       *VehicleHandler
-// 	handlers []BasicController
-// }
-
-// func (mc *MainController) RegisterAllRoutes() {
-// 	for _, handler := range mc.handlers {
-// 		handler.RegisterRoutes()
-// 	}
-// }
 
 // registers router for the server
 func SetupRouter(svr *server.Server) {
@@ -42,20 +31,24 @@ func SetupRouter(svr *server.Server) {
 	// create JWT handler and JWT validator config
 	mc.jwtH = auth.NewJWTHandler(svr, jwt_auth)
 	mc.jwtH.AddJWTMiddleware()
-	// create all needed handlers
 	authConf := auth.NewAuthConfig()
-	// mc.uH = NewUserHandler(systemOperator, authConf, jwt_auth)
-	// mc.vH = NewVehicleHandler(systemOperator, authConf, jwt_auth)
+
+	// create all needed handlers
+
+	mc.handlers = append(mc.handlers, NewClientHandler(systemOperator, authConf, jwt_auth))
+	mc.handlers = append(mc.handlers, NewEmployeeHandler(systemOperator, authConf, jwt_auth))
+	mc.handlers = append(mc.handlers, NewNotificationHandler(systemOperator, authConf, jwt_auth))
+	mc.handlers = append(mc.handlers, NewRepairHandler(systemOperator, authConf, jwt_auth))
+	mc.handlers = append(mc.handlers, NewSalaryHandler(systemOperator, authConf, jwt_auth))
 	mc.handlers = append(mc.handlers, NewUserHandler(systemOperator, authConf, jwt_auth))
 	mc.handlers = append(mc.handlers, NewVehicleHandler(systemOperator, authConf, jwt_auth))
 
-	// register all routes
 	mc.RegisterAllRoutes()
-	// mc.jwtH.RegisterRoutes()
-	// mc.uH.RegisterRoutes()
-	// mc.vH.RegisterRoutes()
 
-	// fmt.Println(mc.jwtH)
-	// fmt.Println("setup", mc.uH.sysOperator.SystemLogger)
+	data, err := json.MarshalIndent(e.Routes(), "", "  ")
+	if err != nil {
+		return
+	}
+	fmt.Println(string(data))
 
 }

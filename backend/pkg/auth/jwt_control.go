@@ -26,17 +26,6 @@ type JWTControllerInterface interface {
 	GenerateJWT(email, role string) (string, producer.Log)
 }
 
-// func (j JWTControl) checkToken(val string) (bool, error) {
-
-// 	for _, revokedToken := range j.revokedTokens {
-// 		if revokedToken == val {
-// 			return true, nil
-// 		}
-// 	}
-
-//		// revoked, _ := j.JwtQE.GetToken(val)
-//		return false, nil
-//	}
 func (j JWTControl) produceMessage(k, val string) {
 	j.JwtQE.Svr.Logger.ProduceMessage(k, val)
 }

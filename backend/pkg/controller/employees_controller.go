@@ -28,8 +28,8 @@ func NewEmployeeHandler(sysOp producer.SystemOperator, ac auth.AuthConfig, g *ec
 }
 
 func (uh *EmployeeHandler) RegisterRoutes() {
-	uh.group.GET("/employees", uh.GetById)
-	uh.group.GET("/employees/all", uh.GetAll)
+	uh.group.GET("/employees", uh.GetById, uh.authConf.IsAuthorized)
+	uh.group.GET("/employees/all", uh.GetAll, uh.authConf.IsAuthorized)
 	uh.group.POST("/employees", uh.Save, uh.authConf.IsAuthorized)
 	uh.group.PUT("/employees", uh.Update, uh.authConf.IsAuthorized)
 	uh.group.DELETE("/employees", uh.Delete, uh.authConf.IsAuthorized)

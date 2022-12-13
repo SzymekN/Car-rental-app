@@ -35,7 +35,7 @@ func (j JWTHandler) RegisterRoutes() {
 }
 
 // Checks for the username in the db
-func (j JWTHandler) getUser(email string) (model.User, producer.Log) {
+func (j JWTHandler) getUserByEmail(email string) (model.User, producer.Log) {
 
 	db := j.getMysqlDB()
 	u := model.User{}
@@ -105,7 +105,7 @@ func (j JWTHandler) SignUp(c echo.Context) error {
 	}
 
 	// check if user already exists
-	_, logger.Log = j.getUser(mc.User.Email)
+	_, logger.Log = j.getUserByEmail(mc.User.Email)
 	if logger.Err != nil && logger.Err.Error() != "no rows affected" {
 		return logger.Err
 	}
@@ -228,7 +228,7 @@ func (j JWTHandler) SignIn(c echo.Context) error {
 	}
 	// check if user exists
 	var authUser model.User
-	authUser, logger.Log = j.getUser(authDetails.Email)
+	authUser, logger.Log = j.getUserByEmail(authDetails.Email)
 
 	if logger.Err != nil {
 		return logger.Err

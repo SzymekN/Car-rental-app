@@ -38,8 +38,9 @@ func (ac AuthConfig) Contains(path, role string) bool {
 func NewAuthConfig() AuthConfig {
 	conf := AuthConfig{
 		Privileges: pathPrivileges{
-			"/api/v1/users": {"owner"},
-			"/users/all":    {"owner"},
+			"/api/v1/users":        {"owner"},
+			"/api/v1/users/all":    {"owner"},
+			"/api/v1/clients/self": {"client"},
 		},
 	}
 	return conf
