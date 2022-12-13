@@ -132,7 +132,7 @@ func (j JWTControl) GenerateJWT(email, role string) (string, producer.Log) {
 	claims["authorized"] = true
 	claims["email"] = email
 	claims["role"] = role
-	claims["exp"] = time.Now().Add(expireTime).Unix()
+	claims["exp"] = float64(time.Now().Add(expireTime).Unix())
 
 	// sign created token
 	tokenString, err := token.SignedString(mySigningKey)
