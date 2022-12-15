@@ -42,7 +42,7 @@ func CheckResultError(result *gorm.DB) producer.Log {
 	return log
 }
 
-func BindData[T model.GenericModel](c echo.Context, d T) (T, producer.Log) {
+func BindData[T any](c echo.Context, d T) (T, producer.Log) {
 
 	if err := c.Bind(&d); err != nil {
 		status := http.StatusBadRequest

@@ -42,6 +42,7 @@ func SetupRouter(svr *server.Server) {
 	mc.handlers = append(mc.handlers, NewSalaryHandler(systemOperator, authConf, jwt_auth))
 	mc.handlers = append(mc.handlers, NewUserHandler(systemOperator, authConf, jwt_auth))
 	mc.handlers = append(mc.handlers, NewVehicleHandler(systemOperator, authConf, jwt_auth))
+	mc.handlers = append(mc.handlers, NewRentalHandler(systemOperator, authConf, jwt_auth))
 
 	mc.RegisterAllRoutes()
 

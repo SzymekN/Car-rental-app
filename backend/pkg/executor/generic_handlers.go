@@ -265,3 +265,32 @@ func GenericGetWithConstraint[T model.GenericModel](c echo.Context, so producer.
 	return dataModel, so.Log
 	// return c.JSON(so.Log.Code, dataModel)
 }
+
+func GenericGetAllWithConstraint[T model.GenericModel](c echo.Context, so producer.SystemOperator, dataModel []T, constraint string, values ...string) ([]T, producer.Log) {
+
+	so.Log = producer.Log{}
+	db := so.GetDB()
+	prefix := fmt.Sprintf("GetAllWithConstraint {%T}", dataModel)
+
+	defer func() {
+		so.Log.Msg = fmt.Sprintf("%s %s", prefix, so.Log.Msg)
+		so.Produce()
+	}()
+
+	result := db.Debug().Where(constraint, values).Find(&dataModel)
+	so.Log = CheckResultError(result)
+	if so.Log.Err != nil {
+		return dataModel, so.Log
+	}
+
+	so.Log = CheckIfAffected(result)
+	if so.Log.Err != nil {
+		return dataModel, so.Log
+	}
+
+	so.Log.Code = http.StatusOK
+	so.Log.Key = "info"
+	so.Log.Msg = fmt.Sprintf("[INFO] read completed, constraint: {%s}, values: {"+strings.Join(values, ", ")+"} HTTP: %v", constraint, so.Log.Code)
+	return dataModel, so.Log
+	// return c.JSON(so.Log.Code, dataModel)
+}

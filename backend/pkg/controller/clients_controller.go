@@ -133,6 +133,13 @@ func getIDFromContextToken(c echo.Context) int {
 	return id
 }
 
+func GetUIDFromContextToken(c echo.Context, so producer.SystemOperator) (int, producer.Log) {
+	id := getIDFromContextToken(c)
+	mu := model.Client{UserID: id}
+	mu, so.Log = executor.GenericGetWithConstraint(c, so, mu, "user_id=?", fmt.Sprint(id))
+	return mu.ID, so.Log
+}
+
 func (uh *ClientHandler) DeleteSelf(c echo.Context) error {
 	logger := uh.sysOperator.SystemLogger
 	logger.Log = producer.Log{}
@@ -157,12 +164,12 @@ func (uh *ClientHandler) DeleteSelf(c echo.Context) error {
 	if logger.Err != nil {
 		return logger.Err
 	}
-	// potrzebne hasło z bazy danych
+
 	logger.Log = auth.CheckPasswordHash(pwd.Password, mu.Password)
 	if logger.Err != nil {
 		return logger.Err
 	}
-	//trzeba wpisać do kontekstu ID
+
 	d, l := executor.GenericDelete(c, uh.sysOperator, mu)
 	return c.JSON(l.Code, d)
 
