@@ -28,30 +28,34 @@ func NewUserHandler(sysOp producer.SystemOperator, ac auth.AuthConfig, g *echo.G
 }
 
 func (uh *UserHandler) RegisterRoutes() {
-	uh.group.GET("/users", uh.GetById)
-	uh.group.GET("/users/all", uh.GetAll)
+	uh.group.GET("/users", uh.GetById, uh.authConf.IsAuthorized)
+	uh.group.GET("/users/all", uh.GetAll, uh.authConf.IsAuthorized)
 	uh.group.POST("/users", uh.Save, uh.authConf.IsAuthorized)
 	uh.group.PUT("/users", uh.Update, uh.authConf.IsAuthorized)
 	uh.group.DELETE("/users", uh.Delete, uh.authConf.IsAuthorized)
 }
 
 func (uh *UserHandler) Save(c echo.Context) error {
-	return executor.GenericPost(c, uh.sysOperator, model.User{})
+	d, l := executor.GenericPost(c, uh.sysOperator, model.User{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *UserHandler) Update(c echo.Context) error {
-	return executor.GenericUpdate(c, uh.sysOperator, model.User{})
+	d, l := executor.GenericUpdate(c, uh.sysOperator, model.User{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *UserHandler) Delete(c echo.Context) error {
-	return executor.GenericDelete(c, uh.sysOperator, model.User{})
+	d, l := executor.GenericDelete(c, uh.sysOperator, model.User{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *UserHandler) GetById(c echo.Context) error {
-	return executor.GenericGetById(c, uh.sysOperator, model.User{})
+	d, l := executor.GenericGetById(c, uh.sysOperator, model.User{})
+	return HandleRequestResult(c, d, l)
 }
 
 func (uh *UserHandler) GetAll(c echo.Context) error {
-	cos := executor.GenericGetAll(c, uh.sysOperator, []model.User{})
-	return cos
+	d, l := executor.GenericGetAll(c, uh.sysOperator, []model.User{})
+	return HandleRequestResult(c, d, l)
 }
