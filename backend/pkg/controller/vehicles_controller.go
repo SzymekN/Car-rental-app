@@ -32,7 +32,7 @@ func NewVehicleHandler(sysOp producer.SystemOperator, ac auth.AuthConfig, g *ech
 func (uh *VehicleHandler) RegisterRoutes() {
 	uh.group.GET("/vehicles", uh.GetById)
 	uh.group.GET("/vehicles/all", uh.GetAll)
-	uh.group.GET("/vehicles/available", uh.GetAvailable)
+	uh.group.POST("/vehicles/available", uh.GetAvailable)
 	uh.group.POST("/vehicles", uh.Save, uh.authConf.IsAuthorized)
 	uh.group.PUT("/vehicles", uh.Update, uh.authConf.IsAuthorized)
 	uh.group.DELETE("/vehicles", uh.Delete, uh.authConf.IsAuthorized)

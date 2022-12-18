@@ -35,7 +35,7 @@ func CheckResultError(result *gorm.DB) producer.Log {
 	if err := result.Error; err != nil {
 		log.Key = "err"
 		log.Code = http.StatusNotFound
-		log.Msg = fmt.Sprintf("[ERROR] couldn't get all, HTTP: %v", log.Code)
+		log.Msg = fmt.Sprintf("[ERROR] query error, HTTP: %v", log.Code)
 		log.Err = err
 		return log
 	}
