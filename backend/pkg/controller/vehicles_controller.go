@@ -30,7 +30,7 @@ func NewVehicleHandler(sysOp producer.SystemOperator, ac auth.AuthConfig, g *ech
 }
 
 func (uh *VehicleHandler) RegisterRoutes() {
-	uh.group.GET("/vehicles", uh.GetById)
+	uh.group.POST("/vehicles/single", uh.GetById)
 	uh.group.GET("/vehicles/all", uh.GetAll)
 	uh.group.POST("/vehicles/available", uh.GetAvailable)
 	uh.group.POST("/vehicles", uh.Save, uh.authConf.IsAuthorized)
@@ -122,7 +122,7 @@ func (uh *VehicleHandler) GetAvailable(c echo.Context) error {
 	// d, l := executor.GenericGetAllWithConstraint(c, uh.sysOperator, []model.Rental{}, "start_date not between ? and ? and end_date not between ? and ?", start, end, start, end)
 	db := uh.sysOperator.DB
 	vehicles := []model.Vehicle{}
-	result := db.Debug().Model(&model.Vehicle{}).Select("*").Joins("join rental on vehicle.ID = rental.vehicle_id").Where("start_date not between ? and ? and end_date not between ? and ?", start, end, start, end)
+	result := db.Debug().Model(&model.Vehicle{}).Select("*").Joins("left join rental on vehicle.ID = rental.vehicle_id and start_date not between ? and ? and end_date not between ? and ?", start, end, start, end)
 	result.Scan(&vehicles)
 
 	logger.Log = executor.CheckResultError(result)

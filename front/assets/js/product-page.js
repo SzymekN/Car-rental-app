@@ -90,7 +90,6 @@ function createFOption(filterMap,buttonName,name,listName){
     }
 }
 
-
 function makeFilters(data){
     //const data = new Map(Object.entries(JSON.parse(jsonData)));
     const brand = [...new Set(data.map(item => item.brand))];
