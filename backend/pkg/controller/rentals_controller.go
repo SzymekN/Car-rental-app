@@ -28,8 +28,8 @@ func NewRentalHandler(sysOp producer.SystemOperator, ac auth.AuthConfig, g *echo
 }
 
 func (uh *RentalHandler) RegisterRoutes() {
-	uh.group.GET("/rentals", uh.GetById)
-	uh.group.GET("/rentals/all", uh.GetAll)
+	uh.group.GET("/rentals", uh.GetById, uh.authConf.IsAuthorized)
+	uh.group.GET("/rentals/all", uh.GetAll, uh.authConf.IsAuthorized)
 	uh.group.POST("/rentals", uh.Save, uh.authConf.IsAuthorized)
 	uh.group.PUT("/rentals", uh.Update, uh.authConf.IsAuthorized)
 	uh.group.DELETE("/rentals", uh.Delete, uh.authConf.IsAuthorized)
