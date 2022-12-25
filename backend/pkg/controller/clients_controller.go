@@ -63,6 +63,7 @@ func (uh *ClientHandler) GetAll(c echo.Context) error {
 	d, l := executor.GenericGetAll(c, uh.sysOperator, []model.Client{})
 	return HandleRequestResult(c, d, l)
 }
+
 func (uh *ClientHandler) UpdateSelf(c echo.Context) error {
 	logger := uh.sysOperator.SystemLogger
 	logger.Log = producer.Log{}
@@ -80,7 +81,7 @@ func (uh *ClientHandler) UpdateSelf(c echo.Context) error {
 		return logger.Log.Err
 	}
 
-	id := getIDFromContextToken(c)
+	id := GetUIDFromContextToken(c)
 	mc.User.ID = id
 	mc.UserID = id
 	mc.ID = 0
@@ -125,20 +126,61 @@ type passwordWrapper struct {
 	Password string `json:"password"`
 }
 
-func getIDFromContextToken(c echo.Context) int {
+// TODO error check
+func GetUIDFromContextToken(c echo.Context) int {
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
 	fmt.Println(claims)
-	id := int(claims["id"].(float64))
-	return id
+	uid := int(claims["id"].(float64))
+	return uid
 }
 
-func GetUIDFromContextToken(c echo.Context, so producer.SystemOperator) (int, producer.Log) {
-	id := getIDFromContextToken(c)
-	mu := model.Client{UserID: id}
-	mu, so.Log = executor.GenericGetWithConstraint(c, so, mu, "user_id=?", fmt.Sprint(id))
-	return mu.ID, so.Log
+func GetCIDFromContextToken(c echo.Context, so producer.SystemOperator) (int, producer.Log) {
+
+	log := producer.Log{}
+	var uid, cid int
+
+	uid = GetUIDFromContextToken(c)
+
+	// if log.Err != nil {
+	// 	return -1, log
+	// }
+
+	cid, log = GetClientID(c, so, uid)
+	if log.Err != nil {
+		return -1, log
+	}
+
+	return cid, log
 }
+
+func GetClientID(c echo.Context, so producer.SystemOperator, uid int) (int, producer.Log) {
+	db := so.GetDB()
+	var id int
+	result := db.Model(&model.Client{}).Select("ID").Where("user_id=?", uid)
+
+	if err := result.Error; err != nil {
+		log := producer.Log{
+			Key:  "err",
+			Msg:  "Couldn't get client id",
+			Err:  err,
+			Code: http.StatusInternalServerError,
+		}
+		return -1, log
+	}
+
+	result.Find(&id)
+	return id, producer.Log{}
+
+}
+
+// prawdopodobnie do usunięcia
+// func GetCIDFromContextToken(c echo.Context, so producer.SystemOperator) (int, producer.Log) {
+// 	id := getUIDFromContextToken(c)
+// 	mu := model.Client{UserID: id}
+// 	mu, so.Log = executor.GenericGetWithConstraint(c, so, mu, "user_id=?", fmt.Sprint(id))
+// 	return mu.ID, so.Log
+// }
 
 func (uh *ClientHandler) DeleteSelf(c echo.Context) error {
 	logger := uh.sysOperator.SystemLogger
@@ -157,7 +199,7 @@ func (uh *ClientHandler) DeleteSelf(c echo.Context) error {
 		return logger.Err
 	}
 
-	id := getIDFromContextToken(c)
+	id := GetUIDFromContextToken(c)
 	mu := model.User{ID: id}
 
 	mu, logger.Log = executor.GenericGetWithConstraint(c, uh.sysOperator, mu, "id=?", fmt.Sprint(id))
