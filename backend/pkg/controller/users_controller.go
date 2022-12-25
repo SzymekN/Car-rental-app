@@ -73,7 +73,7 @@ func (uh *UserHandler) UpdatePassword(c echo.Context) error {
 	}()
 
 	var passwords changePasswordWrapper
-	passwords, logger.Log = BindChangePassword(c, passwords)
+	passwords, logger.Log = BindAny(c, passwords)
 
 	if logger.Err != nil {
 		return logger.Err
