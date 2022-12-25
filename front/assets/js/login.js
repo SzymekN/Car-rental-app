@@ -1,11 +1,14 @@
-async function login () {
+//async
+function login () {
     var t = "http://192.168.33.50:8200/api/v1/users/signin";
     event.preventDefault();
 const fetchPromise=chkLogin(t, 3, 1000).then((response) => response.json())
 .then((data) => {
-  console.log(data)
   localStorage.setItem("token",data.token)
-  loginSuccess();
+  if(data.token)
+    loginSuccess();
+  else
+    alert("Wrong credentials!");
  
 }).catch( err => {
     console.log('error: '+ err)
