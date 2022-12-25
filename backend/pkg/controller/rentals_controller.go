@@ -33,6 +33,7 @@ func (uh *RentalHandler) RegisterRoutes() {
 	uh.group.POST("/rentals", uh.Save, uh.authConf.IsAuthorized)
 	uh.group.PUT("/rentals", uh.Update, uh.authConf.IsAuthorized)
 	uh.group.DELETE("/rentals", uh.Delete, uh.authConf.IsAuthorized)
+	uh.group.GET("/rentals/self", uh.GetSelf, uh.authConf.IsAuthorized)
 	uh.group.POST("/rentals/self", uh.SaveSelf, uh.authConf.IsAuthorized)
 }
 
@@ -57,18 +58,44 @@ func (uh *RentalHandler) SaveSelf(c echo.Context) error {
 		return logger.Err
 	}
 
-	var uid int
-	uid, logger.Log = GetUIDFromContextToken(c, uh.sysOperator)
+	var cid int
+	cid, logger.Log = GetCIDFromContextToken(c, uh.sysOperator)
 	if logger.Err != nil {
 		return logger.Err
 	}
-	mr.ClientID = uid
+	mr.ClientID = cid
 
 	d, l := executor.GenericPost(c, uh.sysOperator, mr)
 	if logger.Err != nil {
 		return logger.Err
 	}
 	return c.JSON(l.Code, d)
+}
+
+func (uh *RentalHandler) GetSelf(c echo.Context) error {
+	mrs := []model.Rental{}
+	logger := uh.sysOperator.SystemLogger
+	logger.Log = producer.Log{}
+	prefix := fmt.Sprintf("SelfRental ")
+
+	defer func() {
+		logger.Log.Msg = fmt.Sprintf("%s %s", prefix, logger.Log.Msg)
+		logger.ProduceWithJSON(c)
+	}()
+
+	var cid int
+	cid, logger.Log = GetCIDFromContextToken(c, uh.sysOperator)
+	if logger.Err != nil {
+		return logger.Err
+	}
+
+	mrs, l := executor.GenericGetAllWithConstraint(c, uh.sysOperator, mrs, "client_id = ?", fmt.Sprint(cid))
+
+	if logger.Err != nil {
+		return logger.Err
+	}
+
+	return c.JSON(l.Code, mrs)
 }
 
 func (uh *RentalHandler) Update(c echo.Context) error {

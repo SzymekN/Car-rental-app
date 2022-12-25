@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
 )
 
@@ -87,10 +89,21 @@ func (mc *MysqlConnect) SetupConnection() {
 	fmt.Println(*mc)
 	log.Print(connString)
 
+	newLogger := logger.New(
+		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+		logger.Config{
+			SlowThreshold:             time.Second, // Slow SQL threshold
+			LogLevel:                  logger.Info, // Log level
+			IgnoreRecordNotFoundError: false,       // Ignore ErrRecordNotFound error for logger
+			Colorful:                  true,        // Disable color
+		},
+	)
+
 	mc.db, err = gorm.Open(mysql.Open(connString), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
 			SingularTable: true,
 		},
+		Logger: newLogger,
 	})
 
 	if err != nil {
