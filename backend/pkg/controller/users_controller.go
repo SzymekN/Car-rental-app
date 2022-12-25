@@ -33,6 +33,7 @@ func (uh *UserHandler) RegisterRoutes() {
 	uh.group.POST("/users", uh.Save, uh.authConf.IsAuthorized)
 	uh.group.PUT("/users", uh.Update, uh.authConf.IsAuthorized)
 	uh.group.DELETE("/users", uh.Delete, uh.authConf.IsAuthorized)
+	uh.group.PUT("/clients/update/password", uh.UpdatePassword, uh.authConf.IsAuthorized)
 }
 
 func (uh *UserHandler) Save(c echo.Context) error {
@@ -58,4 +59,46 @@ func (uh *UserHandler) GetById(c echo.Context) error {
 func (uh *UserHandler) GetAll(c echo.Context) error {
 	d, l := executor.GenericGetAll(c, uh.sysOperator, []model.User{})
 	return HandleRequestResult(c, d, l)
+}
+
+func (uh *UserHandler) UpdatePassword(c echo.Context) error {
+	logger := uh.sysOperator.SystemLogger
+	logger.Log = producer.Log{}
+	prefix := fmt.Sprintf("UpdatePassword ")
+	var newPassword string
+
+	defer func() {
+		logger.Log.Msg = fmt.Sprintf("%s %s", prefix, logger.Log.Msg)
+		logger.ProduceWithJSON(c)
+	}()
+
+	var passwords changePasswordWrapper
+	passwords, logger.Log = BindChangePassword(c, passwords)
+
+	if logger.Err != nil {
+		return logger.Err
+	}
+
+	id := GetUIDFromContextToken(c)
+	mu := model.User{ID: id}
+
+	mu, logger.Log = executor.GenericGetWithConstraint(c, uh.sysOperator, mu, "id=?", fmt.Sprint(id))
+	if logger.Err != nil {
+		return logger.Err
+	}
+
+	logger.Log = auth.CheckPasswordHash(passwords.OldPassword, mu.Password)
+	if logger.Err != nil {
+		return logger.Err
+	}
+
+	newPassword, logger.Log = auth.GeneratehashPassword(passwords.NewPassword)
+	if logger.Err != nil {
+		return logger.Err
+	}
+
+	mu.Password = newPassword
+	d, l := executor.GenericUpdate(c, uh.sysOperator, mu)
+	return c.JSON(l.Code, d)
+
 }

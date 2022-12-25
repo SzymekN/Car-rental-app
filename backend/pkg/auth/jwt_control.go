@@ -20,7 +20,6 @@ type JWTControl struct {
 }
 
 type JWTControllerInterface interface {
-	GeneratehashPassword(password string) (string, producer.Log)
 	Validate(auth string, c echo.Context) (interface{}, error)
 	GenerateJWT(id int, email, role string) (string, producer.Log)
 }
@@ -29,7 +28,7 @@ func (j JWTControl) produceMessage(k, val string) {
 	j.JwtQE.Svr.Logger.ProduceMessage(k, val)
 }
 
-func (j JWTControl) GeneratehashPassword(password string) (string, producer.Log) {
+func GeneratehashPassword(password string) (string, producer.Log) {
 	log := producer.Log{}
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	if err != nil {
