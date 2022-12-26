@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="assets/css/Navbar-With-Button-icons.css">
     <link rel="stylesheet" href="assets/css/settings.css">
     <link rel="stylesheet" href="assets/css/vehicle.css">
+<script>window.onload = function() {
+loadProfileInfo();
+};</script>
 </head>
 
 <body style="color: var(--bs-navbar-color);background: var(--bs-dark);">
@@ -21,7 +24,7 @@
                 <div class="modal-body">
                     <p>Usunięcie konta będzie nieodwracalne!&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Jeśli jesteś pewien swojej decyzji wpisz hasło i potwierdź.</p><input type="password" id="password" name="password" style="width: 100%;border-width: 2px;border-radius: 5px;margin-top: 20px;">
                 </div>
-                <div class="modal-footer" style="border-style: none;"><button class="btn btn-danger" type="button"><strong>Usuwam konto</strong></button></div>
+                <div class="modal-footer" style="border-style: none;"><button class="btn btn-danger" type="button" onclick="selfDelete()"><strong>Usuwam konto</strong></button></div>
             </div>
         </div>
     </div>
@@ -118,6 +121,7 @@
         </div>
     </footer>
     <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="assets/js/delete.js"></script>
     <script src="assets/js/dropdown-login-menu.js"></script>
     <script src="assets/js/login.js"></script>
     <script src="assets/js/logout.js"></script>

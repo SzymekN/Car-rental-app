@@ -1,12 +1,12 @@
-function pay(){
-    createNewReservation();
+async function pay(){
+    await createNewReservation();
+    //console.log(JSON.stringify(localStorage.getItem("startDate")));
     document.location.href = "user-reservations.html";
-    
   }
 function createNewReservation(){
     const rentInfo = {
-        start_date: localStorage.getItem("startDate"),
-        end_date: localStorage.getItem("endDate"),
+        start_date: JSON.stringify(localStorage.getItem("startDate")),
+        end_date: JSON.stringify(localStorage.getItem("endDate")),
         pickup_address: localStorage.getItem("pickupAdress"),
         vehicle_id: parseInt(localStorage.getItem("currentCar"))
     }
@@ -25,10 +25,12 @@ function createNewReservation(){
               const error = (data && data.message) || r.status;
               return Promise.reject(error);
             }
-              var cost=loadCar(data);
               return res(cost);
           }).then(res.toString).catch( err => {
               return rej(err);                         
           });                                              
   });
+}
+function getReservations(){
+  
 }

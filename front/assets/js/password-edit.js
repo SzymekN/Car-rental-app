@@ -10,28 +10,27 @@ function updatePassword(){
             document.location.href = "user-password.html";
             return;
         }
-        if(newVal==confirmVal)
-            rentData=Object.assign(updateData,{new_password:newVal});
+        if(newVal==confirmVal){
+            Object.assign(updateData,{old_password:oldVal});
+            Object.assign(updateData,{new_password:newVal});
+            update(updateData);
+        }
         else{
             alert("Hasła nie są takie same!")
             document.location.href = "user-password.html";
-            return;
         }
     }
     else{
         alert("Wszystkie pola muszą być uzupełnione!")
         document.location.href = "user-password.html";
-        return;
     }
-    console.log(changeData)
-  
 }
 
 function update(data){
     var target="http://192.168.33.50:8200/api/v1/clients/update/password";
     event.preventDefault();
         return new Promise(async (res, rej) => {                       
-          await fetch(target, {method: "POST",mode: 'cors',body: JSON.stringify(data),
+          await fetch(target, {method: "PUT",mode: 'cors',body: JSON.stringify(data),
           headers: {
             "Content-Type": "application/json",
             "Authorization":"Bearer "+localStorage.getItem("token")
@@ -42,8 +41,7 @@ function update(data){
               const error = (data && data.message) || r.status;
               return Promise.reject(error);
             }
-              var cost=loadCar(data);
-              return res(cost);
+              return res(data);
           }).then(res.toString).catch( err => {
               return rej(err);                         
           });                                              

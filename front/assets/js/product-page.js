@@ -235,7 +235,6 @@ async function getAvailableCars() {
           const error = (data && data.message) || r.status;
           return Promise.reject(error);
         }
-          //res(r);                                      // resolve promise if success
           return res(data);
       }).then(res.toString).catch( err => {
           return rej(err);                         // don't try again 
