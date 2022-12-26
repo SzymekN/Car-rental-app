@@ -10,15 +10,29 @@ function formatDateOrder(date) {
     ].join('-');
 }
 
-function rentCar(){
+async function rentCar(){
     
     var start=new Date(JSON.stringify(localStorage.getItem("startDate")));
     var end=new Date(JSON.stringify(localStorage.getItem("endDate")));
-    //console.log(end);
     document.getElementById("startDate").textContent=formatDateOrder(start);
     document.getElementById("endDate").textContent=formatDateOrder(end);
-    getCar();
 
+    const value=await getCar();
+    document.getElementById("dailyCost").textContent=parseInt(value);
+
+    var rentCost=(end-start+1)*parseInt(value);
+    document.getElementById("rentCost").textContent=rentCost;
+    console.log(document.getElementById("adress").value)
+
+    var additional=0;
+
+    if(document.getElementById("adress").value=="Wypożyczalnia")
+      document.getElementById("additionalCosts").textContent=0;
+    else{
+      document.getElementById("additionalCosts").textContent=20;
+      additional=20;
+    }
+    document.getElementById("toPay").textContent=rentCost+additional;
 }
 
 function getCar(){
@@ -26,8 +40,8 @@ function getCar(){
   console.log(typeof parseInt(localStorage.getItem("currentCar")))
 var target="http://192.168.33.50:8200/api/v1/vehicles/single";
 event.preventDefault();
-    const getData=new Promise(async (res, rej) => {                       // return a promise
-      await fetch(target, {method: "POST",mode: 'cors',body: currentCar,
+    return new Promise(async (res, rej) => {                       // return a promise
+      await fetch(target, {method: "POST",mode: 'cors',body: JSON.stringify(currentCar),
       headers: {
         "Content-Type": "application/json",
         "Authorization":"Bearer "+localStorage.getItem("token")
@@ -39,19 +53,21 @@ event.preventDefault();
           const error = (data && data.message) || r.status;
           return Promise.reject(error);
         }
-          loadCar(data);
-          return res(data);
+          var cost=loadCar(data);
+          return res(cost);
       }).then(res.toString).catch( err => {
           return rej(err);                         // don't try again 
       });                                              // again until no more tries
   });
-
 }
 
 function loadCar(car){
-  alert("f");
+  //alert("f");
     console.log(car);
-    document.getElementById("registrationNumber").textContent=formatDateOrder(car.registrationNumber);
-
+    document.getElementById("currentCar").textContent=[car.brand,car.model].join(' ');
+    document.getElementById("registrationNumber").textContent=car.registrationNumber;
+    document.getElementById("dailyCost").textContent=car.dailyCost;
+    document.getElementById("fuelConsumption").textContent=car.fuelConsumption;
+    return car.dailyCost;
     
 }
