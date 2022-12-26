@@ -1,4 +1,5 @@
 //to do:  getAllFilters has to be in filter change, delete local variables when car is rented (start and end date)
+if(window.location.href.substring(window.location.href.lastIndexOf('/') + 1) == 'user-rent.html') {
 document.getElementById("startDate").addEventListener("change", function() {
     var input = this.value;
     //console.log(input);
@@ -11,7 +12,7 @@ document.getElementById("endDate").addEventListener("change", function() {
     localStorage.setItem("endDate",input);
     document.location.href = "user-rent.html";
 });
-
+}
 function padTo2Digits(num) {
     return num.toString().padStart(2, '0');
 }
@@ -25,16 +26,15 @@ function formatDate(date) {
   }
 
 async function getFilterCars(currentPage=0){
-    
+    //alert("F")
+    //console.log("Page location is " + window.location.href.substring(window.location.href.lastIndexOf('/') + 1))
     var start=new Date(JSON.stringify(localStorage.getItem("startDate")));
     var end=new Date(JSON.stringify(localStorage.getItem("endDate")));
     start.setDate(start.getDate()+1);
     end.setDate(end.getDate()+1);
 
-    //console.log(start)
-    //console.log(typeof start)
     var tempDate;
-    if(Object.keys(start).length!=0){
+    if(!isNaN(start)){
         document.getElementById("startDate").valueAsDate=start;
     }
     else{
@@ -42,7 +42,7 @@ async function getFilterCars(currentPage=0){
         localStorage.setItem("startDate",formatDate(tempDate))
         document.getElementById("startDate").valueAsDate = tempDate
     }
-    if(Object.keys(end).length!=0){
+    if(!isNaN(end)){
         document.getElementById("endDate").valueAsDate = end;
     }
     else{
@@ -63,35 +63,23 @@ async function getFilterCars(currentPage=0){
     var filteredCars;
     Promise.resolve(getAvailableCars()).then(cars=>{
         //localStorage.setItem("allCars",JSON.stringify(cars))
-        console.log("f"+JSON.stringify(filters))
         filteredCars=filterCars(cars,filters);
-        console.log(Object.entries(cars))
         makeFilters(cars);
         createFilterOptions();
-        console.log("filtered"+JSON.stringify(filteredCars))
         printFilteredCars(filteredCars,currentPage);
 });
-    
-    
-    
-   
-    
-    //const 
-
-    
-    
-    }
+}
 
 function printFilteredCars(filteredCars,currentPage){
     let temp, item, a, i,maxCarsPage=30;
 
     temp = document.getElementsByTagName("template")[0];
     item = temp.content.querySelector("div");
-    console.log(filteredCars);
+
     if(Object.keys(filteredCars).length!=0){
         // to do maksymalna liczba samochopdów dla kategorii
     for (i = currentPage*maxCarsPage; i < (currentPage*maxCarsPage)+maxCarsPage; i++) {
-        //console.log(i);
+
     //if(i<Object.keys(cars).length){
     if(i<Object.keys(filteredCars).length){
         
@@ -102,11 +90,10 @@ function printFilteredCars(filteredCars,currentPage){
         p[0].textContent=["Dzienny koszt:",filteredCars[i].dailyCost].join(' ');
         p[1].textContent=["Spalanie:",filteredCars[i].fuelConsumption].join(' ');
         let b=a.querySelectorAll("button");
-        //console.log(cars[i].id)
         b[0].id=filteredCars[i].id;
         b[0].addEventListener('click', function handleClick(event) {
             localStorage.setItem("currentCar",this.id);
-            console.log(this.id);
+            //console.log(this.id);
             document.location.href = "car-rent.html";
             rentCar();
     });
@@ -156,7 +143,6 @@ function filterCars(data,filters){
     }
    });
     
-   //console.log(filteredCars.get("2"));
    const res=Object.fromEntries(filteredCars);
 
    let returnArray=[];
@@ -178,7 +164,7 @@ function changeFilter(name){
 async function createFilterOptions(){
     
     const filterMap=new Map(JSON.parse(localStorage.getItem("allFilters")));
-    console.log("createFilteroptions"+Object.entries(filterMap))
+    //console.log("createFilteroptions"+Object.entries(filterMap))
     let filters=JSON.parse(localStorage.getItem("filters"));
     createFOption(filterMap,"activeBrand","brand",filters.brand,"brandList");
     createFOption(filterMap,"activeModel","model",filters.model,"modelList");
@@ -193,7 +179,7 @@ function createFOption(filterMap,buttonName,fName,name,listName){
         item.innerText=name;
     else
         item.innerText="Wszystkie";
-    console.log(filterMap)
+    //console.log(filterMap)
     let i=0,temp;
     for(i;i<filterMap.get(fName).length;i++){
         a=document.createElement("li");
