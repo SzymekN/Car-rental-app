@@ -3,7 +3,6 @@ package controller
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/SzymekN/Car-rental-app/pkg/auth"
@@ -64,34 +63,8 @@ func (uh *VehicleHandler) GetAll(c echo.Context) error {
 	return HandleRequestResult(c, d, l)
 }
 
-type CustomTime struct {
-	time.Time
-}
-
-type DateRange struct {
-	StartDate CustomTime `json:"start_date,omitempty"`
-	EndDate   CustomTime `json:"end_date,omitempty"`
-}
-
-func (t CustomTime) MarshalJSON() ([]byte, error) {
-	date := t.Time.Format("2006-01-02")
-	date = fmt.Sprintf(`"%s"`, date)
-	return []byte(date), nil
-}
-
-func (t *CustomTime) UnmarshalJSON(b []byte) (err error) {
-	s := strings.Trim(string(b), "\"")
-
-	date, err := time.Parse("2006-01-02", s)
-	if err != nil {
-		return err
-	}
-	t.Time = date
-	return
-}
-
 func (uh *VehicleHandler) GetAvailable(c echo.Context) error {
-	dr := DateRange{}
+	dr := model.DateRange{}
 	logger := uh.sysOperator.SystemLogger
 	logger.Log = producer.Log{}
 	prefix := fmt.Sprintf("GetAvailableVehicles ")
