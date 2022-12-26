@@ -18,9 +18,10 @@ async function rentCar(){
     document.getElementById("endDate").textContent=formatDateOrder(end);
 
     const value=await getCar();
+    var dateDiff=(end.getTime()-start.getTime())/(1000*3600*24)+1
     document.getElementById("dailyCost").textContent=parseInt(value);
 
-    var rentCost=(end-start+1)*parseInt(value);
+    var rentCost=dateDiff*parseInt(value);
     document.getElementById("rentCost").textContent=rentCost;
     console.log(document.getElementById("adress").value)
 
