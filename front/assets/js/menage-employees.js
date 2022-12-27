@@ -12,7 +12,6 @@ async function loadEmployees(currentPage=0){
                 elem.append(tmp2.content.cloneNode(true));
                 let td=document.createElement('td');
                 
-                console.log(userInfo)
                 elem.querySelector("#name").innerHTML=employeesInfo[i].name;
                 elem.querySelector("#surname").innerHTML=employeesInfo[i].surname;
                 elem.querySelector("#email").innerHTML=userInfo.email;
@@ -26,6 +25,15 @@ async function loadEmployees(currentPage=0){
         }
     }
 }
+function getEmployeeID(id){
+    localStorage.setItem("employeeId",id);
+}
+async function employeeDelete(){
+    var currentEmployee ={id:parseInt(localStorage.getItem("employeeId"))};
+    await getInfoWithBody("http://192.168.33.50:8200/api/v1/employees","DELETE",currentEmployee);
+    document.location.href = "menage-employees.html";
+}
+
 // function getEmployees(){
 //     var target="http://192.168.33.50:8200/api/v1/employees/all";
 //     event.preventDefault();
