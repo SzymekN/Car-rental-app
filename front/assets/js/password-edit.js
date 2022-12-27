@@ -13,7 +13,8 @@ function updatePassword(){
         if(newVal==confirmVal){
             Object.assign(updateData,{old_password:oldVal});
             Object.assign(updateData,{new_password:newVal});
-            update(updateData);
+            var response=Promise.resolve(update(updateData));
+            
         }
         else{
             alert("Hasła nie są takie same!")

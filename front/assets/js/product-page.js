@@ -241,11 +241,11 @@ async function getAvailableCars() {
       });                                              // again until no more tries
   });
   
-  getData.then(data=>{
-    localStorage.setItem("allCars",JSON.stringify(data))
-    //makeFilters(data);
-    console.log("F"+Object.values(data));
-  }).catch(err=>console.log(err));
+//   getData.then(data=>{
+//     localStorage.setItem("allCars",JSON.stringify(data))
+//     //makeFilters(data);
+//     console.log("F"+Object.values(data));
+//   }).catch(err=>console.log(err));
 }
 
 
