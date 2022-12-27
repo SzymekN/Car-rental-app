@@ -98,10 +98,10 @@ func (uh *VehicleHandler) GetAvailable(c echo.Context) error {
 		return logger.Err
 	}
 
-	// d, l := executor.GenericGetAllWithConstraint(c, uh.sysOperator, []model.Rental{}, "start_date not between ? and ? and end_date not between ? and ?", start, end, start, end)
 	db := uh.sysOperator.DB
 	vehicles := []model.Vehicle{}
-	result := db.Debug().Model(&model.Vehicle{}).Select("vehicle.*").Joins("left join rental on vehicle.ID = rental.vehicle_id and start_date not between ? and ? and end_date not between ? and ?", start, end, start, end)
+	result := db.Debug().Model(&model.Vehicle{}).Select("vehicle.*").Where("vehicle.id not in (SELECT vehicle_id FROM `rental` where start_date between ? and ? and end_date between ? and ?)", start, end, start, end)
+
 	result.Scan(&vehicles)
 	// result.Find(&vehicles)
 	fmt.Println(vehicles)

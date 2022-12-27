@@ -20,7 +20,7 @@ func Insert[T model.GenericModel](c echo.Context, db *gorm.DB, d T) producer.Log
 
 	log := producer.Log{}
 	if err := db.Create(&d).Error; err != nil {
-		log.Code = http.StatusInternalServerError
+		log.Code = http.StatusBadRequest
 		log.Msg = fmt.Sprintf("[ERROR]: post query error, HTTP: %v", log.Code)
 		log.Err = err
 		log.Key = "err"
@@ -34,7 +34,7 @@ func CheckResultError(result *gorm.DB) producer.Log {
 	log := producer.Log{}
 	if err := result.Error; err != nil {
 		log.Key = "err"
-		log.Code = http.StatusNotFound
+		log.Code = http.StatusBadRequest
 		log.Msg = fmt.Sprintf("[ERROR] query error, HTTP: %v", log.Code)
 		log.Err = err
 		return log
