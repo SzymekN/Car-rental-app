@@ -190,10 +190,7 @@ func (uh *ClientHandler) GetProfileInfo(c echo.Context) error {
 
 	id := GetUIDFromContextToken(c)
 
-	// newmc := model.Client{}
-
 	result := db.Model(model.Client{}).Joins("join user on user.ID = client.user_id").Select("name, surname, phone_number, email").Where("user_id=?", id)
-	// newmc, logger.Log = executor.GenericGetWithConstraint(c, uh.sysOperator, model.Client{}, "user_id=?", fmt.Sprint(id))
 	logger.Log = executor.CheckResultError(result)
 
 	if logger.Err != nil {
@@ -202,8 +199,6 @@ func (uh *ClientHandler) GetProfileInfo(c echo.Context) error {
 	pi := profileInfo{}
 	result.Scan(&pi)
 
-	fmt.Println(pi)
-	// fmt.Println(newmc)
 	if logger.Err != nil {
 		return logger.Err
 	}
