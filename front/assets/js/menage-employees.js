@@ -12,6 +12,7 @@ async function loadEmployees(currentPage=0){
                 elem.append(tmp2.content.cloneNode(true));
                 let td=document.createElement('td');
                 
+                elem.querySelector("#id").innerHTML=employeesInfo[i].id;
                 elem.querySelector("#name").innerHTML=employeesInfo[i].name;
                 elem.querySelector("#surname").innerHTML=employeesInfo[i].surname;
                 elem.querySelector("#email").innerHTML=userInfo.email;
@@ -32,6 +33,37 @@ async function employeeDelete(){
     var currentEmployee ={id:parseInt(localStorage.getItem("employeeId"))};
     await getInfoWithBody("http://192.168.33.50:8200/api/v1/employees","DELETE",currentEmployee);
     document.location.href = "menage-employees.html";
+}
+
+
+async function addEmployee(){
+  var nameVal=document.getElementById('name').value;
+  var surnameVal=document.getElementById('surname').value;
+  var peselVal=document.getElementById('pesel').value;
+  var salaryVal=document.getElementById('salary').value;
+  var emailVal=document.getElementById('email').value;
+  var passwordVal=document.getElementById('password').value;
+  console.log(nameVal.length)
+  if(nameVal.length!=0&&surnameVal.length!=0&&peselVal.length!=0&&peselVal.length!=0&&salaryVal.length!=0&&emailVal.length!=0&&passwordVal.length!=0){
+  var employeeData = {
+    name: nameVal,
+    surname: surnameVal,
+    pesel: peselVal,
+    salary: salaryVal,
+    user:{
+      email: emailVal,
+      password: passwordVal,
+      role: "employee"
+    }
+  }
+  var response=Promise.resolve(getInfoWithBody("http://192.168.33.50:8200/api/v1/employees","POST",employeeData));
+  console.log(repsonse);
+}else{
+  alert("Wszystkie pola muszą być uzupełnione!")
+  return null;
+}
+    
+    
 }
 
 // function getEmployees(){
