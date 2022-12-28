@@ -111,7 +111,7 @@ func (j JWTHandler) SignUp(c echo.Context) error {
 	}
 
 	// hash password
-	mc.User.Password, logger.Log = j.JwtC.GeneratehashPassword(mc.User.Password)
+	mc.User.Password, logger.Log = GeneratehashPassword(mc.User.Password)
 	if logger.Err != nil {
 		return logger.Err
 	}

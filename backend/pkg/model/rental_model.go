@@ -1,8 +1,6 @@
 package model
 
-import (
-	"time"
-)
+import "time"
 
 type Rental struct {
 	ID            int       `json:"id"`

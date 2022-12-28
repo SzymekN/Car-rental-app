@@ -32,12 +32,125 @@ func NewClientHandler(sysOp producer.SystemOperator, ac auth.AuthConfig, g *echo
 func (uh *ClientHandler) RegisterRoutes() {
 	uh.group.GET("/clients", uh.GetById, uh.authConf.IsAuthorized)
 	uh.group.GET("/clients/all", uh.GetAll, uh.authConf.IsAuthorized)
-	uh.group.POST("/clients", uh.Save, uh.authConf.IsAuthorized)
+	uh.group.GET("/clients/profileInfo", uh.GetProfileInfo, uh.authConf.IsAuthorized)
 	uh.group.PUT("/clients", uh.Update, uh.authConf.IsAuthorized)
-	uh.group.DELETE("/clients", uh.Delete, uh.authConf.IsAuthorized)
 	uh.group.PUT("/clients/self", uh.UpdateSelf, uh.authConf.IsAuthorized)
+	uh.group.POST("/clients", uh.Save, uh.authConf.IsAuthorized)
+	uh.group.DELETE("/clients", uh.Delete, uh.authConf.IsAuthorized)
 	uh.group.DELETE("/clients/self", uh.DeleteSelf, uh.authConf.IsAuthorized)
 }
+
+func GetClientID(c echo.Context, so producer.SystemOperator, uid int) (int, producer.Log) {
+	db := so.GetDB()
+	var id int
+	result := db.Model(&model.Client{}).Select("ID").Where("user_id=?", uid)
+
+	if err := result.Error; err != nil {
+		log := producer.Log{
+			Key:  "err",
+			Msg:  "Couldn't get client id",
+			Err:  err,
+			Code: http.StatusInternalServerError,
+		}
+		return -1, log
+	}
+
+	result.Find(&id)
+	return id, producer.Log{}
+
+}
+
+// TODO error check
+func GetUIDFromContextToken(c echo.Context) int {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	fmt.Println(claims)
+	uid := int(claims["id"].(float64))
+	return uid
+}
+
+func GetCIDFromContextToken(c echo.Context, so producer.SystemOperator) (int, producer.Log) {
+
+	log := producer.Log{}
+	var uid, cid int
+
+	uid = GetUIDFromContextToken(c)
+
+	// if log.Err != nil {
+	// 	return -1, log
+	// }
+
+	cid, log = GetClientID(c, so, uid)
+	if log.Err != nil {
+		return -1, log
+	}
+
+	return cid, log
+}
+
+type passwordWrapper struct {
+	Password string `json:"password"`
+}
+
+type changePasswordWrapper struct {
+	OldPassword string `json:"old_password"`
+	NewPassword string `json:"new_password"`
+}
+
+type profileInfo struct {
+	Name        string `json:"name,omitempty"`
+	Surname     string `json:"surname,omitempty"`
+	PhoneNumber string `json:"phone_number,omitempty"`
+	Email       string `json:"email,omitempty"`
+}
+
+func BindAny[T any](c echo.Context, d T) (T, producer.Log) {
+
+	if err := c.Bind(&d); err != nil {
+		status := http.StatusBadRequest
+		msg := fmt.Sprintf("[ERROR]: couldn't bind data from request, HTTP: %v", status)
+		log := producer.Log{
+			Key:  "err",
+			Msg:  msg,
+			Code: status,
+			Err:  err}
+		return d, log
+	}
+
+	return d, producer.Log{}
+}
+
+// func BindPassword(c echo.Context, d passwordWrapper) (passwordWrapper, producer.Log) {
+
+// 	if err := c.Bind(&d); err != nil {
+// 		status := http.StatusBadRequest
+// 		msg := fmt.Sprintf("[ERROR]: couldn't bind data from request, HTTP: %v", status)
+// 		log := producer.Log{
+// 			Key:  "err",
+// 			Msg:  msg,
+// 			Code: status,
+// 			Err:  err}
+// 		return d, log
+// 	}
+
+// 	return d, producer.Log{}
+// }
+
+// func BindChangePassword(c echo.Context, d changePasswordWrapper) (changePasswordWrapper, producer.Log) {
+
+// 	if err := c.Bind(&d); err != nil {
+// 		status := http.StatusBadRequest
+// 		msg := fmt.Sprintf("[ERROR]: couldn't bind data from request, HTTP: %v", status)
+// 		log := producer.Log{
+// 			Key:  "err",
+// 			Msg:  msg,
+// 			Code: status,
+// 			Err:  err}
+// 		return d, log
+// 	}
+
+// 	return d, producer.Log{}
+// }
 
 func (uh *ClientHandler) Save(c echo.Context) error {
 	d, l := executor.GenericPost(c, uh.sysOperator, model.Client{})
@@ -63,6 +176,37 @@ func (uh *ClientHandler) GetAll(c echo.Context) error {
 	d, l := executor.GenericGetAll(c, uh.sysOperator, []model.Client{})
 	return HandleRequestResult(c, d, l)
 }
+
+func (uh *ClientHandler) GetProfileInfo(c echo.Context) error {
+	logger := uh.sysOperator.SystemLogger
+	logger.Log = producer.Log{}
+	prefix := fmt.Sprintf("GetProfileInfo ")
+	db := uh.sysOperator.GetDB()
+
+	defer func() {
+		logger.Log.Msg = fmt.Sprintf("%s %s", prefix, logger.Log.Msg)
+		logger.ProduceWithJSON(c)
+	}()
+
+	id := GetUIDFromContextToken(c)
+
+	result := db.Model(model.Client{}).Joins("join user on user.ID = client.user_id").Select("name, surname, phone_number, email").Where("user_id=?", id)
+	logger.Log = executor.CheckResultError(result)
+
+	if logger.Err != nil {
+		return logger.Err
+	}
+	pi := profileInfo{}
+	result.Scan(&pi)
+
+	if logger.Err != nil {
+		return logger.Err
+	}
+
+	return c.JSON(logger.Code, pi)
+
+}
+
 func (uh *ClientHandler) UpdateSelf(c echo.Context) error {
 	logger := uh.sysOperator.SystemLogger
 	logger.Log = producer.Log{}
@@ -80,7 +224,7 @@ func (uh *ClientHandler) UpdateSelf(c echo.Context) error {
 		return logger.Log.Err
 	}
 
-	id := getIDFromContextToken(c)
+	id := GetUIDFromContextToken(c)
 	mc.User.ID = id
 	mc.UserID = id
 	mc.ID = 0
@@ -105,40 +249,13 @@ func (uh *ClientHandler) UpdateSelf(c echo.Context) error {
 
 }
 
-func BindPassword(c echo.Context, d passwordWrapper) (passwordWrapper, producer.Log) {
-
-	if err := c.Bind(&d); err != nil {
-		status := http.StatusBadRequest
-		msg := fmt.Sprintf("[ERROR]: couldn't bind data from request, HTTP: %v", status)
-		log := producer.Log{
-			Key:  "err",
-			Msg:  msg,
-			Code: status,
-			Err:  err}
-		return d, log
-	}
-
-	return d, producer.Log{}
-}
-
-type passwordWrapper struct {
-	Password string `json:"password"`
-}
-
-func getIDFromContextToken(c echo.Context) int {
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	fmt.Println(claims)
-	id := int(claims["id"].(float64))
-	return id
-}
-
-func GetUIDFromContextToken(c echo.Context, so producer.SystemOperator) (int, producer.Log) {
-	id := getIDFromContextToken(c)
-	mu := model.Client{UserID: id}
-	mu, so.Log = executor.GenericGetWithConstraint(c, so, mu, "user_id=?", fmt.Sprint(id))
-	return mu.ID, so.Log
-}
+// prawdopodobnie do usunięcia
+// func GetCIDFromContextToken(c echo.Context, so producer.SystemOperator) (int, producer.Log) {
+// 	id := getUIDFromContextToken(c)
+// 	mu := model.Client{UserID: id}
+// 	mu, so.Log = executor.GenericGetWithConstraint(c, so, mu, "user_id=?", fmt.Sprint(id))
+// 	return mu.ID, so.Log
+// }
 
 func (uh *ClientHandler) DeleteSelf(c echo.Context) error {
 	logger := uh.sysOperator.SystemLogger
@@ -151,13 +268,13 @@ func (uh *ClientHandler) DeleteSelf(c echo.Context) error {
 	}()
 
 	var pwd passwordWrapper
-	pwd, logger.Log = BindPassword(c, pwd)
+	pwd, logger.Log = BindAny(c, pwd)
 
 	if logger.Err != nil {
 		return logger.Err
 	}
 
-	id := getIDFromContextToken(c)
+	id := GetUIDFromContextToken(c)
 	mu := model.User{ID: id}
 
 	mu, logger.Log = executor.GenericGetWithConstraint(c, uh.sysOperator, mu, "id=?", fmt.Sprint(id))

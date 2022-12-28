@@ -10,3 +10,7 @@ type User struct {
 func (d User) GetId() int {
 	return d.ID
 }
+
+type UIDWrapper struct {
+	UID int `json:"id"`
+}

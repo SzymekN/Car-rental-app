@@ -3,7 +3,6 @@ package controller
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/SzymekN/Car-rental-app/pkg/auth"
@@ -64,34 +63,8 @@ func (uh *VehicleHandler) GetAll(c echo.Context) error {
 	return HandleRequestResult(c, d, l)
 }
 
-type CustomTime struct {
-	time.Time
-}
-
-type DateRange struct {
-	StartDate CustomTime `json:"start_date,omitempty"`
-	EndDate   CustomTime `json:"end_date,omitempty"`
-}
-
-func (t CustomTime) MarshalJSON() ([]byte, error) {
-	date := t.Time.Format("2006-01-02")
-	date = fmt.Sprintf(`"%s"`, date)
-	return []byte(date), nil
-}
-
-func (t *CustomTime) UnmarshalJSON(b []byte) (err error) {
-	s := strings.Trim(string(b), "\"")
-
-	date, err := time.Parse("2006-01-02", s)
-	if err != nil {
-		return err
-	}
-	t.Time = date
-	return
-}
-
 func (uh *VehicleHandler) GetAvailable(c echo.Context) error {
-	dr := DateRange{}
+	dr := model.DateRange{}
 	logger := uh.sysOperator.SystemLogger
 	logger.Log = producer.Log{}
 	prefix := fmt.Sprintf("GetAvailableVehicles ")
@@ -125,10 +98,10 @@ func (uh *VehicleHandler) GetAvailable(c echo.Context) error {
 		return logger.Err
 	}
 
-	// d, l := executor.GenericGetAllWithConstraint(c, uh.sysOperator, []model.Rental{}, "start_date not between ? and ? and end_date not between ? and ?", start, end, start, end)
 	db := uh.sysOperator.DB
 	vehicles := []model.Vehicle{}
-	result := db.Debug().Model(&model.Vehicle{}).Select("vehicle.*").Joins("left join rental on vehicle.ID = rental.vehicle_id and start_date not between ? and ? and end_date not between ? and ?", start, end, start, end)
+	result := db.Debug().Model(&model.Vehicle{}).Select("vehicle.*").Where("vehicle.id not in (SELECT vehicle_id FROM `rental` where start_date between ? and ? and end_date between ? and ?)", start, end, start, end)
+
 	result.Scan(&vehicles)
 	// result.Find(&vehicles)
 	fmt.Println(vehicles)
