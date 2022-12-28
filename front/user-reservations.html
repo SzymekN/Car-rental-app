@@ -6,12 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <title>car-rental</title>
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/Lista-Productos-Canito.css">
     <link rel="stylesheet" href="assets/css/Navbar-With-Button-icons.css">
     <link rel="stylesheet" href="assets/css/settings.css">
     <link rel="stylesheet" href="assets/css/vehicle.css">
+<script>window.onload = function() {
+loadRent();
+};</script>
 </head>
 
-<body style="color: var(--bs-navbar-color);background: var(--bs-gray-500);--bs-body-bg: #ffffff;">
+<body style="color: var(--bs-navbar-color);background: var(--bs-dark);"><template id="rentTemp" >
+   
+</template>
+
     <nav class="navbar navbar-light navbar-expand-md py-3" style="color: var(--bs-navbar-active-color);background: var(--bs-navbar-active-color);">
         <div class="container"><a class="navbar-brand d-flex align-items-center" href="user-rent.html"><span class="bs-icon-sm bs-icon-rounded bs-icon-primary d-flex justify-content-center align-items-center me-2 bs-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="1em" height="1em" fill="currentColor">
                         <!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. -->
@@ -30,7 +37,6 @@
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuCickable" style="margin: 0px 0px 0px -50px;min-width: 150px;">
                         <li id="my_reservations" class="dropdown-item" style="border-radius: 5%;margin: 0px 0px 0px 0px;margin-right: -26px;" onclick="location.href=&quot;user-reservations.html&quot;">Moje rezerwacje</li>
                         <li id="reports" class="dropdown-item" style="border-radius: 5%;margin: 0px 0px 0px 0px;margin-right: -26px;" onclick="location.href=&quot;user-reports.html&quot;">Zgłoszenia</li>
-                        <li id="messages" class="dropdown-item" style="border-radius: 5%;" onclick="location.href=&quot;user-messages.html&quot;">Wiadomości</li>
                         <li id="settings" class="dropdown-item" style="border-radius: 5%;" onclick="location.href=&quot;user-settings.html&quot;">Ustawienia</li>
                         <li id="logout" class="dropdown-item" style="border-radius: 5%;" onclick="logout()">Wyloguj</li>
                     </ul>
@@ -38,7 +44,89 @@
             </div>
         </div>
     </nav>
-    <footer class="text-center bg-dark py-4" style="bottom: 0;width:100%;position: fixed;">
+    <div class="container" style="margin-top: 54px;width: 100%;max-width: 100%;margin-left: 0px;margin-right: 0px;padding-left: 0px;padding-right: 0px;">
+        <div class="row" style="width: 100%;">
+            <div class="col-md-4" style="width: 9%;"></div>
+            <div class="col-md-4" style="width: 80%;padding-right: 0px;padding-left: 0px;min-width: 1148px;">
+                <div class="card-group">
+                    <div class="card">
+                        <div class="card-body" id="rentGroup" style="width: 100%;"><!-- <template id="rentTemp">
+   
+</template> -->
+
+<template id="tmpl">
+    <div id="rentDiv" style="height: 190px;margin-top: 20px">
+        <div>
+            <div style="width: 480px;display: inline-block;float: right;">
+                <div id="vehicle" style="height: 168px;float: left;background: var(--bs-gray-100);border: 1px solid var(--bs-gray-800);border-radius: 5px;"><img id="image" class="img-fluid" src="assets/img/maluch.jpg" height="151" width="196" style="margin-top: 8px;margin-left: 7px;padding: 16px;position: Absolute;border-color: var(--bs-border-color-translucent);" />
+                    <h3 id="name" style="margin-top: 13px;margin-left: 216px;padding-top: 8px;">Name</h3>
+                    <h5 id="daily_cost" style="margin-top: 7px;margin-left: 216px;width: 40%;float: left;">Paragraph</h5>
+                    <h5 id="fuel_consumption" style="margin-top: 12px;margin-left: 216px;width: 30%;float: left;">Paragraph</h5>
+                </div>
+            </div>
+            <div style="display: inline-block;width: 580px;margin-top: 0px;padding-left: 20px;padding-top: 20px;padding-bottom: 20px;height: 90px;">
+                <div style="height: 28px;width: 580px;">
+                    <div style="width: 325px;display: inline-block;float: left;">
+                        <h5 id="status" style="width: 160px;margin-right: -1px;height: 54px;">Status:</h5>
+                    </div>
+                    <div style="width: 210px;display: inline-block;float: left;">
+                        <h5 id="start_date" style="width: 210px;padding-left: 0px;margin-left: 0px;height: 54px;">Rozpoczęcie wynajmu:</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="display: inline-block;width: 580px;padding-left: 20px;padding-bottom: 20px;margin-top: 2px;padding-top: 0px;height: 54px;">
+            <div style="height: 28px;">
+                <div style="width: 325px;display: inline-block;float: left;">
+                    <h5 id="rent_cost"style="width: 170px;margin-right: -1px;height: 54px;border-radius: 2px;">Zapłacona kwota:</h5>
+                </div>
+                <div style="width: 210px;display: inline-block;float: left;height: 54px;">
+                    <h5 id="end_date" style="width: 210px;padding-left: 0px;margin-left: 0px;">Zakończenie wynajmu:</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+  </template>
+  
+  <!-- <script>
+    let elem = document.createElement('div');
+  
+    // Clone the template content to reuse it multiple times
+    elem.append(tmpl.content.cloneNode(true));
+  
+    document.body.append(elem);
+    // Now the script from <template> runs
+  </script> -->
+<!--border-bottom: 1px solid var(--bs-black);--></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4" style="width: 9%;"></div>
+        </div>
+    </div>
+    <footer class="text-center bg-dark py-4" style="bottom: 0px;width: 100%;position: fixed;margin-top: -1px;padding-top: 0px;height: 70px;">
+        <div class="container">
+            <div class="row row-cols-1 row-cols-lg-3">
+                <div class="col">
+                    <p class="text-muted my-2">Copyright&nbsp;© 2022 Brand</p>
+                </div>
+                <div class="col">
+                    <ul class="list-inline my-2">
+                        <li class="list-inline-item me-4" style="<button class=&quot;btn btn-primary&quot; type=&quot;button&quot;>Button</button>"></li>
+                        <li class="list-inline-item me-4"></li>
+                        <li class="list-inline-item"></li>
+                    </ul>
+                </div>
+                <div class="col">
+                    <ul class="list-inline my-2">
+                        <li class="list-inline-item"><a class="link-secondary" href="#">Privacy Policy</a></li>
+                        <li class="list-inline-item"><a class="link-secondary" href="#">Terms of Use</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <footer class="text-center bg-dark py-4" style="bottom: 0px;width: 100%;position: fixed;margin-top: -1px;padding-top: 0px;height: 70px;">
         <div class="container">
             <div class="row row-cols-1 row-cols-lg-3">
                 <div class="col">
@@ -61,12 +149,21 @@
         </div>
     </footer>
     <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="assets/js/delete.js"></script>
     <script src="assets/js/dropdown-login-menu.js"></script>
+    <script src="assets/js/getInfo.js"></script>
     <script src="assets/js/login.js"></script>
     <script src="assets/js/logout.js"></script>
+    <script src="assets/js/menage-employees.js"></script>
+    <script src="assets/js/menage-reports.js"></script>
+    <script src="assets/js/menage-users.js"></script>
+    <script src="assets/js/password-edit.js"></script>
     <script src="assets/js/product-page.js"></script>
+    <script src="assets/js/profile-edit.js"></script>
     <script src="assets/js/register.js"></script>
     <script src="assets/js/rent.js"></script>
+    <script src="assets/js/reservations.js"></script>
+    <script src="assets/js/view-logs.js"></script>
 </body>
 
 </html>

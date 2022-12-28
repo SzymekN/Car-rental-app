@@ -1,5 +1,4 @@
 function chkLogout(target, times, delay) {
-
     return new Promise((res, rej) => {                       // return a promise
         fetch(target, {method: "GET",mode: 'cors',
         headers: {
@@ -37,5 +36,6 @@ function chkLogout(target, times, delay) {
   async function logoutAction(){
     if(localStorage.getItem("token")==null){
       document.location.href = "index.html";
+      localStorage.clear();
     }else(console.log('error: token still exists!'))
   }

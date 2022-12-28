@@ -30,7 +30,7 @@ func NewUserHandler(sysOp producer.SystemOperator, ac auth.AuthConfig, g *echo.G
 }
 
 func (uh *UserHandler) RegisterRoutes() {
-	uh.group.GET("/users", uh.GetById, uh.authConf.IsAuthorized)
+	uh.group.POST("/users/info", uh.GetById, uh.authConf.IsAuthorized)
 	uh.group.GET("/users/all", uh.GetAll, uh.authConf.IsAuthorized)
 	uh.group.POST("/users", uh.Save, uh.authConf.IsAuthorized)
 	uh.group.PUT("/users", uh.Update, uh.authConf.IsAuthorized)

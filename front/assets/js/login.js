@@ -5,8 +5,9 @@ function login () {
 const fetchPromise=chkLogin(t, 3, 1000).then((response) => response.json())
 .then((data) => {
   localStorage.setItem("token",data.token)
+  console.log(data)
   if(data.token)
-    loginSuccess();
+    loginSuccess(data.role);
   else
     alert("Wrong credentials!");
  
@@ -35,9 +36,21 @@ function chkLogin(target, times, delay) {
   });
 }
 
-async function loginSuccess(){
+async function loginSuccess(role){
   if(localStorage.getItem("token")){//!="undefined"
-    document.location.href = "user-rent.html";
+    //console.log(role=="client")
+    if(role=="client")
+      document.location.href = "user-rent.html";
+    else if(role=="employee")
+      document.location.href = "employee-main.html";
+    else if(role=="accountant")
+      document.location.href = "accountant-main.html";
+    else if(role=="driver")
+      document.location.href = "driver-main.html";
+    else if(role=="admin")
+      document.location.href = "menage-employees.html";
+
+
   }
 }
 
