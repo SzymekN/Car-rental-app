@@ -1,40 +1,97 @@
-//wywolanie na poczatku 
-// if(localStorage.getItem("currentPage"))
-//     getFilterCars(localStorage.getItem("currentPage"));
-// else
-//     getFilterCars();
+//to do:  getAllFilters has to be in filter change, delete local variables when car is rented (start and end date)
+document.getElementById("startDate").addEventListener("change", function() {
+    var input = this.value;
+    //console.log(input);
+    localStorage.setItem("startDate",input);
+    document.location.href = "user-rent.html";
+});
+document.getElementById("endDate").addEventListener("change", function() {
+    var input = this.value;
+    //console.log(input);
+    localStorage.setItem("endDate",input);
+    document.location.href = "user-rent.html";
+});
+
+function padTo2Digits(num) {
+    return num.toString().padStart(2, '0');
+}
+
+function formatDate(date) {
+    return [
+      date.getFullYear(),
+      padTo2Digits(date.getMonth() + 1),
+      padTo2Digits(date.getDate()),
+    ].join('-');
+  }
 
 function getFilterCars(currentPage=0){
+    
+    var start=new Date(JSON.stringify(localStorage.getItem("startDate")));
+    var end=new Date(JSON.stringify(localStorage.getItem("endDate")));
+    start.setDate(start.getDate()+1);
+    end.setDate(end.getDate()+1);
+
+    //console.log(start)
+    var tempDate;
+    if(start){
+        document.getElementById("startDate").valueAsDate=start;
+    }
+    else{
+        tempDate=new Date()
+        localStorage.setItem("startDate",formatDate(tempDate))
+        document.getElementById("startDate").valueAsDate = tempDate
+    }
+    if(end){
+        document.getElementById("endDate").valueAsDate = end;
+    }
+    else{
+        tempDate=new Date()
+        localStorage.setItem("endDate",formatDate(tempDate))
+        document.getElementById("endDate").valueAsDate = tempDate
+    }
+        
+    getAvailableCars();
 
     var filters,maxCarsPage=30;
-    
     if(localStorage.getItem("filters"))
-        filters=localStorage.getItem("filters");
-    else
-        filters="NULL";
-    
-    
-    var cars=filterCars(filters);
-    
-   
-    //var cars = [filters, '1', '3', '7' ];
-    
+        filters=JSON.parse(localStorage.getItem("filters"));
+    else{
+        // as many nulls as categories
+        filters={"brand":"Wszystkie","model":"Wszystkie","type":"Wszystkie","color":"Wszystkie"};
+        localStorage.setItem("filters",JSON.stringify(filters));
+    }
+
+    const cars=filterCars(filters);
+
     let temp, item, a, i;
 
     temp = document.getElementsByTagName("template")[0];
     item = temp.content.querySelector("div");
-    if(cars!=null){
+    console.log(cars);
+    if(Object.keys(cars).length!=0){
         // to do maksymalna liczba samochopdów dla kategorii
     for (i = currentPage*maxCarsPage; i < (currentPage*maxCarsPage)+maxCarsPage; i++) {
         //console.log(i);
+    //if(i<Object.keys(cars).length){
+       
     if(i<Object.keys(cars).length){
-      a = document.importNode(item, true);
-      let elem=a.querySelectorAll("h3");
-      elem[0].textContent=[cars[i].brand,cars[i].model].join(' ');
-      let p=a.querySelectorAll("h5");
-      p[0].textContent=["Dzienny koszt:",cars[i].dailyCost].join(' ');
-      p[1].textContent=["Spalanie:",cars[i].fuelConsumption].join(' ');
-      document.getElementById("cardGroup").appendChild(a);
+        
+        a = document.importNode(item, true);
+        let elem=a.querySelectorAll("h3");
+        elem[0].textContent=[cars[i].brand,cars[i].model].join(' ');
+        let p=a.querySelectorAll("h5");
+        p[0].textContent=["Dzienny koszt:",cars[i].dailyCost].join(' ');
+        p[1].textContent=["Spalanie:",cars[i].fuelConsumption].join(' ');
+        let b=a.querySelectorAll("button");
+        //console.log(cars[i].id)
+        b[0].id=cars[i].id;
+        b[0].addEventListener('click', function handleClick(event) {
+            localStorage.setItem("currentCar",this.id);
+            console.log(this.id);
+            document.location.href = "car-rent.html";
+            rentCar();
+    });
+        document.getElementById("cardGroup").appendChild(a);
     }
     }}
     else{
@@ -44,47 +101,109 @@ function getFilterCars(currentPage=0){
         
         document.getElementById("cardGroup").appendChild(a);
     }
-    createFilterOptions();
+    createFilterOptions(filters);
     }
 
 
-function filterChange(){
-    document.getElementById("cardGroup").remove();
-    localStorage.setItem("filters","filters");
+// function filterChange(){
+//     document.getElementById("cardGroup").remove();
+//     localStorage.setItem("filters","filters");
+//     document.location.href = "user-rent.html";
+// }
+
+// zwraca mape ktora zawiera wszystkie wystapienia searchValue
+function getByValue(map, searchValue) {
+    const final = new Map();
+    for (let [key, value] of map.entries()) {
+        //key = pojedynczy samochod
+        Object.entries(value).forEach(([k,v]) => {
+        //console.log(v);
+        // gdy jedna wartosc rowna
+        if(searchValue==v){
+            final.set(key,value);
+        }
+    });
+    }
+    return final;
+  }
+function filterCars(filters){
+    const jsonObj=JSON.parse(localStorage.getItem("allCars"));
+    //const filterMap=new Map(JSON.parse(localStorage.getItem("allFilters")));
+    let map= new Map(Object.entries(jsonObj));
+    
+    //przyjecie filtrow w tabeli
+    //for(let i=0; i<map.size;i++){
+    //for(let i=0;i<Object.keys(filters).length;i++){
+    //petla for z usuwaniem wartosci w zaleznosci od wybranego filtra
+        // if(filters[i]!=)
+        //     map.forEach(filters[i])
+        // }
+        //console.log(filters[i]);
+    //}
+   //}
+   //console.log(getByValue(map,"czarny"));
+   
+   let filteredCars=new Map(map);
+   
+   Object.entries(filters).forEach(([key,value]) => {
+    if(value!="Wszystkie"){
+        filteredCars=getByValue(filteredCars,value);
+    }
+   });
+    
+   //console.log(filteredCars.get("2"));
+   const res=Object.fromEntries(filteredCars);
+
+   let returnArray=[];
+   Object.entries(res).forEach(([key,value])=>{
+    returnArray.push(value);
+   });
+    //console.log(returnArray);
+    
+    return returnArray;
+}
+function changeFilter(name){
+    // przekazywana wartosc w name to "kategoria kliknietaOpcja"
+    const words = name.split(' ');
+    var filters=JSON.parse(localStorage.getItem("filters"));
+    filters[words[0]]=words[1];
+    localStorage.setItem("filters",JSON.stringify(filters));
     document.location.href = "user-rent.html";
 }
-
-function filterCars(filters){
-    var jsonObj=JSON.parse(localStorage.getItem("allCars"));
-    if(jsonObj)
-        console.log(jsonObj[0].id);
-    return jsonObj;
-    //const map = new Map(Object.entries(JSON.parse(json)));
-}
-
 async function createFilterOptions(){
     
     const filterMap=new Map(JSON.parse(localStorage.getItem("allFilters")));
-    createFOption(filterMap,"activeBrand","brand","brandList");
-    createFOption(filterMap,"activeModel","model","modelList");
-    createFOption(filterMap,"activeType","type","typeList");
-    createFOption(filterMap,"activeColor","color","colorList");
-
+    let filters=JSON.parse(localStorage.getItem("filters"));
+    createFOption(filterMap,"activeBrand","brand",filters.brand,"brandList");
+    createFOption(filterMap,"activeModel","model",filters.model,"modelList");
+    createFOption(filterMap,"activeType","type",filters.type,"typeList");
+    createFOption(filterMap,"activeColor","color",filters.color,"colorList");
 }
 
-function createFOption(filterMap,buttonName,name,listName){
+// generowanie opcji do wybrania w filtrowaniu
+function createFOption(filterMap,buttonName,fName,name,listName){
     let item=document.getElementById(buttonName);
-    
-    if(localStorage.getItem(name))
-        item.innerText=localStorage.getItem(name)
+    //console.log(fName);
+    if(name)
+        item.innerText=name;
     else
         item.innerText="Wszystkie";
     //item=document.getElementById("filterList");
-
-    let i=0;
-    for(i;i<filterMap.get(name).length;i++){
+    
+    let i=0,temp;
+    for(i;i<filterMap.get(fName).length;i++){
+        //temp=filterMap.get(fName)[i];
         a=document.createElement("li");
-        a.appendChild(document.createTextNode(filterMap.get(name)[i]));
+        a.appendChild(document.createTextNode(filterMap.get(fName)[i]));
+        a.id=fName+" "+filterMap.get(fName)[i];
+        //jesli jest rozna opcja niz wszystkie
+        //console.log(filterMap.get(fName)[i]);
+        if(filterMap.get(fName)[i]==name){
+            a.classList.add("disabled");
+        }
+        a.addEventListener('click', function handleClick(event) {
+                changeFilter(this.id);
+        });
         a.classList.add("dropdown-item");
         document.getElementById(listName).appendChild(a);
     }
@@ -92,28 +211,30 @@ function createFOption(filterMap,buttonName,name,listName){
 
 function makeFilters(data){
     //const data = new Map(Object.entries(JSON.parse(jsonData)));
-    const brand = [...new Set(data.map(item => item.brand))];
-    const model = [...new Set(data.map(item => item.model))];
-    const type = [...new Set(data.map(item => item.type))]; 
-    const color = [...new Set(data.map(item => item.color))];
+    
+    const brand = ["Wszystkie",...new Set(data.map(item => item.brand))];
+    const model = ["Wszystkie",...new Set(data.map(item => item.model))];
+    const type = ["Wszystkie",...new Set(data.map(item => item.type))]; 
+    const color = ["Wszystkie",...new Set(data.map(item => item.color))];
     const map1= new Map();
     map1.set('brand',brand);
     map1.set('model',model);
     map1.set('type',type);
     map1.set('color',color);
-    console.log(map1.get('brand'));
+    //console.log(map1.get('brand'));
     localStorage.setItem('allFilters',JSON.stringify(Array.from(map1.entries())));
 }
 
   
-function getAllCars() {
-    // const login = {
-    //   email: document.getElementById('email').value,
-    //   password: document.getElementById('password').value
-    // }
-    var target="http://192.168.33.50:8200/api/v1/vehicles/all";
+function getAvailableCars() {
+    const carsDate = {
+        start_date: localStorage.getItem("startDate"),
+        end_date: localStorage.getItem("endDate")
+    }
+
+    var target="http://192.168.33.50:8200/api/v1/vehicles/available";
     const getData=new Promise(async (res, rej) => {                       // return a promise
-      await fetch(target, {method: "GET",mode: 'cors',
+      await fetch(target, {method: "POST",mode: 'cors',body: JSON.stringify(carsDate),
       headers: {
         "Content-Type": "application/json; charset=UTF-8",
         "Content-Length":"217",
@@ -135,7 +256,10 @@ function getAllCars() {
   
   getData.then(data=>{
     localStorage.setItem("allCars",JSON.stringify(data))
-    console.log(JSON.stringify(data))
+    //console.log(JSON.stringify(data))
+    console.log(data);
     makeFilters(data);
   }).catch(err=>console.log(err));
 }
+
+
