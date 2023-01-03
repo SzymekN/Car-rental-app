@@ -28,7 +28,7 @@ func NewNotificationHandler(sysOp producer.SystemOperator, ac auth.AuthConfig, g
 }
 
 func (uh *NotificationHandler) RegisterRoutes() {
-	uh.group.GET("/notifications", uh.GetById, uh.authConf.IsAuthorized)
+	uh.group.POST("/notifications/info", uh.GetById, uh.authConf.IsAuthorized)
 	uh.group.GET("/notifications/all", uh.GetAll, uh.authConf.IsAuthorized)
 	uh.group.POST("/notifications", uh.Save, uh.authConf.IsAuthorized)
 	uh.group.PUT("/notifications", uh.Update, uh.authConf.IsAuthorized)

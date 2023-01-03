@@ -3,6 +3,7 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"net/http"
 
 	"github.com/SzymekN/Car-rental-app/pkg/auth"
 	"github.com/SzymekN/Car-rental-app/pkg/executor"
@@ -35,12 +36,81 @@ func (uh *RentalHandler) RegisterRoutes() {
 	uh.group.PUT("/rentals", uh.Update, uh.authConf.IsAuthorized)
 	uh.group.DELETE("/rentals", uh.Delete, uh.authConf.IsAuthorized)
 	uh.group.GET("/rentals/self", uh.GetSelf, uh.authConf.IsAuthorized)
+	uh.group.POST("/rentals/rent-for-user", uh.RentForUser, uh.authConf.IsAuthorized)
 	uh.group.POST("/rentals/self", uh.SaveSelf, uh.authConf.IsAuthorized)
 }
 
 func (uh *RentalHandler) Save(c echo.Context) error {
 	d, l := executor.GenericPost(c, uh.sysOperator, model.Rental{})
 	return HandleRequestResult(c, d, l)
+}
+
+func (uh *RentalHandler) RentForUser(c echo.Context) error {
+
+	mrw := model.RentForUserWrapper{}
+	logger := uh.sysOperator.SystemLogger
+	logger.Log = producer.Log{}
+	prefix := fmt.Sprintf("SelfRental ")
+
+	defer func() {
+		logger.Log.Msg = fmt.Sprintf("%s %s", prefix, logger.Log.Msg)
+		logger.ProduceWithJSON(c)
+	}()
+
+	mrw, logger.Log = executor.BindData(c, mrw)
+	if logger.Err != nil {
+		return logger.Err
+	}
+
+	var cid int
+	db := uh.sysOperator.GetDB()
+	// var id int
+	result := db.Model(&model.User{}).Joins(" join client on user.id = client.user_id").Select("client.id").Where("email=?", mrw.Email)
+	if err := result.Error; err != nil {
+		logger.Log = producer.Log{
+			Key:  "err",
+			Msg:  "Couldn't get client id",
+			Err:  err,
+			Code: http.StatusInternalServerError,
+		}
+		return logger.Err
+	}
+
+	result.Find(&cid)
+	mr := mrw.Rental
+	mr.ClientID = cid
+
+	//sprawdzanie czy fura jest dostępna
+
+	start := mr.StartDate.Format("2006-01-02")
+	end := mr.EndDate.Format("2006-01-02")
+
+	if start > end {
+		logger.Err = errors.New("Wrong dates")
+		return logger.Err
+	}
+
+	result = db.Debug().Model(&model.Vehicle{}).Select("vehicle.id").Where("id not in (SELECT vehicle_id FROM `rental` where (start_date between ? and ? and end_date between ? and ?) and vehicle_id=?) and id=?", start, end, start, end, mr.VehicleID, mr.VehicleID).Scan(&model.Vehicle{})
+
+	logger.Log = executor.CheckResultError(result)
+
+	if logger.Log.Err != nil {
+		return logger.Log.Err
+	}
+
+	logger.Log = executor.CheckIfAffected(result)
+
+	if logger.Err != nil {
+		logger.Msg = "car not available in given period"
+		return logger.Err
+	}
+
+	d, l := executor.GenericPost(c, uh.sysOperator, mr)
+	if logger.Err != nil {
+		return logger.Err
+	}
+	return c.JSON(l.Code, d)
+
 }
 
 func (uh *RentalHandler) SaveSelf(c echo.Context) error {
