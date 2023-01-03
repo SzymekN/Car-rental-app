@@ -12,6 +12,11 @@ type Rental struct {
 	VehicleID     int       `json:"vehicle_id,omitempty"`
 }
 
+type RentForUserWrapper struct {
+	Rental
+	Email string `json:"email"`
+}
+
 func (d Rental) GetId() int {
 	return d.ID
 }

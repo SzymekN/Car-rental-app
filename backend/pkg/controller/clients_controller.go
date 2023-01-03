@@ -76,10 +76,6 @@ func GetCIDFromContextToken(c echo.Context, so producer.SystemOperator) (int, pr
 
 	uid = GetUIDFromContextToken(c)
 
-	// if log.Err != nil {
-	// 	return -1, log
-	// }
-
 	cid, log = GetClientID(c, so, uid)
 	if log.Err != nil {
 		return -1, log
@@ -119,38 +115,6 @@ func BindAny[T any](c echo.Context, d T) (T, producer.Log) {
 
 	return d, producer.Log{}
 }
-
-// func BindPassword(c echo.Context, d passwordWrapper) (passwordWrapper, producer.Log) {
-
-// 	if err := c.Bind(&d); err != nil {
-// 		status := http.StatusBadRequest
-// 		msg := fmt.Sprintf("[ERROR]: couldn't bind data from request, HTTP: %v", status)
-// 		log := producer.Log{
-// 			Key:  "err",
-// 			Msg:  msg,
-// 			Code: status,
-// 			Err:  err}
-// 		return d, log
-// 	}
-
-// 	return d, producer.Log{}
-// }
-
-// func BindChangePassword(c echo.Context, d changePasswordWrapper) (changePasswordWrapper, producer.Log) {
-
-// 	if err := c.Bind(&d); err != nil {
-// 		status := http.StatusBadRequest
-// 		msg := fmt.Sprintf("[ERROR]: couldn't bind data from request, HTTP: %v", status)
-// 		log := producer.Log{
-// 			Key:  "err",
-// 			Msg:  msg,
-// 			Code: status,
-// 			Err:  err}
-// 		return d, log
-// 	}
-
-// 	return d, producer.Log{}
-// }
 
 func (uh *ClientHandler) Save(c echo.Context) error {
 	d, l := executor.GenericPost(c, uh.sysOperator, model.Client{})
