@@ -78,6 +78,34 @@ INSERT INTO `employee` VALUES (1,'employee','employee',0,'12384918273',46);
 UNLOCK TABLES;
 
 --
+-- Table structure for table `log`
+--
+
+DROP TABLE IF EXISTS `log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `log` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `timestamp` timestamp NOT NULL,
+  `key` varchar(15) NOT NULL,
+  `value` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `timestamp` (`timestamp`),
+  KEY `key` (`key`)
+) ENGINE=InnoDB AUTO_INCREMENT=138 DEFAULT CHARSET=utf8mb3;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `log`
+--
+
+LOCK TABLES `log` WRITE;
+/*!40000 ALTER TABLE `log` DISABLE KEYS */;
+INSERT INTO `log` VALUES (109,'2023-01-04 18:22:05','info','REDIS Read   [INFO]: signing key retrieved, HTTP: 200'),(110,'2023-01-04 18:22:05','info','SignIn  [INFO] SignIn completed: user signed in, email: {admin}, HTTP: 200'),(111,'2023-01-04 18:22:16','err','REDIS Read   [INFO]: Token not invalidated, HTTP: 200, err:redis: nil'),(112,'2023-01-04 18:22:16','info','REDIS Read   [INFO]: signing key retrieved, HTTP: 200'),(113,'2023-01-04 18:22:16','info','GetALL {[]model.Rental} [INFO] completed, HTTP: 200'),(114,'2023-01-04 18:22:20','info','REDIS Read   [INFO]: signing key retrieved, HTTP: 200'),(115,'2023-01-04 18:22:20','err','REDIS Read   [INFO]: Token not invalidated, HTTP: 200, err:redis: nil'),(116,'2023-01-04 18:22:20','info','GetALL {[]model.Repair} [INFO] completed, HTTP: 200'),(117,'2023-01-04 18:22:26','info','REDIS Read   [INFO]: signing key retrieved, HTTP: 200'),(118,'2023-01-04 18:22:26','err','REDIS Read   [INFO]: Token not invalidated, HTTP: 200, err:redis: nil'),(119,'2023-01-04 18:22:26','info','GetALL {[]model.Employee} [INFO] completed, HTTP: 200'),(120,'2023-01-04 18:22:40','info','REDIS Read   [INFO]: signing key retrieved, HTTP: 200'),(121,'2023-01-04 18:22:40','err','REDIS Read   [INFO]: Token not invalidated, HTTP: 200, err:redis: nil'),(122,'2023-01-04 18:22:40','info','GetALL {[]model.Vehicle} [INFO] completed, HTTP: 200'),(123,'2023-01-04 18:22:42','info','REDIS Read   [INFO]: signing key retrieved, HTTP: 200'),(124,'2023-01-04 18:22:42','info','GetAvailableVehicles  [INFO] completed, HTTP: 200'),(125,'2023-01-04 18:22:42','err','REDIS Read   [INFO]: Token not invalidated, HTTP: 200, err:redis: nil'),(126,'2023-01-04 18:22:47','info','REDIS Read   [INFO]: signing key retrieved, HTTP: 200'),(127,'2023-01-04 18:22:47','err','REDIS Read   [INFO]: Token not invalidated, HTTP: 200, err:redis: nil'),(128,'2023-01-04 18:22:47','info','GetALL {[]model.Notification} [INFO] completed, HTTP: 200'),(129,'2023-01-04 18:22:58','info','REDIS Read   [INFO]: signing key retrieved, HTTP: 200'),(130,'2023-01-04 18:22:58','err','REDIS Read   [INFO]: Token not invalidated, HTTP: 200, err:redis: nil'),(131,'2023-01-04 18:22:58','info','GetALL {[]model.Log} [INFO] completed, HTTP: 200'),(132,'2023-01-04 18:23:19','info','REDIS Read   [INFO]: signing key retrieved, HTTP: 200'),(133,'2023-01-04 18:23:19','info','GetLogFromRange  [INFO] completed, HTTP: 404'),(134,'2023-01-04 18:23:19','err','REDIS Read   [INFO]: Token not invalidated, HTTP: 200, err:redis: nil'),(135,'2023-01-04 18:23:23','info','REDIS Read   [INFO]: signing key retrieved, HTTP: 200'),(136,'2023-01-04 18:23:23','err','REDIS Read   [INFO]: Token not invalidated, HTTP: 200, err:redis: nil'),(137,'2023-01-04 18:23:23','info','GetLogFromRange  [INFO] completed, HTTP: 200');
+/*!40000 ALTER TABLE `log` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `notification`
 --
 
@@ -268,4 +296,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-01-03 18:29:40
+-- Dump completed on 2023-01-04 18:25:51

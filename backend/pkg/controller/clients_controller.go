@@ -167,6 +167,9 @@ func (uh *ClientHandler) GetProfileInfo(c echo.Context) error {
 		return logger.Err
 	}
 
+	logger.Log.Code = http.StatusOK
+	logger.Log.Key = "info"
+	logger.Log.Msg = fmt.Sprintf("[INFO] completed, HTTP: %v", logger.Log.Code)
 	return c.JSON(logger.Code, pi)
 
 }
@@ -209,6 +212,9 @@ func (uh *ClientHandler) UpdateSelf(c echo.Context) error {
 		return logger.Err
 	}
 
+	logger.Log.Code = http.StatusOK
+	logger.Log.Key = "info"
+	logger.Log.Msg = fmt.Sprintf("[INFO] completed, HTTP: %v", logger.Log.Code)
 	return c.JSON(logger.Code, mc)
 
 }
@@ -252,6 +258,15 @@ func (uh *ClientHandler) DeleteSelf(c echo.Context) error {
 	}
 
 	d, l := executor.GenericDelete(c, uh.sysOperator, mu)
+
+	logger.Log = l
+	if logger.Err != nil {
+		return logger.Err
+	}
+
+	logger.Log.Code = http.StatusOK
+	logger.Log.Key = "info"
+	logger.Log.Msg = fmt.Sprintf("[INFO] completed, HTTP: %v", logger.Log.Code)
 	return c.JSON(l.Code, d)
 
 }

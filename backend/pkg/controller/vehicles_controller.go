@@ -3,6 +3,7 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/SzymekN/Car-rental-app/pkg/auth"
@@ -112,6 +113,9 @@ func (uh *VehicleHandler) GetAvailable(c echo.Context) error {
 		return logger.Log.Err
 	}
 
+	logger.Log.Code = http.StatusOK
+	logger.Log.Key = "info"
+	logger.Log.Msg = fmt.Sprintf("[INFO] completed, HTTP: %v", logger.Log.Code)
 	return c.JSON(logger.Code, vehicles)
 	// return HandleRequestResult(c, vehicles, l)
 }
