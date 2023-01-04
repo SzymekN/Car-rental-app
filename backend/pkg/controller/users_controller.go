@@ -195,6 +195,15 @@ func (uh *UserHandler) UpdatePassword(c echo.Context) error {
 
 	mu.Password = newPassword
 	d, l := executor.GenericUpdate(c, uh.sysOperator, mu)
+
+	logger.Log = l
+	if logger.Err != nil {
+		return logger.Err
+	}
+
+	logger.Log.Code = http.StatusOK
+	logger.Log.Key = "info"
+	logger.Log.Msg = fmt.Sprintf("[INFO] completed, HTTP: %v", logger.Log.Code)
 	return c.JSON(l.Code, d)
 
 }

@@ -144,8 +144,8 @@ func (j JWTQueryExecutor) GetToken(token string) (bool, error) {
 	fmt.Println(rdb)
 	_, err := rdb.Get(j.Ctx, token).Result()
 	if err != nil {
-		code := http.StatusInternalServerError
-		msg := fmt.Sprintf("[ERROR]: Reading token failure , HTTP: %v", code)
+		code := http.StatusOK
+		msg := fmt.Sprintf("[INFO]: Token not invalidated, HTTP: %v", code)
 		logger.Log.Populate("err", msg, code, err)
 		return false, err
 	}

@@ -109,6 +109,10 @@ func (uh *RentalHandler) RentForUser(c echo.Context) error {
 	if logger.Err != nil {
 		return logger.Err
 	}
+
+	logger.Log.Code = http.StatusOK
+	logger.Log.Key = "info"
+	logger.Log.Msg = fmt.Sprintf("[INFO] completed, HTTP: %v", logger.Log.Code)
 	return c.JSON(l.Code, d)
 
 }
@@ -166,6 +170,10 @@ func (uh *RentalHandler) SaveSelf(c echo.Context) error {
 	if logger.Err != nil {
 		return logger.Err
 	}
+
+	logger.Log.Code = http.StatusOK
+	logger.Log.Key = "info"
+	logger.Log.Msg = fmt.Sprintf("[INFO] completed, HTTP: %v", logger.Log.Code)
 	return c.JSON(l.Code, d)
 }
 
@@ -192,6 +200,9 @@ func (uh *RentalHandler) GetSelf(c echo.Context) error {
 		return logger.Err
 	}
 
+	logger.Log.Code = http.StatusOK
+	logger.Log.Key = "info"
+	logger.Log.Msg = fmt.Sprintf("[INFO] completed, HTTP: %v", logger.Log.Code)
 	return c.JSON(l.Code, mrs)
 }
 

@@ -1,7 +1,7 @@
 package model
 
 type Repair struct {
-	ID             int  `json:"id"`
+	ID             int  `json:"id,omitempty"`
 	Cost           int  `json:"cost,omitempty"`
 	Approved       bool `json:"approved,omitempty"`
 	NotificationID int  `json:"notification_id,omitempty"`

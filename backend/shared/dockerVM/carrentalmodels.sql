@@ -57,6 +57,14 @@ CREATE TABLE `user` (
   password varchar(255) NOT NULL, 
   role     varchar(20) NOT NULL, 
   PRIMARY KEY (ID)) CHARACTER SET UTF8;
+CREATE TABLE log (
+  id        int(10) NOT NULL AUTO_INCREMENT, 
+  timestamp timestamp NOT NULL, 
+  `key`     varchar(15) NOT NULL, 
+  value     varchar(255) NOT NULL, 
+  PRIMARY KEY (id), 
+  INDEX (timestamp), 
+  INDEX (`key`)) CHARACTER SET UTF8;
 ALTER TABLE rental ADD CONSTRAINT FKrental154746 FOREIGN KEY (vehicle_id) REFERENCES vehicle (ID);
 ALTER TABLE rental ADD CONSTRAINT FKrental590843 FOREIGN KEY (client_id) REFERENCES client (ID);
 ALTER TABLE notification ADD CONSTRAINT FKnotificati466077 FOREIGN KEY (vechicle_id) REFERENCES vehicle (ID);
