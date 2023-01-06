@@ -38,3 +38,7 @@ function getInfoWithoutBody(target,httpMethod){
           });                                              
   });
  } 
+
+ function reload(){
+  document.location.href=window.location.href.substring(window.location.href.lastIndexOf('/') + 1);
+ }

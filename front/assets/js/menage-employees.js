@@ -43,7 +43,8 @@ async function addEmployee(){
   var salaryVal=parseInt(document.getElementById('salary').value);
   var emailVal=document.getElementById('email').value;
   var passwordVal=document.getElementById('password').value;
-  console.log(nameVal.length)
+  //console.log(nameVal.length)
+
   if(nameVal.length!=0&&surnameVal.length!=0&&peselVal.length!=0&&peselVal.length!=0&&salaryVal.length!=0&&emailVal.length!=0&&passwordVal.length!=0){
   var employeeData = {
     name: nameVal,
@@ -56,36 +57,11 @@ async function addEmployee(){
       role: "employee"
     }
   }
-  var response=Promise.resolve(getInfoWithBody("http://192.168.33.50:8200/api/v1/employees","POST",employeeData));
-  console.log(response);
+  await Promise.resolve(getInfoWithBody("http://192.168.33.50:8200/api/v1/employees","POST",employeeData));
+  //console.log(response);
   document.location.href="menage-employees.html";
 }else{
   alert("Wszystkie pola muszą być uzupełnione!")
   return null;
 }
-    
-    
 }
-
-// function getEmployees(){
-//     var target="http://192.168.33.50:8200/api/v1/employees/all";
-//     event.preventDefault();
-//       return new Promise(async (res, rej) => {                       
-//         await fetch(target, {method: "GET",mode: 'cors',
-//         headers: {
-//           "Content-Type": "application/json",
-//           "Authorization":"Bearer "+localStorage.getItem("token")
-//         }}).then(async (r) => {   
-        
-//           const data =  await r.json();
-//           if(!r.ok)
-//           {
-//             const error = (data && data.message) || r.status;
-//             return Promise.reject(error);
-//           }
-//             return res(data);
-//         }).then(res.toString).catch( err => {
-//             return rej(err);                        
-//         });                                              
-//     });
-// }

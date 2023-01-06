@@ -1,6 +1,5 @@
 
-function chkRegister(target, times, delay) {
-
+function chkRegister(target) {
   var nameVal=document.getElementById('name').value;
   var surnameVal=document.getElementById('surname').value;
   var peselVal=document.getElementById('pesel').value;
@@ -9,7 +8,7 @@ function chkRegister(target, times, delay) {
   var passwordVal=document.getElementById('password').value;
   console.log(nameVal.length)
   if(nameVal.length!=0&&surnameVal.length!=0&&peselVal.length!=0&&peselVal.length!=0&&phone_numberVal.length!=0&&emailVal.length!=0&&passwordVal.length!=0){
-  var login = {
+  var regData = {
     name: nameVal,
     surname: surnameVal,
     pesel: peselVal,
@@ -23,24 +22,17 @@ function chkRegister(target, times, delay) {
   alert("Wszystkie pola muszą być uzupełnione!")
   return null;
 }
-  return new Promise((res, rej) => {                       // return a promise
-      fetch(target, {method: "POST",mode: 'cors',body: JSON.stringify(login),
-      headers: {
-        "Content-Type": "application/json; charset=UTF-8",
-        "Content-Length":"217"
-      }}).then((r) => {   // fetch the resourse
-          res(r);                                      // resolve promise if success
-      }).then(res.toString).catch( err => {
-          return rej(err);                         // don't try again 
-      });                                              // again until no more tries
-  });
+  return getInfoWithBody(target,"POST",regData);
 }
   async function register () {
       var t = "http://192.168.33.50:8200/api/v1/users/signup";
       event.preventDefault();
-    var response=await Promise.resolve(chkRegister(t, 3, 1000));
-    if(response!=null)
+    Promise.resolve(chkRegister(t)).then((data) => {
       registrationSuccess();
+    }).catch( err => {
+        console.log('error: '+ err);
+        alert("Złe dane");
+      });      
 }
 
   async function registrationSuccess(){  

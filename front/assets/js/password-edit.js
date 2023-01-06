@@ -13,7 +13,13 @@ function updatePassword(){
         if(newVal==confirmVal){
             Object.assign(updateData,{old_password:oldVal});
             Object.assign(updateData,{new_password:newVal});
-            var response=Promise.resolve(update(updateData));
+            Promise.resolve(getInfoWithBody("http://192.168.33.50:8200/api/v1/clients/update/password","PUT",updateData)).then((data) => {
+                passwordChangeSuccess();  
+            }).catch( err => {
+                  console.log('error: '+ err);
+                  alert("Niepoprawne stare hasło!");
+                  document.location.href=window.location.href.substring(window.location.href.lastIndexOf('/') + 1);
+                });
             
         }
         else{
@@ -26,25 +32,7 @@ function updatePassword(){
         document.location.href = "user-password.html";
     }
 }
-
-function update(data){
-    var target="http://192.168.33.50:8200/api/v1/clients/update/password";
-    event.preventDefault();
-        return new Promise(async (res, rej) => {                       
-          await fetch(target, {method: "PUT",mode: 'cors',body: JSON.stringify(data),
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization":"Bearer "+localStorage.getItem("token")
-          }}).then(async (r) => {   // fetch the resourse
-            const data =  await r.json();
-            if(!r.ok)
-            {
-              const error = (data && data.message) || r.status;
-              return Promise.reject(error);
-            }
-              return res(data);
-          }).then(res.toString).catch( err => {
-              return rej(err);                         
-          });                                              
-  });
+function passwordChangeSuccess(){
+    alert("Pomyślnie zmieniono hasło.\nZaloguj się ponownie.")
+    logout();
 }

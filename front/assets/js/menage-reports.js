@@ -1,5 +1,5 @@
 async function loadReports(currentPage=0){
-    var reportsInfo=await getInfoWithoutBody("http://192.168.33.50:8200/api/v1/reports/all","GET");
+    var reportsInfo=await getInfoWithoutBody("http://192.168.33.50:8200/api/v1/notifications/all","GET");
     var i=0,maxReports=30;
 
     if(Object.entries(reportsInfo).length!=0){

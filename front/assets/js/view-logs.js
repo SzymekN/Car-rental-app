@@ -1,5 +1,6 @@
 async function loadLogs(currentPage=0){
     var logsInfo=await getInfoWithoutBody("http://192.168.33.50:8200/api/v1/logs/all","GET");
+    console.log(logsInfo)
     var i=0,maxLogs=30;
 
     if(Object.entries(logsInfo).length!=0){
@@ -10,7 +11,7 @@ async function loadLogs(currentPage=0){
                 let td=document.createElement('td');
                 
                 elem.querySelector("#timestamp").innerHTML=logsInfo[i].timestamp;
-                elem.querySelector("#message").innerHTML=logsInfo[i].message;
+                elem.querySelector("#message").innerHTML=logsInfo[i].value;
                 
                 document.getElementById("tableBody").appendChild(elem);
             }
