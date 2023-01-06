@@ -19,7 +19,6 @@ function getInfoWithoutBody(target,httpMethod){
   }
 
  function   getInfoWithBody(target,httpMethod,httpBody){
-    //event.preventDefault();
         return new Promise(async (res, rej) => {                       
           await fetch(target, {method: httpMethod,mode: 'cors',body: JSON.stringify(httpBody),
           headers: {
