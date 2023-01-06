@@ -1,4 +1,4 @@
-//TO DO: nie zezwalać na null
+
 function chkRegister(target, times, delay) {
 
   var nameVal=document.getElementById('name').value;
@@ -48,5 +48,9 @@ function chkRegister(target, times, delay) {
     myModal.show();
   }
   function clickModal(){
-    document.location.href = "login.html";
+    var currentLoc=(window.location.href.substring(window.location.href.lastIndexOf('/') + 1))
+    if(currentLoc=="employee-create.html")
+      document.location.href="employee-create.html";
+    else if(currentLoc=="register.html")
+      document.location.href = "login.html";
   }

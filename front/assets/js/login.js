@@ -42,7 +42,7 @@ async function loginSuccess(role){
     if(role=="client")
       document.location.href = "user-rent.html";
     else if(role=="employee")
-      document.location.href = "employee-main.html";
+      document.location.href = "employee-rent.html";
     else if(role=="accountant")
       document.location.href = "accountant-main.html";
     else if(role=="driver")

@@ -14,16 +14,17 @@ async function rentCar(){
     
     var start=new Date(JSON.stringify(localStorage.getItem("startDate")));
     var end=new Date(JSON.stringify(localStorage.getItem("endDate")));
+    //console.log(document.getElementById("startDate"));
     document.getElementById("startDate").textContent=formatDateOrder(start);
     document.getElementById("endDate").textContent=formatDateOrder(end);
-
+  
     const value=await getCar();
     var dateDiff=(end.getTime()-start.getTime())/(1000*3600*24)+1
     document.getElementById("dailyCost").textContent=parseInt(value);
 
     var rentCost=dateDiff*parseInt(value);
     document.getElementById("rentCost").textContent=rentCost;
-    console.log(document.getElementById("adress").value)
+    //console.log(document.getElementById("adress").value)
 
     var additional=0;
 

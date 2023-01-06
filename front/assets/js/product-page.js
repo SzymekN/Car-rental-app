@@ -1,16 +1,17 @@
 //to do:  getAllFilters has to be in filter change, delete local variables when car is rented (start and end date)
-if(window.location.href.substring(window.location.href.lastIndexOf('/') + 1) == 'user-rent.html') {
+if(window.location.href.substring(window.location.href.lastIndexOf('/') + 1) == 'user-rent.html'||window.location.href.substring(window.location.href.lastIndexOf('/') + 1) == 'employee-rent.html') {
+    var currentLoc=(window.location.href.substring(window.location.href.lastIndexOf('/') + 1));
 document.getElementById("startDate").addEventListener("change", function() {
     var input = this.value;
     //console.log(input);
     localStorage.setItem("startDate",input);
-    document.location.href = "user-rent.html";
+    document.location.href = currentLoc;
 });
 document.getElementById("endDate").addEventListener("change", function() {
     var input = this.value;
     //console.log(input);
     localStorage.setItem("endDate",input);
-    document.location.href = "user-rent.html";
+    document.location.href = currentLoc;
 });
 }
 function padTo2Digits(num) {
@@ -32,7 +33,7 @@ async function getFilterCars(currentPage=0){
     var end=new Date(JSON.stringify(localStorage.getItem("endDate")));
     start.setDate(start.getDate()+1);
     end.setDate(end.getDate()+1);
-
+    console.log(end);
     var tempDate;
     if(!isNaN(start)){
         document.getElementById("startDate").valueAsDate=start;
@@ -47,6 +48,7 @@ async function getFilterCars(currentPage=0){
     }
     else{
         tempDate=new Date()
+        //tempDate.setDate(tempDate.getDate()+1);
         localStorage.setItem("endDate",formatDate(tempDate))
         document.getElementById("endDate").valueAsDate = tempDate
     }
@@ -94,7 +96,11 @@ function printFilteredCars(filteredCars,currentPage){
         b[0].addEventListener('click', function handleClick(event) {
             localStorage.setItem("currentCar",this.id);
             //console.log(this.id);
-            document.location.href = "car-rent.html";
+            var currentLoc=(window.location.href.substring(window.location.href.lastIndexOf('/') + 1))
+            if(currentLoc=="employee-rent.html")
+                document.location.href = "employee-checkout.html";
+            else    
+                document.location.href="client-chockout.html";
             rentCar();
     });
         document.getElementById("cardGroup").appendChild(a);
@@ -159,7 +165,8 @@ function changeFilter(name){
     var filters=JSON.parse(localStorage.getItem("filters"));
     filters[words[0]]=words[1];
     localStorage.setItem("filters",JSON.stringify(filters));
-    document.location.href = "user-rent.html";
+    var currentLoc=("currentPageLocation",window.location.href.substring(window.location.href.lastIndexOf('/') + 1))
+    document.location.href = currentLoc;
 }
 async function createFilterOptions(){
     

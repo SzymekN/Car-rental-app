@@ -40,7 +40,7 @@ async function addEmployee(){
   var nameVal=document.getElementById('name').value;
   var surnameVal=document.getElementById('surname').value;
   var peselVal=document.getElementById('pesel').value;
-  var salaryVal=document.getElementById('salary').value;
+  var salaryVal=parseInt(document.getElementById('salary').value);
   var emailVal=document.getElementById('email').value;
   var passwordVal=document.getElementById('password').value;
   console.log(nameVal.length)
@@ -57,7 +57,8 @@ async function addEmployee(){
     }
   }
   var response=Promise.resolve(getInfoWithBody("http://192.168.33.50:8200/api/v1/employees","POST",employeeData));
-  console.log(repsonse);
+  console.log(response);
+  document.location.href="menage-employees.html";
 }else{
   alert("Wszystkie pola muszą być uzupełnione!")
   return null;

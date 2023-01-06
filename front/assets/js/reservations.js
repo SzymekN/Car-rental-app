@@ -1,16 +1,29 @@
 async function pay(){
-    await createNewRent();
+    var email=document.getElementById('email').value;
+    console.log(document.body.contains(document.getElementById('email')))
+   
+    await createNewRent(email);
     //console.log(JSON.stringify(localStorage.getItem("startDate")));
-    document.location.href = "user-reservations.html";
+
+    if(document.body.contains(document.getElementById('email'))&&email.length==0){
+      alert("Nie wypełniono pola email!")
+      document.location.href = "employee-checkout.html";
+    }
+    else if(email.length!=0)
+      document.location.href = "employee-rent.html";
+    else
+      document.location.href="user-reservations.html";
   }
-function createNewRent(){
-    const rentInfo = {
+function createNewRent(emailVal){
+    var rentInfo = {
         start_date: new Date(localStorage.getItem("startDate")),
         end_date: new Date(localStorage.getItem("endDate")),
         pickup_address: JSON.stringify(localStorage.getItem("pickupAdress")),
         vehicle_id: parseInt(localStorage.getItem("currentCar"))
     }
-
+    if(emailVal.length!=0)
+      Object.assign(rentInfo,{email:emailVal});
+    console.log(rentInfo);
     var target="http://192.168.33.50:8200/api/v1/rentals/self";
     event.preventDefault();
         return new Promise(async (res, rej) => {                       
