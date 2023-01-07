@@ -163,6 +163,7 @@ func GenericDelete[T model.GenericModel](c echo.Context, so producer.SystemOpera
 	return dataModel, so.Log
 }
 
+// TODO zmienić bo wywala błąd not found przy update
 func GenericUpdate[T model.GenericModel](c echo.Context, so producer.SystemOperator, dataModel T) (T, producer.Log) {
 
 	so.Log = producer.Log{}
@@ -214,6 +215,7 @@ func GenericUpdate[T model.GenericModel](c echo.Context, so producer.SystemOpera
 
 	so.Log = CheckIfAffected(result)
 	if so.Log.Err != nil {
+		so.Log.Msg = "row not updated, no new values"
 		return dataModel, so.Log
 	}
 
@@ -224,7 +226,6 @@ func GenericUpdate[T model.GenericModel](c echo.Context, so producer.SystemOpera
 	// return c.JSON(so.Log.Code, dataModel)
 }
 
-// tu jeszzce spróbować dodać odbiorcę który będzie se miał bazę danych
 func GenericGetWithConstraint[T model.GenericModel](c echo.Context, so producer.SystemOperator, dataModel T, constraint string, values ...string) (T, producer.Log) {
 
 	so.Log = producer.Log{}

@@ -38,6 +38,40 @@ func (uh *EmployeeHandler) RegisterRoutes() {
 	uh.group.DELETE("/employees", uh.Delete, uh.authConf.IsAuthorized)
 }
 
+func GetEmployeeID(c echo.Context, so producer.SystemOperator, uid int) (int, producer.Log) {
+	db := so.GetDB()
+	var id int
+	result := db.Model(&model.Employee{}).Select("ID").Where("user_id=?", uid)
+
+	if err := result.Error; err != nil {
+		log := producer.Log{
+			Key:  "err",
+			Msg:  "Couldn't get employee id",
+			Err:  err,
+			Code: http.StatusInternalServerError,
+		}
+		return -1, log
+	}
+
+	result.Find(&id)
+	return id, producer.Log{}
+}
+
+func GetEIDFromContextToken(c echo.Context, so producer.SystemOperator) (int, producer.Log) {
+
+	log := producer.Log{}
+	var uid, eid int
+
+	uid = GetUIDFromContextToken(c)
+
+	eid, log = GetEmployeeID(c, so, uid)
+	if log.Err != nil {
+		return -1, log
+	}
+
+	return eid, log
+}
+
 func (uh *EmployeeHandler) Save(c echo.Context) error {
 
 	// var validToken string
