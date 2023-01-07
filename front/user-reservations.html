@@ -16,10 +16,31 @@ loadRent();
 };</script>
 </head>
 
-<body style="color: var(--bs-navbar-color);background: var(--bs-dark);"><template id="rentTemp" >
-   
-</template>
-
+<body style="color: var(--bs-navbar-color);background: var(--bs-dark);">
+    <div class="modal fade" role="dialog" tabindex="-1" id="endModal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Zakończenie wypożyczenia</h4><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Aby móc zakończyć wypożyczenie zrób zdjęcie/a samochodu&nbsp; &nbsp; &nbsp; &nbsp; i wyślij je używając poniższego przycisku.&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</p><input class="form-control" type="file" id="formFileMultiple" accept="image/*" multiple/>
+                </div>
+                <div class="modal-footer" style="border-style: none;"><button class="btn btn-primary" type="button" onclick="endRent(this.id)"><strong>Zakończ</strong></button></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" role="dialog" tabindex="-1" id="crashModal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Zgłoś awarię</h4><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body"><textarea id="description" style="height:150px;width:100%"></textarea></div>
+                <div class="modal-footer" style="border-style: none;"><button class="btn btn-primary" type="button" onclick="reportDamage(this.id)"><strong>Zakończ</strong></button></div>
+            </div>
+        </div>
+    </div>
     <nav class="navbar navbar-light navbar-expand-md py-3" style="color: var(--bs-navbar-active-color);background: var(--bs-navbar-active-color);">
         <div class="container"><a class="navbar-brand d-flex align-items-center" href="user-rent.html"><span class="bs-icon-sm bs-icon-rounded bs-icon-primary d-flex justify-content-center align-items-center me-2 bs-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="1em" height="1em" fill="currentColor">
                         <!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. -->
@@ -29,7 +50,7 @@ loadRent();
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item"><a class="nav-link active" href="user-rent.html"><span style="color: rgb(255, 255, 255);">Wynajem</span></a></li>
                     <li class="nav-item"><a class="nav-link active" href="user-reservations.html"><span style="color: rgb(255, 255, 255);">Moje rezerwacje</span></a></li>
-                    <li class="nav-item"><a class="nav-link active" href="user-reports.html"><span style="color: rgb(255, 255, 255);">Zgłoszenie błędu</span></a></li>
+                    <li class="nav-item"><a class="nav-link active" href="user-report.html"><span style="color: rgb(255, 255, 255);">Zgłoszenie błędu</span></a></li>
                     <li class="nav-item"></li>
                     <li class="nav-item"></li>
                 </ul>
@@ -53,83 +74,59 @@ loadRent();
             <div class="col-md-4" style="width: 80%;padding-right: 0px;padding-left: 0px;min-width: 1148px;">
                 <div class="card-group">
                     <div class="card">
-                        <div class="card-body" id="rentGroup" style="width: 100%;"><!-- <template id="rentTemp">
-   
-</template> -->
-
+                        <div class="card-body" id="rentGroup" style="width: 100%;">
 <template id="tmpl">
-    <div id="rentDiv" style="height: 190px;margin-top: 20px">
+    <div id="rentDiv" style="height: 190px;margin-top: 20px; min-width: 1250px;">
         <div>
-            <div style="width: 480px;display: inline-block;float: right;">
+            <div style="width: 480px;display: block;float: right; margin-right:9%">
                 <div id="vehicle" style="height: 168px;float: left;background: var(--bs-gray-100);border: 1px solid var(--bs-gray-800);border-radius: 5px;"><img id="image" class="img-fluid" src="assets/img/maluch.jpg" height="151" width="196" style="margin-top: 8px;margin-left: 7px;padding: 16px;position: Absolute;border-color: var(--bs-border-color-translucent);" />
                     <h3 id="name" style="margin-top: 13px;margin-left: 216px;padding-top: 8px;">Name</h3>
                     <h5 id="daily_cost" style="margin-top: 7px;margin-left: 216px;width: 40%;float: left;">Paragraph</h5>
                     <h5 id="fuel_consumption" style="margin-top: 12px;margin-left: 216px;width: 30%;float: left;">Paragraph</h5>
                 </div>
             </div>
-            <div style="display: inline-block;width: 580px;margin-top: 0px;padding-left: 20px;padding-top: 20px;padding-bottom: 20px;height: 90px;">
-                <div style="height: 28px;width: 580px;">
-                    <div style="width: 325px;display: inline-block;float: left;">
+            <div style="width: 50%;display: width: 580px;margin-top: 0px;padding-left: 20px;padding-top: 20px;padding-bottom: 20px;height: 90px;">
+                <div style="height: 28px;width:100%">
+                    <button id="end" class="btn btn-danger" type="button" style="padding-bottom:10px;float:left" data-bs-toggle="modal" data-bs-target="#endModal">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="-64 0 512 512" width="1em" height="1em" fill="currentColor">
+                            <!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. -->
+                            <path d="M376.6 427.5c11.31 13.58 9.484 33.75-4.094 45.06c-5.984 4.984-13.25 7.422-20.47 7.422c-9.172 0-18.27-3.922-24.59-11.52L192 305.1l-135.4 162.5c-6.328 7.594-15.42 11.52-24.59 11.52c-7.219 0-14.48-2.438-20.47-7.422c-13.58-11.31-15.41-31.48-4.094-45.06l142.9-171.5L7.422 84.5C-3.891 70.92-2.063 50.75 11.52 39.44c13.56-11.34 33.73-9.516 45.06 4.094L192 206l135.4-162.5c11.3-13.58 31.48-15.42 45.06-4.094c13.58 11.31 15.41 31.48 4.094 45.06l-142.9 171.5L376.6 427.5z"></path>
+                        </svg></button>
+                    <div style="margin-left:50px;width: 215px;display: inline-block;float: left;">
                         <h5 id="status" style="width: 160px;margin-right: -1px;height: 54px;">Status:</h5>
                     </div>
-                    <div style="width: 210px;display: inline-block;float: left;">
+                    <div style="width: 210px;display: inline-block;float: right;height: 54px;">
                         <h5 id="start_date" style="width: 210px;padding-left: 0px;margin-left: 0px;height: 54px;">Rozpoczęcie wynajmu:</h5>
                     </div>
                 </div>
             </div>
         </div>
-        <div style="display: inline-block;width: 580px;padding-left: 20px;padding-bottom: 20px;margin-top: 2px;padding-top: 0px;height: 54px;">
+        <div style="display: inline-block;width: 50%;padding-left: 20px;padding-bottom: 20px;margin-top: 2px;padding-top: 0px;height: 54px;">
             <div style="height: 28px;">
-                <div style="width: 325px;display: inline-block;float: left;">
+                <button id="crash" class="btn btn-warning" type="button" style="height:45px;width:45px;float:left" data-bs-toggle="modal" data-bs-target="#crashModal">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="100 -30 640 640" width="2em" height="2em" fill="currentColor">
+                        <!--! Font Awesome Free 6.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. -->
+                        <path d="M176 8C182.6 8 188.4 11.1 190.9 18.09L220.3 92.05L296.4 68.93C302.7 67.03 309.5 69.14 313.6 74.27C314.1 74.85 314.5 75.45 314.9 76.08C297.8 84.32 282.7 96.93 271.4 113.3L230.4 172.5C203.1 181.4 180.6 203.5 172.6 233.4L152.7 307.4L117.4 339.9C112.6 344.4 105.5 345.4 99.64 342.6C93.73 339.7 90.16 333.6 90.62 327L96.21 247.6L17.56 235.4C11.08 234.4 5.871 229.6 4.413 223.2C2.954 216.8 5.54 210.1 10.94 206.4L76.5 161.3L37.01 92.18C33.76 86.49 34.31 79.39 38.4 74.27C42.48 69.14 49.28 67.03 55.55 68.93L131.7 92.05L161.1 18.09C163.6 11.1 169.4 8 176 8L176 8zM384.2 99.67L519.8 135.1C552.5 144.7 576.1 173.1 578.8 206.8L585.7 290.7C602.9 304.2 611.3 327 605.3 349.4L570.1 480.8C565.5 497.8 547.1 507.1 530.9 503.4L515.5 499.3C498.4 494.7 488.3 477.1 492.8 460.1L501.1 429.1L253.8 362.9L245.6 393.8C240.1 410.9 223.4 421 206.4 416.4L190.9 412.3C173.8 407.7 163.7 390.2 168.3 373.1L203.5 241.7C209.5 219.3 228.2 203.8 249.8 200.7L297.7 131.5C316.9 103.6 351.6 90.92 384.2 99.67L384.2 99.67zM367.7 161.5C361.1 159.7 354.2 162.3 350.4 167.8L318.1 214.5L519.6 268.5L515 211.1C514.5 205.2 509.8 199.6 503.2 197.8L367.7 161.5zM268.3 308.8C281.1 312.2 294.3 304.6 297.7 291.8C301.2 279 293.6 265.9 280.8 262.4C267.1 259 254.8 266.6 251.4 279.4C247.9 292.2 255.5 305.4 268.3 308.8zM528 328.7C515.2 325.3 502.1 332.9 498.6 345.7C495.2 358.5 502.8 371.6 515.6 375.1C528.4 378.5 541.6 370.9 545 358.1C548.4 345.3 540.8 332.1 528 328.7z"></path>
+                    </svg>
+            </button>
+                <div style="margin-left:50px;width: 200px;display: inline-block;float: left;">
                     <h5 id="rent_cost"style="width: 170px;margin-right: -1px;height: 54px;border-radius: 2px;">Zapłacona kwota:</h5>
                 </div>
-                <div style="width: 210px;display: inline-block;float: left;height: 54px;">
+                <div style="width: 210px;display: inline-block;float: right;height: 54px;">
                     <h5 id="end_date" style="width: 210px;padding-left: 0px;margin-left: 0px;">Zakończenie wynajmu:</h5>
                 </div>
             </div>
         </div>
     </div>
   </template>
-  
-  <!-- <script>
-    let elem = document.createElement('div');
-  
-    // Clone the template content to reuse it multiple times
-    elem.append(tmpl.content.cloneNode(true));
-  
-    document.body.append(elem);
-    // Now the script from <template> runs
-  </script> -->
-<!--border-bottom: 1px solid var(--bs-black);--></div>
+  </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-4" style="width: 9%;"></div>
         </div>
     </div>
-    <footer class="text-center bg-dark py-4" style="bottom: 0px;width: 100%;position: fixed;margin-top: -1px;padding-top: 0px;height: 70px;">
-        <div class="container">
-            <div class="row row-cols-1 row-cols-lg-3">
-                <div class="col">
-                    <p class="text-muted my-2">Copyright&nbsp;© 2022 Brand</p>
-                </div>
-                <div class="col">
-                    <ul class="list-inline my-2">
-                        <li class="list-inline-item me-4" style="<button class=&quot;btn btn-primary&quot; type=&quot;button&quot;>Button</button>"></li>
-                        <li class="list-inline-item me-4"></li>
-                        <li class="list-inline-item"></li>
-                    </ul>
-                </div>
-                <div class="col">
-                    <ul class="list-inline my-2">
-                        <li class="list-inline-item"><a class="link-secondary" href="#">Privacy Policy</a></li>
-                        <li class="list-inline-item"><a class="link-secondary" href="#">Terms of Use</a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </footer>
-    <footer class="text-center bg-dark py-4" style="bottom: 0px;width: 100%;position: fixed;margin-top: -1px;padding-top: 0px;height: 70px;">
+    <footer class="text-center bg-dark py-4" style="bottom: 0px;width: 100%;position: fixed;height: 70pxl">
         <div class="container">
             <div class="row row-cols-1 row-cols-lg-3">
                 <div class="col">
@@ -163,6 +160,7 @@ loadRent();
     <script src="assets/js/profile-edit.js"></script>
     <script src="assets/js/register.js"></script>
     <script src="assets/js/rent.js"></script>
+    <script src="assets/js/repairs.js"></script>
     <script src="assets/js/reports.js"></script>
     <script src="assets/js/reservations.js"></script>
     <script src="assets/js/view-logs.js"></script>

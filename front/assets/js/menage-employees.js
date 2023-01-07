@@ -18,7 +18,7 @@ async function loadEmployees(currentPage=0){
                 elem.querySelector("#email").innerHTML=userInfo.email;
                 elem.querySelector("#role").innerHTML=userInfo.role;
                 elem.querySelector(".btn-danger").id=employeesInfo[i].id;
-
+                
                 elem.querySelector(".btn-warning").id=employeesInfo[i].id;
                 
                 document.getElementById("tableBody").appendChild(elem);
@@ -64,4 +64,30 @@ async function addEmployee(){
   alert("Wszystkie pola muszą być uzupełnione!")
   return null;
 }
+}
+
+async function getEmployee(idVal){
+  
+  var employee= await getInfoWithBody("http://192.168.33.50:8200/api/v1/employees/info","POST",{id:parseInt(idVal)})
+  console.log(employee);
+  var userInfo=await getInfoWithBody("http://192.168.33.50:8200/api/v1/users/info","POST",{id:parseInt(employee.userId)});
+  document.getElementById("role").innerText=userInfo.role;
+
+  a=document.createElement("li");
+  if(userInfo.role==="employee")
+    a.classList.add("disabled");
+  a.appendChild(document.createTextNode("employee"));
+  a.classList.add("dropdown-item");
+  document.getElementById("roleList").appendChild(a);
+
+  a=document.createElement("li");
+  if(userInfo.role==="admin")
+    a.classList.add("disabled");
+  a.appendChild(document.createTextNode("admin"));
+  a.classList.add("dropdown-item");
+  document.getElementById("roleList").appendChild(a);
+}
+async function employeeUpdate(idVal){
+  
+  
 }

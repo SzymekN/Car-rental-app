@@ -49,3 +49,6 @@ function loadCar(car){
     return car.dailyCost;
     
 }
+function  endRent(idVal){
+  console.log(idVal);
+}

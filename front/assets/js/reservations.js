@@ -41,11 +41,14 @@ async function loadRent(currentPage=0){
         
       for (i = currentPage*maxCarsPage; i < (currentPage*maxCarsPage)+maxCarsPage; i++) {
         if(i<Object.keys(response).length){
-  
+          
           const currentCar ={id:response[i].vehicle_id};
           console.log(typeof parseInt(localStorage.getItem("currentCar")))
           var car =await getInfoWithBody("http://192.168.33.50:8200/api/v1/vehicles/single","POST",currentCar);
-          if(response[i].end_date<new Date())
+          var start=new Date(response[i].start_date);
+          var end=new Date(response[i].end_date);
+          var dateDiff=(end.getTime()-start.getTime())/(1000*3600*24)+1
+          if(new Date(response[i].end_date)<new Date())
             status="Zakończone";
           else 
             status="W trakcie";
@@ -58,10 +61,17 @@ async function loadRent(currentPage=0){
           elem.querySelector("#fuel_consumption").innerHTML=["Spalanie:",car.fuelConsumption].join(' ')
           elem.querySelector("#status").innerHTML=["Status:",status].join("<br>");
           elem.querySelector("#start_date").innerHTML=["Rozpoczęcie wynajmu:",formatDateOrder(new Date(response[i].start_date))].join("<br>")
-          elem.querySelector("#rent_cost").innerHTML=["Zapłacona kwota:",car.dailyCost].join("<br>")
+          elem.querySelector("#rent_cost").innerHTML=["Zapłacona kwota:",dateDiff*car.dailyCost].join("<br>")
           elem.querySelector("#end_date").innerHTML=["Zakończenie wynajmu:",formatDateOrder(new Date(response[i].end_date))].join("<br>")
+          
+          elem.querySelector("#crash").id=response[i].id;
+          if(new Date()>=new Date(response[i].end_date))
+            elem.querySelector("#end").disabled=true;
+          // to avoid cannot set properties do disabled
+          else
+            elem.querySelector("#end").id=response[i].id;
 
-          //dla każdego następnego border u góry
+          // border for every other element than first
           document.getElementById("rentGroup").appendChild(elem);
       }
     }
@@ -83,4 +93,38 @@ function loadRentedCar(car){
   document.getElementById("dailyCost").textContent=car.dailyCost;
   document.getElementById("fuelConsumption").textContent=car.fuelConsumption;
   return car.dailyCost;
+}
+
+async function endRent(idVal){
+  console.log(document.getElementById("formFileMultiple").files);
+
+  window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
+  window.requestFileSystem(window.PERSISTENT, 1024, function(fs) {
+    fs.writeFileSync('./node/myText.txt',"Hello World!!");
+    //fs.mkdirSync('Rent/'+idVal);
+    // fs.root.getFile('mystorage.txt', {create: true, exclusive: true}, function(file) {
+    //     file.createWriter(function(writer) {
+    //         var blob = new Blob(["putdatahere"], {type: 'text/plain'});
+    //         writer.write(blob);
+    //     });
+    // });
+}, function() {
+    console.log("Could not access file system");
+});
+ // document.getElementById("formFileMultiple").files.replace("image/png","Rent/"+idVal);
+  //fr = new FileReader();
+  //fr.readAsDataURL(file);
+}
+
+async function reportDamage(idVal){
+  var descVal=document.getElementById("description").value;
+  //const reportInfo={description:descVal};
+  if(descVal.length!=0){
+      await getInfoWithBody("http://192.168.33.50:8200/api/v1/notifications/client","POST",{vehicle_id:parseInt(idVal),description:descVal});
+      alert("Pomyślnie wysłano zgłoszenie");
+      reload();
+  }
+  else
+      alert("Wiadomość jest pusta")
+
 }
