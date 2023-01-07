@@ -44,6 +44,8 @@ func NewAuthConfig() AuthConfig {
 			"/api/v1/clients/update/password": {"client"},
 			"/api/v1/clients/profileInfo":     {"client"},
 			"/api/v1/rentals/self":            {"client"},
+			"/api/v1/rentals/rent-for-user":   {"employee"},
+			"/api/v1/notifications/employee":  {"employee"},
 		},
 	}
 	return conf
@@ -58,7 +60,7 @@ func (ac AuthConfig) IsAuthorized(next echo.HandlerFunc) echo.HandlerFunc {
 		user := c.Get("user").(*jwt.Token)
 		claims := user.Claims.(jwt.MapClaims)
 		role := claims["role"].(string)
-		if role == "admin" {
+		if role == "admin" || role == "employee" {
 			fmt.Println("AUTH: ADMIN")
 			return next(c)
 		} else if ac.Contains(path, role) {

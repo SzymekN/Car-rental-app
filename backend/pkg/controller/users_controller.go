@@ -9,6 +9,7 @@ import (
 	"github.com/SzymekN/Car-rental-app/pkg/executor"
 	"github.com/SzymekN/Car-rental-app/pkg/model"
 	"github.com/SzymekN/Car-rental-app/pkg/producer"
+	"github.com/golang-jwt/jwt"
 
 	"github.com/labstack/echo/v4"
 )
@@ -38,6 +39,15 @@ func (uh *UserHandler) RegisterRoutes() {
 	uh.group.PUT("/clients/update/password", uh.UpdatePassword, uh.authConf.IsAuthorized)
 	uh.group.PUT("/users/block", uh.BlockUser, uh.authConf.IsAuthorized)
 	uh.group.PUT("/users/unblock", uh.UnblockUser, uh.authConf.IsAuthorized)
+}
+
+// TODO error check
+func GetUIDFromContextToken(c echo.Context) int {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	fmt.Println(claims)
+	uid := int(claims["id"].(float64))
+	return uid
 }
 
 func (uh *UserHandler) Save(c echo.Context) error {

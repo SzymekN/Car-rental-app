@@ -101,7 +101,8 @@ func (uh *VehicleHandler) GetAvailable(c echo.Context) error {
 
 	db := uh.sysOperator.DB
 	vehicles := []model.Vehicle{}
-	result := db.Debug().Model(&model.Vehicle{}).Select("vehicle.*").Where("vehicle.id not in (SELECT vehicle_id FROM `rental` where start_date between ? and ? and end_date between ? and ?)", start, end, start, end)
+	// where (start_date between sf and ef and end_date between sf and ef) or (start_date > sf and end_date > sf and end_date < ef) or (start_date < sf and end_date > ef) or (start_date < sf and end_date > sf and end_date < ef))", start, end, start, end)"
+	result := db.Debug().Model(&model.Vehicle{}).Select("vehicle.*").Where("vehicle.id not in (SELECT vehicle_id FROM `rental` where (start_date between ? and ? and end_date between ? and ?) or (start_date > ? and end_date > ? and end_date < ?) or (start_date < ? and end_date > ?) or (start_date < ? and end_date > ? and end_date < ?))", start, end, start, end, start, start, end, start, end, start, start, end)
 
 	result.Scan(&vehicles)
 	// result.Find(&vehicles)

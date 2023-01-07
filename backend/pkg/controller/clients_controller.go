@@ -8,7 +8,6 @@ import (
 	"github.com/SzymekN/Car-rental-app/pkg/executor"
 	"github.com/SzymekN/Car-rental-app/pkg/model"
 	"github.com/SzymekN/Car-rental-app/pkg/producer"
-	"github.com/golang-jwt/jwt"
 
 	"github.com/labstack/echo/v4"
 )
@@ -58,15 +57,6 @@ func GetClientID(c echo.Context, so producer.SystemOperator, uid int) (int, prod
 	result.Find(&id)
 	return id, producer.Log{}
 
-}
-
-// TODO error check
-func GetUIDFromContextToken(c echo.Context) int {
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	fmt.Println(claims)
-	uid := int(claims["id"].(float64))
-	return uid
 }
 
 func GetCIDFromContextToken(c echo.Context, so producer.SystemOperator) (int, producer.Log) {
@@ -199,18 +189,21 @@ func (uh *ClientHandler) UpdateSelf(c echo.Context) error {
 	newmc := model.Client{}
 	newmc, logger.Log = executor.GenericGetWithConstraint(c, uh.sysOperator, mc, "user_id=?", fmt.Sprint(id))
 	mc.ID = newmc.ID
+	mc.User.Role = "client"
 
 	if logger.Err != nil {
 		return logger.Err
 	}
 
 	mc, logger.Log = executor.GenericUpdate(c, uh.sysOperator, mc)
-	mc.User, logger.Log = executor.GenericUpdate(c, uh.sysOperator, mc.User)
-
-	fmt.Println(mc)
-	if logger.Err != nil {
+	if logger.Err != nil && logger.Code != http.StatusBadRequest {
 		return logger.Err
 	}
+	mc.User, logger.Log = executor.GenericUpdate(c, uh.sysOperator, mc.User)
+	if logger.Err != nil && logger.Code != http.StatusBadRequest {
+		return logger.Err
+	}
+	fmt.Println(mc)
 
 	logger.Log.Code = http.StatusOK
 	logger.Log.Key = "info"
