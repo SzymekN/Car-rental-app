@@ -46,7 +46,9 @@ function loadCar(car){
     document.getElementById("registrationNumber").textContent=car.registrationNumber;
     document.getElementById("dailyCost").textContent=car.dailyCost;
     document.getElementById("fuelConsumption").textContent=car.fuelConsumption;
-    document.getElementById("carImage").src=getPhoto(car.brand,car.model);
+    //document.getElementById("carImage").src=getPhoto(car.brand,car.model);
+    document.querySelector("img").src=getPhoto(car.brand,car.model);
+
     return car.dailyCost;
     
 }
