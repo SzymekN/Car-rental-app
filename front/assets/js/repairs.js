@@ -44,8 +44,9 @@ async function addRepair(){
         vehicle_id:parseInt(notificationInfo.vehicle_id)
     }
     console.log(repairInfo)
-    await getInfoWithBody("http://192.168.33.50:8200/api/v1/repairs","POST",repairInfo);
-    reload();
+    Promise.resolve(getInfoWithBody("http://192.168.33.50:8200/api/v1/repairs","POST",repairInfo)).then(data=>{reload()}).catch(err => {
+        console.log('error: '+ err);
+        alert("Naprawa już zatwierdzona")});
 }
 async function loadRepairs(idVal){
     var repairsInfo=await getInfoWithoutBody("http://192.168.33.50:8200/api/v1/repairs/all","GET");

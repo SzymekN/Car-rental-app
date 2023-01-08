@@ -68,14 +68,29 @@ async function addEmployee(){
 
 async function getEmployee(idVal){
   
+  if(document.getElementById("roleList").innerHTML.length)
+    document.getElementById("roleList").innerHTML="";
   var employee= await getInfoWithBody("http://192.168.33.50:8200/api/v1/employees/info","POST",{id:parseInt(idVal)})
-  console.log(employee);
+  localStorage.setItem("currentEmployee",JSON.stringify(employee));
+  //console.log(employee);
   var userInfo=await getInfoWithBody("http://192.168.33.50:8200/api/v1/users/info","POST",{id:parseInt(employee.userId)});
+  localStorage.setItem("currentUser",JSON.stringify(userInfo));
   document.getElementById("role").innerText=userInfo.role;
+  
+  document.getElementById("modalName").value=employee.name;
+  document.getElementById("modalSurname").value=employee.surname;
+  document.getElementById("modalEmail").value=userInfo.email;
 
   a=document.createElement("li");
   if(userInfo.role==="employee")
     a.classList.add("disabled");
+  else{
+    a.id="employee";
+    a.addEventListener('click', function handleClick(event) {
+      localStorage.setItem("role",this.id);
+      document.getElementById("role").innerText=this.id;
+    });
+    }
   a.appendChild(document.createTextNode("employee"));
   a.classList.add("dropdown-item");
   document.getElementById("roleList").appendChild(a);
@@ -83,11 +98,77 @@ async function getEmployee(idVal){
   a=document.createElement("li");
   if(userInfo.role==="admin")
     a.classList.add("disabled");
+  else{
+   a.id="admin";
+   a.addEventListener('click', function handleClick(event) {
+    localStorage.setItem("role",this.id);
+    document.getElementById("role").innerText=this.id;
+  });
+  }
   a.appendChild(document.createTextNode("admin"));
   a.classList.add("dropdown-item");
   document.getElementById("roleList").appendChild(a);
 }
-async function employeeUpdate(idVal){
+// async function changeRole(role){
+// localStorage.setItem("role",role);
+// // await getInfoWithBody("http://192.168.33.50:8200/api/v1/users","PUT",{id:parseInt(words[0]),role:words[1]});
+// // reload();
+// }
+async function editEmployee(){
+  const employeeId=localStorage.getItem("employeeId");
+  var employee=JSON.parse(localStorage.getItem("currentEmployee"));
+  var user=JSON.parse(localStorage.getItem("currentUser"));
+  var employeeData={};
+  var userData={};
+
   
+  var nameVal=document.getElementById("modalName").value;
+  var surnameVal=document.getElementById("modalSurname").value;
+  var emailVal=document.getElementById("modalEmail").value;
+  var roleVal=document.getElementById("role").innerText;
+ 
+  //console.log(employee.name)
+  
+  
+  if(nameVal!==employee.name)
+      Object.assign(employeeData,{name:nameVal});
+  if(surnameVal!==employee.surname)
+      Object.assign(employeeData,{surname:surnameVal});
+  if(emailVal!==user.email)
+      Object.assign(userData,{email:emailVal});
+  if(roleVal!==user.role)
+      Object.assign(userData,{role:roleVal});
+  console.log(employeeData)
+  console.log(userData)
+
+  if(Object.keys(employeeData).length==0&&Object.keys(userData).length==0)
+    alert("Nie zmieniono żadnej wartości!");
+  else{
+    if(Object.keys(employeeData).length!=0){
+      if(!isNaN(parseInt(employeeId)))
+          Object.assign(employeeData,{id:parseInt(employeeId)})
+        Promise.resolve(getInfoWithBody("http://192.168.33.50:8200/api/v1/employees","PUT",employeeData)).then((data) => {
+        alert("Pomyślnie zmieniono dane.");
+        reload();
+      }).catch( err => {
+        console.log('error: '+ err);
+        alert("Wprowadzono złe dane!");
+        reload();
+      });
+    }
+    else if(Object.keys(userData).length!=0){
+      if(!isNaN(parseInt(user.id)))
+        Object.assign(userData,{id:parseInt(user.id)})
+      Promise.resolve(getInfoWithBody("http://192.168.33.50:8200/api/v1/users","PUT",userData)).then((data) => {
+        alert("Pomyślnie zmieniono dane.");
+        reload();
+      }).catch( err => {
+        console.log('error: '+ err);
+        alert("Wprowadzono złe dane!");
+        reload();
+      });
+    }
+    
+  }
   
 }

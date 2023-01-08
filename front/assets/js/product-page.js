@@ -1,4 +1,4 @@
-if(window.location.href.substring(window.location.href.lastIndexOf('/') + 1) == 'user-rent.html'||window.location.href.substring(window.location.href.lastIndexOf('/') + 1) == 'employee-rent.html') {
+if(window.location.href.substring(window.location.href.lastIndexOf('/') + 1) == 'user-rent.html'||window.location.href.substring(window.location.href.lastIndexOf('/') + 1) == 'employee-rent.html'||window.location.href.substring(window.location.href.lastIndexOf('/') + 1)=='index=rent.html') {
     var currentLoc=(window.location.href.substring(window.location.href.lastIndexOf('/') + 1));
 document.getElementById("startDate").addEventListener("change", function() {
     var input = this.value;
@@ -61,15 +61,30 @@ async function getFilterCars(currentPage=0){
     }
 
     var filteredCars;
+//     if(localStorage.getItem("token")==null){
+//         Promise.resolve(getInfoWithBodyWithoutToken("http://192.168.33.50:8200/api/v1/vehicles/available","POST",carsDate)).then(cars=>{
+//         filteredCars=filterCars(cars,filters);
+//         makeFilters(cars);
+//         createFilterOptions();
+//         printFilteredCars(filteredCars,currentPage);
+//     }).catch( err => {
+//     console.log('error: '+ err);
+//     alert("Złe daty!");
+//   });;
+//     }
+//     else{
+
     Promise.resolve(getInfoWithBody("http://192.168.33.50:8200/api/v1/vehicles/available","POST",carsDate)).then(cars=>{
         filteredCars=filterCars(cars,filters);
+        console.log(filteredCars)
         makeFilters(cars);
         createFilterOptions();
         printFilteredCars(filteredCars,currentPage);
-}).catch( err => {
+    }).catch( err => {
     console.log('error: '+ err);
     alert("Złe daty!");
   });;
+//}
 }
 
 function printFilteredCars(filteredCars,currentPage){
@@ -89,17 +104,19 @@ function printFilteredCars(filteredCars,currentPage){
         let p=a.querySelectorAll("h5");
         p[0].textContent=["Dzienny koszt:",filteredCars[i].dailyCost].join(' ');
         p[1].textContent=["Spalanie:",filteredCars[i].fuelConsumption].join(' ');
-        let b=a.querySelectorAll("button");
-        b[0].id=filteredCars[i].id;
-        b[0].addEventListener('click', function handleClick(event) {
-            localStorage.setItem("currentCar",this.id);
-            var currentLoc=(window.location.href.substring(window.location.href.lastIndexOf('/') + 1))
-            if(currentLoc=="employee-rent.html")
-                document.location.href = "employee-checkout.html";
-            else    
-                document.location.href="user-checkout.html";
-            rentCar();
+        if(window.location.href.substring(window.location.href.lastIndexOf('/') + 1)!=="index-rent.html"){
+            let b=a.querySelectorAll("button");
+            b[0].id=filteredCars[i].id;
+            b[0].addEventListener('click', function handleClick(event) {
+                localStorage.setItem("currentCar",this.id);
+                var currentLoc=(window.location.href.substring(window.location.href.lastIndexOf('/') + 1))
+                if(currentLoc=="employee-rent.html")
+                    document.location.href = "employee-checkout.html";
+                else    
+                    document.location.href="user-checkout.html";
+                rentCar();
     });
+}
         document.getElementById("cardGroup").appendChild(a);
     }
     }}

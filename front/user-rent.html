@@ -18,7 +18,7 @@
 };</script>
 </head>
 
-<body style="color: var(--bs-black);background: var(--bs-gray-dark);">
+<body style="color: var(--bs-black);background: var(--bs-gray-dark); margin-bottom: 1000px;clear: both;">
     <nav class="navbar navbar-light navbar-expand-md py-3" style="color: var(--bs-navbar-active-color);background: var(--bs-navbar-active-color);">
         <div class="container"><a class="navbar-brand d-flex align-items-center" href="user-rent.html"><span class="bs-icon-sm bs-icon-rounded bs-icon-primary d-flex justify-content-center align-items-center me-2 bs-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="1em" height="1em" fill="currentColor">
                         <!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. -->
@@ -38,7 +38,7 @@
                     </svg>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuCickable" style="margin: 0px 0px 0px -50px;min-width: 150px;">
                         <li id="my_reservations" class="dropdown-item" style="border-radius: 5%;margin: 0px 0px 0px 0px;margin-right: -26px;" onclick="location.href=&quot;user-reservations.html&quot;">Moje rezerwacje</li>
-                        <li id="reports" class="dropdown-item" style="border-radius: 5%;margin: 0px 0px 0px 0px;margin-right: -26px;" onclick="location.href=&quot;user-reports.html&quot;">Zgłoszenia</li>
+                        <li id="reports" class="dropdown-item" style="border-radius: 5%;margin: 0px 0px 0px 0px;margin-right: -26px;" onclick="location.href=&quot;user-report.html&quot;">Zgłoszenia</li>
                         <li id="settings" class="dropdown-item" style="border-radius: 5%;" onclick="location.href=&quot;user-settings.html&quot;">Ustawienia</li>
                         <li id="logout" class="dropdown-item" style="border-radius: 5%;" onclick="logout()">Wyloguj</li>
                     </ul>
@@ -74,7 +74,7 @@
 </template>
 
     <div id="cardGroup" style="width: 100%;padding: 20px;height: 100%;display: inline-block;"></div>
-    <footer class="text-center bg-dark py-4" style="bottom: 0;width: 100%;position: fixed;margin-top: -1px;padding-top: 0px;height: 70px;">
+    <footer class="text-center bg-dark py-4" style="bottom: 0;width: 100%;position: fixed;margin-top: -1px;padding-top: 0px;height: 70px">
         <div class="container">
             <div class="row row-cols-1 row-cols-lg-3">
                 <div class="col">
@@ -97,12 +97,14 @@
         </div>
     </footer>
     <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="assets/js/bs-init.js"></script>
     <script src="assets/js/delete.js"></script>
+    <script src="assets/js/employee-clients.js"></script>
     <script src="assets/js/getInfo.js"></script>
     <script src="assets/js/login.js"></script>
     <script src="assets/js/logout.js"></script>
+    <script src="assets/js/menage-clients.js"></script>
     <script src="assets/js/menage-employees.js"></script>
-    <script src="assets/js/menage-users.js"></script>
     <script src="assets/js/password-edit.js"></script>
     <script src="assets/js/product-page.js"></script>
     <script src="assets/js/profile-edit.js"></script>

@@ -39,14 +39,14 @@ loadEmployees();
                 <div class="modal-body" style="height: 150px;">
                     <div class="mb-3" style="width: 100%;height: 54px;padding-bottom: 0px;margin-bottom: 0px;">
                         <div class="mb-3" style="width: 100%;height: 54px;padding-bottom: 0px;margin-bottom: 0px;">
-                            <div style="width: 150px; display: inline-block;     float: left;"><small class="form-text">Imię</small><input type="text" id="name-1" name="name" placeholder="Imię" style="width: 150px"></div>
-                            <div style="width: 188.8px;display: inline-block;float: right;"><small class="form-text">Nazwisko</small><input type="text" id="surname-1" name="surname" placeholder="Nazwisko"></div>
+                            <div style="width: 150px; display: inline-block;     float: left;"><small class="form-text">Imię</small><input type="text" id="modalName" name="name" placeholder="Imię" style="width: 150px"></div>
+                            <div style="width: 188.8px;display: inline-block;float: right;"><small class="form-text">Nazwisko</small><input type="text" id="modalSurname" name="surname" placeholder="Nazwisko"></div>
                         </div>
                         <div style="width: 100%;height: 54px;margin-bottom: 15px;">
-                            <div style="width: 188.8px;display: inline-block;"><small class="form-text">Email</small><input type="email" id="email-1" name="email" placeholder="Email"></div>
+                            <div style="width: 188.8px;display: inline-block;"><small class="form-text">Email</small><input type="email" id="modalEmail" name="email" placeholder="Email"></div>
                             <div style="width: 188.8px; display: inline-block;float: right;">
                                 <div style="width: 50px;"><small class="form-text" style="float:left">Rola</small>
-                                    <div class="text-bg-light btn btn-secondary" id="brand" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" style="position: relative;display: inline-block;margin-right: -1px;padding-right: 0px;margin-top: 0px;margin-left: 0px;padding-left: 0px;padding-bottom: 0px;padding-top: 0px;border-radius: 0px;background: var(--bs-gray-900);border-style: none;width: 73.5px;height: 38px;"><button class="btn btn-primary" id="role" type="button" style="border-radius: 0px;background: rgb(255,255,255);border-style: solid;border-color: rgb(0,0,0);color: rgb(0,0,0);margin-left: -1px;">Button</button>
+                                    <div class="text-bg-light btn btn-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" style="position: relative;display: inline-block;margin-right: -1px;padding-right: 0px;margin-top: 0px;margin-left: 0px;padding-left: 0px;padding-bottom: 0px;padding-top: 0px;border-radius: 0px;background: var(--bs-gray-900);border-style: none;width: 73.5px;height: 38px;"><button class="btn btn-primary" id="role" type="button" style="border-radius: 0px;background: rgb(255,255,255);border-style: solid;border-color: rgb(0,0,0);color: rgb(0,0,0);margin-left: -1px;">Button</button>
                                         <ul id="roleList" class="dropdown-menu" aria-labelledby="dropdownMenuCickable" style="margin: 0px 0px 0px -50px;min-width: 150px;"></ul>
                                     </div>
                                 </div>
@@ -183,12 +183,14 @@ loadEmployees();
         </div>
     </footer>
     <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="assets/js/bs-init.js"></script>
     <script src="assets/js/delete.js"></script>
+    <script src="assets/js/employee-clients.js"></script>
     <script src="assets/js/getInfo.js"></script>
     <script src="assets/js/login.js"></script>
     <script src="assets/js/logout.js"></script>
+    <script src="assets/js/menage-clients.js"></script>
     <script src="assets/js/menage-employees.js"></script>
-    <script src="assets/js/menage-users.js"></script>
     <script src="assets/js/password-edit.js"></script>
     <script src="assets/js/product-page.js"></script>
     <script src="assets/js/profile-edit.js"></script>

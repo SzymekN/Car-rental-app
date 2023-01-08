@@ -1,4 +1,5 @@
 async function pay(){
+    localStorage.setItem("car start rent photos",document.getElementById('formFileMultiple').files);
     var emailVal;
     var rentInfo = {
       start_date: new Date(localStorage.getItem("startDate")),
@@ -55,22 +56,34 @@ async function loadRent(currentPage=0){
           let elem = document.createElement('div');
           if(i!=0)
             elem.style="border-top: 1px solid var(--bs-black);"
+          
+          var paid;
+          if(dateDiff*car.dailyCost<0)
+            paid=0;
+          else
+            paid=dateDiff*car.dailyCost;
           elem.append(tmpl.content.cloneNode(true));
           elem.querySelector("#name").innerHTML=[car.brand,car.model].join(' ');
           elem.querySelector("#daily_cost").innerHTML=["Dzienny koszt:",car.dailyCost].join(' ')
           elem.querySelector("#fuel_consumption").innerHTML=["Spalanie:",car.fuelConsumption].join(' ')
           elem.querySelector("#status").innerHTML=["Status:",status].join("<br>");
           elem.querySelector("#start_date").innerHTML=["Rozpoczęcie wynajmu:",formatDateOrder(new Date(response[i].start_date))].join("<br>")
-          elem.querySelector("#rent_cost").innerHTML=["Zapłacona kwota:",dateDiff*car.dailyCost].join("<br>")
+          elem.querySelector("#rent_cost").innerHTML=["Zapłacona kwota:",paid].join("<br>")
           elem.querySelector("#end_date").innerHTML=["Zakończenie wynajmu:",formatDateOrder(new Date(response[i].end_date))].join("<br>")
           
-          elem.querySelector("#crash").id=response[i].id;
-          if(new Date()>=new Date(response[i].end_date))
+          if(new Date()>=new Date(response[i].end_date)){
             elem.querySelector("#end").disabled=true;
+            elem.querySelector("#crash").disabled=true;
+          }
+          else if(new Date(response[i].start_date)>new Date()){
+            elem.querySelector("#end").disabled=true;
+            elem.querySelector("#crash").disabled=true;
+          }
           // to avoid cannot set properties do disabled
-          else
+          else{
             elem.querySelector("#end").id=response[i].id;
-
+            elem.querySelector("#crash").id=car.id;
+          }
           // border for every other element than first
           document.getElementById("rentGroup").appendChild(elem);
       }
@@ -95,30 +108,18 @@ function loadRentedCar(car){
   return car.dailyCost;
 }
 
-async function endRent(idVal){
-  console.log(document.getElementById("formFileMultiple").files);
-
-  window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
-  window.requestFileSystem(window.PERSISTENT, 1024, function(fs) {
-    fs.writeFileSync('./node/myText.txt',"Hello World!!");
-    //fs.mkdirSync('Rent/'+idVal);
-    // fs.root.getFile('mystorage.txt', {create: true, exclusive: true}, function(file) {
-    //     file.createWriter(function(writer) {
-    //         var blob = new Blob(["putdatahere"], {type: 'text/plain'});
-    //         writer.write(blob);
-    //     });
-    // });
-}, function() {
-    console.log("Could not access file system");
-});
- // document.getElementById("formFileMultiple").files.replace("image/png","Rent/"+idVal);
-  //fr = new FileReader();
-  //fr.readAsDataURL(file);
+async function endRent(){
+  var idVal=localStorage.getItem("currentRentId");
+  console.log(idVal);
+  localStorage.setItem("car end rent photos",document.getElementById('formFileMultiple').files);      
+  await getInfoWithBody("http://192.168.33.50:8200/api/v1/rentals/end","POST",{id:parseInt(idVal)});
+  reload();
 }
 
-async function reportDamage(idVal){
+async function reportDamage(){
   var descVal=document.getElementById("description").value;
-  //const reportInfo={description:descVal};
+  var idVal=localStorage.getItem('currentCarId');
+  console.log({vehicle_id:parseInt(idVal),description:descVal});
   if(descVal.length!=0){
       await getInfoWithBody("http://192.168.33.50:8200/api/v1/notifications/client","POST",{vehicle_id:parseInt(idVal),description:descVal});
       alert("Pomyślnie wysłano zgłoszenie");

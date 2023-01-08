@@ -18,6 +18,25 @@ function getInfoWithoutBody(target,httpMethod){
     });
   }
 
+ function getInfoWithBodyWithoutToken(target,httpMethod,httpBody){
+  return new Promise(async (res, rej) => {                       
+    await fetch(target, {method: httpMethod,mode: 'cors',body: JSON.stringify(httpBody),
+    headers: {
+      "Content-Type": "application/json"
+    }}).then(async (r) => {   // fetch the resourse
+      const data =  await r.json();
+      if(!r.ok)
+      {
+        const error = (data && data.message) || r.status;
+        return Promise.reject(error);
+      }
+        return res(data);
+    }).then(res.toString).catch( err => {
+        return rej(err);                         
+    });                                              
+});
+ }
+
  function   getInfoWithBody(target,httpMethod,httpBody){
         return new Promise(async (res, rej) => {                       
           await fetch(target, {method: httpMethod,mode: 'cors',body: JSON.stringify(httpBody),
