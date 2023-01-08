@@ -119,6 +119,10 @@ function printFilteredCars(filteredCars,currentPage){
 }
         document.getElementById("cardGroup").appendChild(a);
     }
+    if(window.location.href.substring(window.location.href.lastIndexOf('/') + 1)==="employee-rent.html"){
+        let b=a.querySelectorAll("button");
+        b[1].id=b[0].id;
+    }
     }}
     else{
         let a=document.createElement("h4");

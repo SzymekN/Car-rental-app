@@ -1,4 +1,5 @@
 async function pay(){
+  if(window.location.href.substring(window.location.href.lastIndexOf('/') + 1)!=="employee-checkout.html")
     localStorage.setItem("car start rent photos",document.getElementById('formFileMultiple').files);
     var emailVal;
     var rentInfo = {
@@ -15,14 +16,21 @@ async function pay(){
       }
       else{
         Object.assign(rentInfo,{email:emailVal});
+        Promise.resolve(getInfoWithBody("http://192.168.33.50:8200/api/v1/rentals/rent-for-user","POST",rentInfo)).then((data) => {
+        alert("Pomyślnie zarezerwowano pojazd");
+        document.location.href = "employee-rent.html";
+    
+    }).catch( err => {
+        console.log('error: '+ err);
+        alert("Rezerwacja samochodu nie powiodła się");
+
+      });
       }
-    }
-    Promise.resolve(getInfoWithBody("http://192.168.33.50:8200/api/v1/rentals/self","POST",rentInfo)).then((data) => {
-    alert("Pomyślnie zarezerwowano pojazd")
-    if(window.location.href.substring(window.location.href.lastIndexOf('/') + 1)=="employee-checkout.html"){
-      document.location.href = "employee-rent.html";
+
     }
     else
+      Promise.resolve(getInfoWithBody("http://192.168.33.50:8200/api/v1/rentals/self","POST",rentInfo)).then((data) => {
+    alert("Pomyślnie zarezerwowano pojazd")
       document.location.href="user-reservations.html";
     }).catch( err => {
         console.log('error: '+ err);
@@ -33,11 +41,16 @@ async function pay(){
 
 
 async function loadRent(currentPage=0){
-  var response=await getInfoWithoutBody("http://192.168.33.50:8200/api/v1/rentals/self","GET");
+  var response;
+  if(window.location.href.substring(window.location.href.lastIndexOf('/') + 1)==="user-reservations.html")
+    response=await getInfoWithoutBody("http://192.168.33.50:8200/api/v1/rentals/self","GET");
+  else
+    response=await getInfoWithoutBody("http://192.168.33.50:8200/api/v1/rentals/get-active","GET");
+    console.log(response[0]);
     var temp, item, a, i=0,maxCarsPage=30,status;
     var car,elem=0;
     
-    console.log(Object.values(response))
+    //console.log(Object.values(response))
     if(Object.entries(response).length!=0){
         
       for (i = currentPage*maxCarsPage; i < (currentPage*maxCarsPage)+maxCarsPage; i++) {
@@ -121,7 +134,10 @@ async function reportDamage(){
   var idVal=localStorage.getItem('currentCarId');
   console.log({vehicle_id:parseInt(idVal),description:descVal});
   if(descVal.length!=0){
-      await getInfoWithBody("http://192.168.33.50:8200/api/v1/notifications/client","POST",{vehicle_id:parseInt(idVal),description:descVal});
+      if(window.location.href.substring(window.location.href.lastIndexOf('/') + 1)==="employee-rent.html")
+        await getInfoWithBody("http://192.168.33.50:8200/api/v1/notifications/employee","POST",{vehicle_id:parseInt(idVal),description:descVal});
+      else
+        await getInfoWithBody("http://192.168.33.50:8200/api/v1/notifications/client","POST",{vehicle_id:parseInt(idVal),description:descVal});
       alert("Pomyślnie wysłano zgłoszenie");
       reload();
   }

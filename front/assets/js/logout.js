@@ -16,6 +16,6 @@ function logout () {
 function logoutAction(){
     if(localStorage.getItem("token")==null){
       document.location.href = "index.html";
-      localStorage.clear();
+      //localStorage.clear();
     }else(console.log('error: token still exists!'))
   }

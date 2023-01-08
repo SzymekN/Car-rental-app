@@ -266,7 +266,7 @@ func (uh *RentalHandler) GetAll(c echo.Context) error {
 }
 
 func (uh *RentalHandler) GetActiveRentals(c echo.Context) error {
-	mr := model.Rental{}
+	mr := []model.Rental{}
 	logger := uh.sysOperator.SystemLogger
 	logger.Log = producer.Log{}
 	prefix := fmt.Sprintf("GetActiveRentals ")
