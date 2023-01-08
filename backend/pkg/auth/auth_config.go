@@ -44,6 +44,8 @@ func NewAuthConfig() AuthConfig {
 			"/api/v1/clients/update/password": {"client"},
 			"/api/v1/clients/profileInfo":     {"client"},
 			"/api/v1/rentals/self":            {"client"},
+			"/api/v1/rentals/end":             {"client"},
+			"/api/v1/notifications/client":    {"client"},
 			"/api/v1/rentals/rent-for-user":   {"employee"},
 			"/api/v1/notifications/employee":  {"employee"},
 		},

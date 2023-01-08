@@ -12,6 +12,8 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
+var E *echo.Echo
+
 // registers router for the server
 func SetupRouter(svr *server.Server) {
 
@@ -35,6 +37,7 @@ func SetupRouter(svr *server.Server) {
 
 	// create all needed handlers
 
+	E = e
 	mc.handlers = append(mc.handlers, NewClientHandler(systemOperator, authConf, jwt_auth))
 	mc.handlers = append(mc.handlers, NewEmployeeHandler(systemOperator, authConf, jwt_auth))
 	mc.handlers = append(mc.handlers, NewNotificationHandler(systemOperator, authConf, jwt_auth))

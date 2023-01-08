@@ -28,7 +28,7 @@ func NewSalaryHandler(sysOp producer.SystemOperator, ac auth.AuthConfig, g *echo
 }
 
 func (uh *SalaryHandler) RegisterRoutes() {
-	uh.group.GET("/salaries", uh.GetById, uh.authConf.IsAuthorized)
+	uh.group.POST("/salaries/info", uh.GetById, uh.authConf.IsAuthorized)
 	uh.group.GET("/salaries/all", uh.GetAll, uh.authConf.IsAuthorized)
 	uh.group.POST("/salaries", uh.Save, uh.authConf.IsAuthorized)
 	uh.group.PUT("/salaries", uh.Update, uh.authConf.IsAuthorized)
