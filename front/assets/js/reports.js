@@ -14,13 +14,13 @@ async function loadReports(currentPage=0){
                 let td=document.createElement('td');
                 var userInfo={}
                 if(typeof reportsInfo[i].employee_id!=="undefined"){
-                    
                     user= await getInfoWithBody("http://192.168.33.50:8200/api/v1/employees/info","POST",{id:reportsInfo[i].employee_id});
                     user= await getInfoWithBody("http://192.168.33.50:8200/api/v1/users/info","POST",{id:user.userId});
                     email=user.email;
                 }
                 else if(typeof reportsInfo[i].client_id!=="undefined"){
-                    user= await getInfoWithBody("http://192.168.33.50:8200/api/v1/users/info","POST",{id:reportsInfo[i].client_id});
+                    user= await getInfoWithBody("http://192.168.33.50:8200/api/v1/clients/info","POST",{id:reportsInfo[i].client_id});
+                    user= await getInfoWithBody("http://192.168.33.50:8200/api/v1/users/info","POST",{id:user.userId});
                     email=user.email;
                 }
                 else 

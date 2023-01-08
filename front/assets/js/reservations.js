@@ -1,6 +1,6 @@
 async function pay(){
   if(window.location.href.substring(window.location.href.lastIndexOf('/') + 1)!=="employee-checkout.html")
-    localStorage.setItem("car start rent photos",document.getElementById('formFileMultiple').files);
+    
     var emailVal;
     var rentInfo = {
       start_date: new Date(localStorage.getItem("startDate")),
@@ -17,6 +17,9 @@ async function pay(){
       else{
         Object.assign(rentInfo,{email:emailVal});
         Promise.resolve(getInfoWithBody("http://192.168.33.50:8200/api/v1/rentals/rent-for-user","POST",rentInfo)).then((data) => {
+        //localStorage.setItem("car start rent photos",document.getElementById('formFileMultiple').files);
+        sendPhotos(data.id,document.getElementById('formFileMultiple').files);
+
         alert("Pomyślnie zarezerwowano pojazd");
         document.location.href = "employee-rent.html";
     
@@ -83,7 +86,7 @@ async function loadRent(currentPage=0){
           elem.querySelector("#start_date").innerHTML=["Rozpoczęcie wynajmu:",formatDateOrder(new Date(response[i].start_date))].join("<br>")
           elem.querySelector("#rent_cost").innerHTML=["Zapłacona kwota:",paid].join("<br>")
           elem.querySelector("#end_date").innerHTML=["Zakończenie wynajmu:",formatDateOrder(new Date(response[i].end_date))].join("<br>")
-          
+          elem.querySelector("img").src=getPhoto(car.brand,car.model);
           if(new Date()>=new Date(response[i].end_date)){
             elem.querySelector("#end").disabled=true;
             elem.querySelector("#crash").disabled=true;
@@ -124,7 +127,8 @@ function loadRentedCar(car){
 async function endRent(){
   var idVal=localStorage.getItem("currentRentId");
   console.log(idVal);
-  localStorage.setItem("car end rent photos",document.getElementById('formFileMultiple').files);      
+  //localStorage.setItem("car end rent photos",document.getElementById('formFileMultiple').files);      
+  sendPhotos(idVal,document.getElementById('formFileMultiple').files);
   await getInfoWithBody("http://192.168.33.50:8200/api/v1/rentals/end","POST",{id:parseInt(idVal)});
   reload();
 }

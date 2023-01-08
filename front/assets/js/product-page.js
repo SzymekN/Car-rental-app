@@ -104,6 +104,8 @@ function printFilteredCars(filteredCars,currentPage){
         let p=a.querySelectorAll("h5");
         p[0].textContent=["Dzienny koszt:",filteredCars[i].dailyCost].join(' ');
         p[1].textContent=["Spalanie:",filteredCars[i].fuelConsumption].join(' ');
+
+        a.querySelector("img").src=getPhoto(filteredCars[i].brand,filteredCars[i].model);
         if(window.location.href.substring(window.location.href.lastIndexOf('/') + 1)!=="index-rent.html"){
             let b=a.querySelectorAll("button");
             b[0].id=filteredCars[i].id;
