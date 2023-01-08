@@ -66,6 +66,8 @@ services:
       - MYSQL_PORT=3306    
       - MYSQL_DB_NAME=car_rental 
 
+    volumes: 
+      - /vagrant_data/shared/dockerVM/images:/images
   # userapi-2:
   #   depends_on:
   #     - cassandra
