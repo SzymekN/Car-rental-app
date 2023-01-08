@@ -105,9 +105,7 @@ func (uh *VehicleHandler) GetAvailable(c echo.Context) error {
 	result := db.Debug().Model(&model.Vehicle{}).Select("vehicle.*").Where("vehicle.id not in (SELECT vehicle_id FROM `rental` where (start_date between ? and ? and end_date between ? and ?) or (start_date > ? and end_date > ? and end_date < ?) or (start_date < ? and end_date > ?) or (start_date < ? and end_date > ? and end_date < ?))", start, end, start, end, start, start, end, start, end, start, start, end)
 
 	result.Scan(&vehicles)
-	// result.Find(&vehicles)
-	fmt.Println(vehicles)
-	fmt.Println(result)
+
 	logger.Log = executor.CheckResultError(result)
 
 	if logger.Log.Err != nil {
