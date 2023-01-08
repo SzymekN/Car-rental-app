@@ -3,7 +3,10 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/SzymekN/Car-rental-app/pkg/auth"
@@ -41,6 +44,7 @@ func (uh *RentalHandler) RegisterRoutes() {
 	uh.group.POST("/rentals/end", uh.EndRent, uh.authConf.IsAuthorized)
 	uh.group.POST("/rentals/self", uh.SaveSelf, uh.authConf.IsAuthorized)
 	uh.group.GET("/rentals/get-active", uh.GetActiveRentals, uh.authConf.IsAuthorized)
+	uh.group.POST("/rentals/save-image", uh.SaveImage, uh.authConf.IsAuthorized)
 }
 
 func (uh *RentalHandler) Save(c echo.Context) error {
@@ -108,7 +112,12 @@ func (uh *RentalHandler) RentForUser(c echo.Context) error {
 		return logger.Err
 	}
 
-	d, l := executor.GenericPost(c, uh.sysOperator, mr)
+	mr, logger.Log = executor.GenericPost(c, uh.sysOperator, mr)
+	if logger.Err != nil {
+		return logger.Err
+	}
+
+	mr, logger.Log = executor.GenericGetById(c, uh.sysOperator, mr)
 	if logger.Err != nil {
 		return logger.Err
 	}
@@ -116,7 +125,7 @@ func (uh *RentalHandler) RentForUser(c echo.Context) error {
 	logger.Log.Code = http.StatusOK
 	logger.Log.Key = "info"
 	logger.Log.Msg = fmt.Sprintf("[INFO] completed, HTTP: %v", logger.Log.Code)
-	return c.JSON(l.Code, d)
+	return c.JSON(logger.Code, mr)
 
 }
 
@@ -290,4 +299,50 @@ func (uh *RentalHandler) GetActiveRentals(c echo.Context) error {
 	logger.Log.Key = "info"
 	logger.Log.Msg = fmt.Sprintf("[INFO] completed, HTTP: %v", logger.Log.Code)
 	return c.JSON(logger.Code, mr)
+}
+
+type ImageWrapper struct {
+	Id     int      `json:"rental_id"`
+	Images [][]byte `json:"img"`
+}
+
+func (uh *RentalHandler) SaveImage(c echo.Context) error {
+	iw := ImageWrapper{}
+	logger := uh.sysOperator.SystemLogger
+	logger.Log = producer.Log{}
+	prefix := fmt.Sprintf("SaveImage ")
+	// db := uh.sysOperator.GetDB()
+
+	defer func() {
+		logger.Log.Msg = fmt.Sprintf("%s %s", prefix, logger.Log.Msg)
+		logger.ProduceWithJSON(c)
+	}()
+
+	iw, logger.Log = executor.BindData(c, iw)
+	if logger.Err != nil {
+		return logger.Err
+	}
+
+	dir := "images/" + string(iw.Id)
+	if _, err := os.Stat(dir + "/before"); os.IsNotExist(err) {
+		dir = dir + "/before"
+		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		dir = dir + "/after"
+		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	for i, image := range iw.Images {
+		ioutil.WriteFile(string(iw.Id)+"_"+string(i)+".jpg", image, 0666)
+		log.Println("I saved your image buddy!")
+	}
+
+	logger.Log.Code = http.StatusOK
+	logger.Log.Key = "info"
+	logger.Log.Msg = fmt.Sprintf("[INFO] completed, HTTP: %v", logger.Log.Code)
+	return c.JSON(logger.Code, producer.GenericMessage{Message: "Images saved"})
 }
