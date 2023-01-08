@@ -33,6 +33,7 @@ func (uh *NotificationHandler) RegisterRoutes() {
 	uh.group.GET("/notifications/all", uh.GetAll, uh.authConf.IsAuthorized)
 	uh.group.POST("/notifications", uh.Save, uh.authConf.IsAuthorized)
 	uh.group.POST("/notifications/employee", uh.AddByEmployee, uh.authConf.IsAuthorized)
+	uh.group.POST("/notifications/client", uh.AddByClient, uh.authConf.IsAuthorized)
 	uh.group.PUT("/notifications", uh.Update, uh.authConf.IsAuthorized)
 	uh.group.DELETE("/notifications", uh.Delete, uh.authConf.IsAuthorized)
 }
@@ -76,6 +77,40 @@ func (uh *NotificationHandler) AddByEmployee(c echo.Context) error {
 	return c.JSON(logger.Code, n)
 	// d, l := executor.GenericPost(c, uh.sysOperator, model.Notification{})
 	// return HandleRequestResult(c, d, l)
+}
+
+func (uh *NotificationHandler) AddByClient(c echo.Context) error {
+	logger := uh.sysOperator.SystemLogger
+	logger.Log = producer.Log{}
+	prefix := fmt.Sprintf("AddNotificationByClient ")
+	db := uh.sysOperator.GetDB()
+	n := model.Notification{}
+
+	defer func() {
+		logger.Log.Msg = fmt.Sprintf("%s %s", prefix, logger.Log.Msg)
+		logger.ProduceWithJSON(c)
+	}()
+
+	var cid int
+	cid, logger.Log = GetCIDFromContextToken(c, uh.sysOperator)
+	if logger.Err != nil {
+		return logger.Err
+	}
+
+	n, logger.Log = executor.BindData(c, n)
+	if logger.Err != nil && n.GetId() < 0 {
+		return logger.Err
+	}
+
+	n.ClientID = &cid
+	logger.Log = executor.Insert(c, db, n)
+	if logger.Log.Err != nil {
+		return logger.Err
+	}
+	logger.Log.Code = http.StatusOK
+	logger.Log.Key = "info"
+	logger.Log.Msg = fmt.Sprintf("[INFO] completed, HTTP: %v", logger.Log.Code)
+	return c.JSON(logger.Code, n)
 }
 
 func (uh *NotificationHandler) Update(c echo.Context) error {

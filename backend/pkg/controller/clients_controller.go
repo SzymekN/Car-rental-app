@@ -29,7 +29,7 @@ func NewClientHandler(sysOp producer.SystemOperator, ac auth.AuthConfig, g *echo
 }
 
 func (uh *ClientHandler) RegisterRoutes() {
-	uh.group.GET("/clients", uh.GetById, uh.authConf.IsAuthorized)
+	uh.group.POST("/clients/info", uh.GetById, uh.authConf.IsAuthorized)
 	uh.group.GET("/clients/all", uh.GetAll, uh.authConf.IsAuthorized)
 	uh.group.GET("/clients/profileInfo", uh.GetProfileInfo, uh.authConf.IsAuthorized)
 	uh.group.PUT("/clients", uh.Update, uh.authConf.IsAuthorized)

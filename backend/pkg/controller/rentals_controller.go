@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/SzymekN/Car-rental-app/pkg/auth"
 	"github.com/SzymekN/Car-rental-app/pkg/executor"
@@ -37,6 +38,7 @@ func (uh *RentalHandler) RegisterRoutes() {
 	uh.group.DELETE("/rentals", uh.Delete, uh.authConf.IsAuthorized)
 	uh.group.GET("/rentals/self", uh.GetSelf, uh.authConf.IsAuthorized)
 	uh.group.POST("/rentals/rent-for-user", uh.RentForUser, uh.authConf.IsAuthorized)
+	uh.group.POST("/rentals/end", uh.EndRent, uh.authConf.IsAuthorized)
 	uh.group.POST("/rentals/self", uh.SaveSelf, uh.authConf.IsAuthorized)
 }
 
@@ -204,6 +206,42 @@ func (uh *RentalHandler) GetSelf(c echo.Context) error {
 	logger.Log.Key = "info"
 	logger.Log.Msg = fmt.Sprintf("[INFO] completed, HTTP: %v", logger.Log.Code)
 	return c.JSON(l.Code, mrs)
+}
+
+func (uh *RentalHandler) EndRent(c echo.Context) error {
+	mr := model.Rental{}
+	logger := uh.sysOperator.SystemLogger
+	logger.Log = producer.Log{}
+	prefix := fmt.Sprintf("EndRental ")
+	db := uh.sysOperator.GetDB()
+
+	defer func() {
+		logger.Log.Msg = fmt.Sprintf("%s %s", prefix, logger.Log.Msg)
+		logger.ProduceWithJSON(c)
+	}()
+
+	mr, logger.Log = executor.BindData(c, mr)
+	if logger.Err != nil && mr.GetId() < 0 {
+		return logger.Err
+	}
+
+	mr.EndDate = time.Now()
+	result := db.Debug().Updates(&mr)
+	logger.Log = executor.CheckResultError(result)
+	if logger.Log.Err != nil {
+		return logger.Err
+	}
+
+	logger.Log = executor.CheckIfAffected(result)
+	if logger.Log.Err != nil {
+		logger.Log.Msg = "row not updated, no new values"
+		return logger.Err
+	}
+
+	logger.Log.Code = http.StatusOK
+	logger.Log.Key = "info"
+	logger.Log.Msg = fmt.Sprintf("%s [INFO] completed, HTTP: %v", prefix, logger.Log.Code)
+	return c.JSON(logger.Code, mr)
 }
 
 func (uh *RentalHandler) Update(c echo.Context) error {

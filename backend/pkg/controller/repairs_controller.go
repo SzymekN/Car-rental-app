@@ -28,7 +28,7 @@ func NewRepairHandler(sysOp producer.SystemOperator, ac auth.AuthConfig, g *echo
 }
 
 func (uh *RepairHandler) RegisterRoutes() {
-	uh.group.GET("/repairs", uh.GetById, uh.authConf.IsAuthorized)
+	uh.group.POST("/repairs/info", uh.GetById, uh.authConf.IsAuthorized)
 	uh.group.GET("/repairs/all", uh.GetAll, uh.authConf.IsAuthorized)
 	uh.group.POST("/repairs", uh.Save, uh.authConf.IsAuthorized)
 	uh.group.PUT("/repairs", uh.Update, uh.authConf.IsAuthorized)
