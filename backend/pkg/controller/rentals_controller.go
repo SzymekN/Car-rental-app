@@ -40,6 +40,7 @@ func (uh *RentalHandler) RegisterRoutes() {
 	uh.group.POST("/rentals/rent-for-user", uh.RentForUser, uh.authConf.IsAuthorized)
 	uh.group.POST("/rentals/end", uh.EndRent, uh.authConf.IsAuthorized)
 	uh.group.POST("/rentals/self", uh.SaveSelf, uh.authConf.IsAuthorized)
+	uh.group.GET("/rentals/get-active", uh.GetActiveRentals, uh.authConf.IsAuthorized)
 }
 
 func (uh *RentalHandler) Save(c echo.Context) error {
@@ -262,4 +263,31 @@ func (uh *RentalHandler) GetById(c echo.Context) error {
 func (uh *RentalHandler) GetAll(c echo.Context) error {
 	d, l := executor.GenericGetAll(c, uh.sysOperator, []model.Rental{})
 	return HandleRequestResult(c, d, l)
+}
+
+func (uh *RentalHandler) GetActiveRentals(c echo.Context) error {
+	mr := model.Rental{}
+	logger := uh.sysOperator.SystemLogger
+	logger.Log = producer.Log{}
+	prefix := fmt.Sprintf("GetActiveRentals ")
+	db := uh.sysOperator.GetDB()
+	today := time.Now()
+
+	defer func() {
+		logger.Log.Msg = fmt.Sprintf("%s %s", prefix, logger.Log.Msg)
+		logger.ProduceWithJSON(c)
+	}()
+
+	result := db.Debug().Where("end_date >= ?", today).Find(&mr)
+	result.Scan(&mr)
+	logger.Log = executor.CheckResultError(result)
+
+	if logger.Log.Err != nil {
+		return logger.Log.Err
+	}
+
+	logger.Log.Code = http.StatusOK
+	logger.Log.Key = "info"
+	logger.Log.Msg = fmt.Sprintf("[INFO] completed, HTTP: %v", logger.Log.Code)
+	return c.JSON(logger.Code, mr)
 }
