@@ -117,10 +117,10 @@ func (uh *RentalHandler) RentForUser(c echo.Context) error {
 		return logger.Err
 	}
 
-	mr, logger.Log = executor.GenericGetById(c, uh.sysOperator, mr)
-	if logger.Err != nil {
-		return logger.Err
-	}
+	// mr, logger.Log = executor.GenericGetById(c, uh.sysOperator, mr)
+	// if logger.Err != nil {
+	// 	return logger.Err
+	// }
 
 	logger.Log.Code = http.StatusOK
 	logger.Log.Key = "info"
@@ -178,15 +178,20 @@ func (uh *RentalHandler) SaveSelf(c echo.Context) error {
 		return logger.Err
 	}
 
-	d, l := executor.GenericPost(c, uh.sysOperator, mr)
+	mr, logger.Log = executor.GenericPost(c, uh.sysOperator, mr)
 	if logger.Err != nil {
 		return logger.Err
 	}
 
+	// mr, logger.Log = executor.GenericGetById(c, uh.sysOperator, mr)
+	// if logger.Err != nil {
+	// 	return logger.Err
+	// }
+
 	logger.Log.Code = http.StatusOK
 	logger.Log.Key = "info"
 	logger.Log.Msg = fmt.Sprintf("[INFO] completed, HTTP: %v", logger.Log.Code)
-	return c.JSON(l.Code, d)
+	return c.JSON(logger.Code, mr)
 }
 
 func (uh *RentalHandler) GetSelf(c echo.Context) error {
@@ -302,8 +307,8 @@ func (uh *RentalHandler) GetActiveRentals(c echo.Context) error {
 }
 
 type ImageWrapper struct {
-	Id     int      `json:"rental_id"`
-	Images [][]byte `json:"img"`
+	Id     int    `json:"rental_id"`
+	Images string `json:"img"`
 }
 
 func (uh *RentalHandler) SaveImage(c echo.Context) error {
@@ -312,6 +317,8 @@ func (uh *RentalHandler) SaveImage(c echo.Context) error {
 	logger.Log = producer.Log{}
 	prefix := fmt.Sprintf("SaveImage ")
 	// db := uh.sysOperator.GetDB()
+
+	fmt.Println("TUTAJ JESTESMY I WALCZYMY")
 
 	defer func() {
 		logger.Log.Msg = fmt.Sprintf("%s %s", prefix, logger.Log.Msg)
@@ -336,10 +343,21 @@ func (uh *RentalHandler) SaveImage(c echo.Context) error {
 		}
 	}
 
-	for i, image := range iw.Images {
-		ioutil.WriteFile(string(iw.Id)+"_"+string(i)+".jpg", image, 0666)
-		log.Println("I saved your image buddy!")
-	}
+	// for i, image := range iw.Images {
+	// 	ioutil.WriteFile(string(iw.Id)+"_"+string(i)+".jpg", image, 0666)
+	// 	log.Println("I saved your image buddy!")
+	// }
+	// image := c.Request().Body
+	// image, err := ioutil.ReadAll(c.Request().Body)
+	// if err != nil {
+	// 	log.Fatalf("ioutil.ReadAll -> %v", err)
+	// }
+	// ioutil.WriteFile(string("iw.Id")+"_0.jpg", image, 0666)
+
+	// for i, image := range iw.Images {
+	ioutil.WriteFile(string(iw.Id)+"_"+string(1)+".jpg", []byte(iw.Images), 0666)
+	log.Println("I saved your image buddy!")
+	// }
 
 	logger.Log.Code = http.StatusOK
 	logger.Log.Key = "info"

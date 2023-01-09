@@ -16,7 +16,7 @@ import (
 // 	CheckID(id int) producer.Log
 // }
 
-func Insert[T model.GenericModel](c echo.Context, db *gorm.DB, d T) producer.Log {
+func Insert[T model.GenericModel](c echo.Context, db *gorm.DB, d *T) producer.Log {
 
 	log := producer.Log{}
 	if err := db.Create(&d).Error; err != nil {

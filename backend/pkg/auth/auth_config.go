@@ -46,6 +46,7 @@ func NewAuthConfig() AuthConfig {
 			"/api/v1/rentals/self":            {"client"},
 			"/api/v1/rentals/end":             {"client"},
 			"/api/v1/notifications/client":    {"client"},
+			"/api/v1/rentals/save-image":      {"client"},
 			"/api/v1/rentals/rent-for-user":   {"employee"},
 			"/api/v1/notifications/employee":  {"employee"},
 		},

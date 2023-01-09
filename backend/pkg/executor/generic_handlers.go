@@ -42,7 +42,7 @@ func GenericPost[T model.GenericModel](c echo.Context, so producer.SystemOperato
 	}
 
 	// save user in the db
-	so.Log = Insert(c, db, dataModel)
+	so.Log = Insert(c, db, &dataModel)
 	if so.Log.Err != nil {
 		return dataModel, so.Log
 	}

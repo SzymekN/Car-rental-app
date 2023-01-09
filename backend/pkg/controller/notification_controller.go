@@ -67,7 +67,7 @@ func (uh *NotificationHandler) AddByEmployee(c echo.Context) error {
 	}
 
 	n.EmployeeID = &eid
-	logger.Log = executor.Insert(c, db, n)
+	logger.Log = executor.Insert(c, db, &n)
 	if logger.Log.Err != nil {
 		return logger.Err
 	}
@@ -103,7 +103,7 @@ func (uh *NotificationHandler) AddByClient(c echo.Context) error {
 	}
 
 	n.ClientID = &cid
-	logger.Log = executor.Insert(c, db, n)
+	logger.Log = executor.Insert(c, db, &n)
 	if logger.Log.Err != nil {
 		return logger.Err
 	}
