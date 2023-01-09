@@ -185,11 +185,6 @@ func (uh *RentalHandler) SaveSelf(c echo.Context) error {
 		return logger.Err
 	}
 
-	// mr, logger.Log = executor.GenericGetById(c, uh.sysOperator, mr)
-	// if logger.Err != nil {
-	// 	return logger.Err
-	// }
-
 	logger.Log.Code = http.StatusOK
 	logger.Log.Key = "info"
 	logger.Log.Msg = fmt.Sprintf("[INFO] completed, HTTP: %v", logger.Log.Code)

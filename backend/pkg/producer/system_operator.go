@@ -41,7 +41,3 @@ func NewSystemOperator(db *gorm.DB, l SystemLogger) SystemOperator {
 	global_db = so.DB
 	return so
 }
-
-// func (sl SystemOperator) GetSystemLogger() producer.SystemLogger {
-// 	return sl.SystemLogger
-// }

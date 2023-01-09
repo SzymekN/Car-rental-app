@@ -14,7 +14,6 @@ type LogProducer interface {
 }
 
 func (sl SystemLogger) ProduceLog() {
-	// fmt.Println("SO: ", sl)
 	if sl.Err != nil {
 		sl.Msg += ", err:" + sl.Err.Error()
 	}
@@ -23,7 +22,6 @@ func (sl SystemLogger) ProduceLog() {
 }
 
 func (sl SystemLogger) ProduceWithJSON(c echo.Context) {
-	// fmt.Println("SO: ", sl)
 	if sl.Err != nil {
 		sl.Msg += ", err:" + sl.Err.Error()
 		c.JSON(sl.Code, &GenericMessage{Message: sl.Msg})
@@ -32,11 +30,6 @@ func (sl SystemLogger) ProduceWithJSON(c echo.Context) {
 	go sl.ProduceMessage(sl.Key, sl.Msg)
 }
 func (sl SystemLogger) Produce() {
-	// fmt.Println("SO: ", sl)
-	// if sl.Err != nil {
-	// 	sl.Msg += ", err:" + sl.Err.Error()
-	// 	c.JSON(sl.Code, &GenericMessage{Message: sl.Msg})
-	// }
 	go LogToDB(sl.Key, sl.Msg)
 	go sl.ProduceMessage(sl.Key, sl.Msg)
 }

@@ -41,7 +41,6 @@ func (uh *UserHandler) RegisterRoutes() {
 	uh.group.PUT("/users/unblock", uh.UnblockUser, uh.authConf.IsAuthorized)
 }
 
-// TODO error check
 func GetUIDFromContextToken(c echo.Context) int {
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
@@ -75,9 +74,6 @@ func (uh *UserHandler) GetAll(c echo.Context) error {
 	return HandleRequestResult(c, d, l)
 }
 func (uh *UserHandler) BlockUser(c echo.Context) error {
-	// pobranie id
-	// zmiana hasła na jakieś generyczne
-
 	logger := uh.sysOperator.SystemLogger
 	logger.Log = producer.Log{}
 	prefix := fmt.Sprintf("BlockUser ")

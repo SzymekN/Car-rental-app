@@ -75,8 +75,6 @@ func (uh *NotificationHandler) AddByEmployee(c echo.Context) error {
 	logger.Log.Key = "info"
 	logger.Log.Msg = fmt.Sprintf("[INFO] completed, HTTP: %v", logger.Log.Code)
 	return c.JSON(logger.Code, n)
-	// d, l := executor.GenericPost(c, uh.sysOperator, model.Notification{})
-	// return HandleRequestResult(c, d, l)
 }
 
 func (uh *NotificationHandler) AddByClient(c echo.Context) error {
