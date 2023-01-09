@@ -48,10 +48,4 @@ func SetupRouter(svr *server.Server) {
 
 	mc.RegisterAllRoutes()
 
-	// data, err := json.MarshalIndent(e.Routes(), "", "  ")
-	// if err != nil {
-	// 	return
-	// }
-	// fmt.Println(string(data))
-
 }
