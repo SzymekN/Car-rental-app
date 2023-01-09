@@ -38,7 +38,7 @@ async function sendPhotos(rentId,photos){
   console.log(prom);
 
     const info={
-        id:parseInt(rentId),
+        rental_id:parseInt(rentId),
         img:prom
     }
     console.log(JSON.stringify(info))

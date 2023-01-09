@@ -329,7 +329,7 @@ func (uh *RentalHandler) SaveImage(c echo.Context) error {
 		return logger.Err
 	}
 
-	dir := "images/" + fmt.Sprint(iw.Id)
+	dir := "images/rentals/" + fmt.Sprint(iw.Id)
 	if _, err := os.Stat(dir + "/before"); os.IsNotExist(err) {
 		dir = dir + "/before"
 		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
