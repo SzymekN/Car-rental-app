@@ -31,10 +31,11 @@ async function pay(){
       }
 
     }
-    // else
-      // Promise.resolve(getInfoWithBody("http://192.168.33.50:8200/api/v1/rentals/self","POST",rentInfo)).then((data) => {
-        sendPhotos(3,document.getElementById('formFileMultiple').files);
-    //     alert("Pomyślnie zarezerwowano pojazd")
+    else
+    sendPhotos(data.id,document.getElementById('formFileMultiple').files);
+    //   Promise.resolve(getInfoWithBody("http://192.168.33.50:8200/api/v1/rentals/self","POST",rentInfo)).then((data) => {
+    //     sendPhotos(data.id,document.getElementById('formFileMultiple').files);
+    // alert("Pomyślnie zarezerwowano pojazd")
     //   document.location.href="user-reservations.html";
     // }).catch( err => {
     //     console.log('error: '+ err);
