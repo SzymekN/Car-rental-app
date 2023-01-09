@@ -2,32 +2,25 @@ function getPhoto(brand,model){
     return "cars/"+brand+model+".jpg";
 }
 
-let base64String = "";
-     
+// let base64String = "";
+// var reader = new FileReader();
+// reader.onload = function () {
+//         console.log("LOADED")
+// }
 async function imageUploaded(file) {
     var image = file[0];
  
-    var reader = new FileReader();
     console.log("next");
-     
-    return new Promise((resolve, reject) =>{
-    reader.onload = function () {
-        base64String = reader.result.replace("data:", "")
-            .replace(/^.+,/, "");
- 
-            console.log("To się robi za późno");
-          imageBase64Stringsep = base64String;
-          
-          // alert(imageBase64Stringsep);
-          console.log(base64String);
-          reader.readAsDataURL(image);
-          resolve(base64String)
+    return new Promise((onSuccess, onError) => {
+      try {
+        const reader = new FileReader() ;
+        reader.onload = function(){ onSuccess(this.result.replace("data:", "")
+        .replace(/^.+,/, "")) } ;
+        reader.readAsDataURL(image);
+      } catch(e) {
+        onError(e);
       }
     });
-    prom.then((resolve) => {
-      console.log("result: " + resolve);
-    });
-    
 }
     
  
@@ -40,36 +33,33 @@ async function sendPhotos(rentId,photos){
   // const fd = new FormData()
     // let prom = new Promise((resolve, reject) =>{
 
-  let prom = imageUploaded(photos)
-  prom.then(resolve =>{
-    console.log(resolve);
-
-  });
+  const prom = await imageUploaded(photos)
   console.log("A to za wcześniue");
+  console.log(prom);
 
     const info={
         id:parseInt(rentId),
-        img:base64String
+        img:prom
     }
     console.log(JSON.stringify(info))
     console.log(typeof(bity))
-    console.log(base64String)
+    console.log(prom)
 
     return new Promise(async (res, rej) => {                       
-        await fetch("http://192.168.33.50:8200/api/v1/rentals/save-image", {method: 'POST' ,mode: 'cors',body: JSON.stringify(info),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization":"Bearer "+localStorage.getItem("token")
-        }}).then(async (r) => {   // fetch the resourse
-          const data =  await r.json();
-          if(!r.ok)
-          {
-            const error = (data && data.message) || r.status;
-            return Promise.reject(error);
-          }
-            return res(data);
-        }).then(res.toString).catch( err => {
-            return rej(err);                         
-        });                                              
+      await fetch("http://192.168.33.50:8200/api/v1/rentals/save-image", {method: 'POST' ,mode: 'cors',body: JSON.stringify(info),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization":"Bearer "+localStorage.getItem("token")
+      }}).then(async (r) => {   // fetch the resourse
+        const data =  await r.json();
+        if(!r.ok)
+        {
+          const error = (data && data.message) || r.status;
+          return Promise.reject(error);
+        }
+          return res(data);
+      }).then(res.toString).catch( err => {
+          return rej(err);                         
+      });                                              
 });
 }

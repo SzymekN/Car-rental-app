@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -318,8 +319,6 @@ func (uh *RentalHandler) SaveImage(c echo.Context) error {
 	prefix := fmt.Sprintf("SaveImage ")
 	// db := uh.sysOperator.GetDB()
 
-	fmt.Println("TUTAJ JESTESMY I WALCZYMY")
-
 	defer func() {
 		logger.Log.Msg = fmt.Sprintf("%s %s", prefix, logger.Log.Msg)
 		logger.ProduceWithJSON(c)
@@ -330,7 +329,7 @@ func (uh *RentalHandler) SaveImage(c echo.Context) error {
 		return logger.Err
 	}
 
-	dir := "images/" + string(iw.Id)
+	dir := "images/" + fmt.Sprint(iw.Id)
 	if _, err := os.Stat(dir + "/before"); os.IsNotExist(err) {
 		dir = dir + "/before"
 		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
@@ -343,21 +342,18 @@ func (uh *RentalHandler) SaveImage(c echo.Context) error {
 		}
 	}
 
-	// for i, image := range iw.Images {
-	// 	ioutil.WriteFile(string(iw.Id)+"_"+string(i)+".jpg", image, 0666)
-	// 	log.Println("I saved your image buddy!")
-	// }
-	// image := c.Request().Body
-	// image, err := ioutil.ReadAll(c.Request().Body)
-	// if err != nil {
-	// 	log.Fatalf("ioutil.ReadAll -> %v", err)
-	// }
-	// ioutil.WriteFile(string("iw.Id")+"_0.jpg", image, 0666)
+	rawDecodedText, err := base64.StdEncoding.DecodeString(iw.Images)
 
-	// for i, image := range iw.Images {
-	ioutil.WriteFile(string(iw.Id)+"_"+string(1)+".jpg", []byte(iw.Images), 0666)
-	log.Println("I saved your image buddy!")
-	// }
+	if err != nil {
+		panic(err)
+	}
+
+	err = ioutil.WriteFile(dir+"/"+fmt.Sprint(time.Now().Unix())+".jpg", []byte(rawDecodedText), 0666)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		log.Println("I saved your image buddy!")
+	}
 
 	logger.Log.Code = http.StatusOK
 	logger.Log.Key = "info"
