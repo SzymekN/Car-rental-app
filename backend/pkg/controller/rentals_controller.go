@@ -45,7 +45,8 @@ func (uh *RentalHandler) RegisterRoutes() {
 	uh.group.POST("/rentals/end", uh.EndRent, uh.authConf.IsAuthorized)
 	uh.group.POST("/rentals/self", uh.SaveSelf, uh.authConf.IsAuthorized)
 	uh.group.GET("/rentals/get-active", uh.GetActiveRentals, uh.authConf.IsAuthorized)
-	uh.group.POST("/rentals/save-image", uh.SaveImage, uh.authConf.IsAuthorized)
+	uh.group.POST("/rentals/save-image-before", uh.SaveImageBefore, uh.authConf.IsAuthorized)
+	uh.group.POST("/rentals/save-image-after", uh.SaveImageAfter, uh.authConf.IsAuthorized)
 }
 
 func (uh *RentalHandler) Save(c echo.Context) error {
@@ -312,7 +313,7 @@ type ImageWrapper struct {
 	Images string `json:"img"`
 }
 
-func (uh *RentalHandler) SaveImage(c echo.Context) error {
+func (uh *RentalHandler) SaveImageBefore(c echo.Context) error {
 	iw := ImageWrapper{}
 	logger := uh.sysOperator.SystemLogger
 	logger.Log = producer.Log{}
@@ -329,14 +330,8 @@ func (uh *RentalHandler) SaveImage(c echo.Context) error {
 		return logger.Err
 	}
 
-	dir := "images/rentals/" + fmt.Sprint(iw.Id)
-	if _, err := os.Stat(dir + "/before"); os.IsNotExist(err) {
-		dir = dir + "/before"
-		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-			log.Fatal(err)
-		}
-	} else {
-		dir = dir + "/after"
+	dir := "images/rentals/before/" + fmt.Sprint(iw.Id)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
 			log.Fatal(err)
 		}
@@ -348,7 +343,50 @@ func (uh *RentalHandler) SaveImage(c echo.Context) error {
 		panic(err)
 	}
 
-	err = ioutil.WriteFile(dir+"/"+fmt.Sprint(time.Now().Unix())+".jpg", []byte(rawDecodedText), 0666)
+	err = ioutil.WriteFile(dir+"/"+fmt.Sprint(time.Now().UnixNano())+".jpg", []byte(rawDecodedText), 0666)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		log.Println("I saved your image buddy!")
+	}
+
+	logger.Log.Code = http.StatusOK
+	logger.Log.Key = "info"
+	logger.Log.Msg = fmt.Sprintf("[INFO] completed, HTTP: %v", logger.Log.Code)
+	return c.JSON(logger.Code, producer.GenericMessage{Message: "Images saved"})
+}
+
+func (uh *RentalHandler) SaveImageAfter(c echo.Context) error {
+	iw := ImageWrapper{}
+	logger := uh.sysOperator.SystemLogger
+	logger.Log = producer.Log{}
+	prefix := fmt.Sprintf("SaveImage ")
+	// db := uh.sysOperator.GetDB()
+
+	defer func() {
+		logger.Log.Msg = fmt.Sprintf("%s %s", prefix, logger.Log.Msg)
+		logger.ProduceWithJSON(c)
+	}()
+
+	iw, logger.Log = executor.BindData(c, iw)
+	if logger.Err != nil {
+		return logger.Err
+	}
+
+	dir := "images/rentals/after/" + fmt.Sprint(iw.Id)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	rawDecodedText, err := base64.StdEncoding.DecodeString(iw.Images)
+
+	if err != nil {
+		panic(err)
+	}
+
+	err = ioutil.WriteFile(dir+"/"+fmt.Sprint(time.Now().UnixNano())+".jpg", []byte(rawDecodedText), 0666)
 	if err != nil {
 		fmt.Println(err)
 	} else {

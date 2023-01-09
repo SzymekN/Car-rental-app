@@ -44,9 +44,13 @@ console.log(prom);
   // console.log(JSON.stringify(info))
   // console.log(typeof(bity))
   // console.log(prom)
-
+  var target;
+  if(window.location.href.substring(window.location.href.lastIndexOf('/') + 1)==="user-checkout.html")
+    target="http://192.168.33.50:8200/api/v1/rentals/save-image-before";
+  else
+    target="http://192.168.33.50:8200/api/v1/rentals/save-image-after"
   return new Promise(async (res, rej) => {                       
-    await fetch("http://192.168.33.50:8200/api/v1/rentals/save-image", {method: 'POST' ,mode: 'cors',body: JSON.stringify(info),
+    await fetch(target, {method: 'POST' ,mode: 'cors',body: JSON.stringify(info),
     headers: {
       "Content-Type": "application/json",
       "Authorization":"Bearer "+localStorage.getItem("token")
