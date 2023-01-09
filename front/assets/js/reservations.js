@@ -15,34 +15,42 @@ async function pay(){
         document.location.href = "employee-checkout.html";
       }
       else{
-        // Object.assign(rentInfo,{email:emailVal});
-        // Promise.resolve(getInfoWithBody("http://192.168.33.50:8200/api/v1/rentals/rent-for-user","POST",rentInfo)).then((data) => {
+        Object.assign(rentInfo,{email:emailVal});
+        if(document.getElementById('formFileMultiple').files.length!=0){
+        Promise.resolve(getInfoWithBody("http://192.168.33.50:8200/api/v1/rentals/rent-for-user","POST",rentInfo)).then((data) => {
         //localStorage.setItem("car start rent photos",document.getElementById('formFileMultiple').files);
-        sendPhotos(3,document.getElementById('formFileMultiple').files);
+        for(var i=0;i<document.getElementById('formFileMultiple').files.length;i++)
+          sendPhotos(data.id,document.getElementById('formFileMultiple').files[i]);
 
-    //     alert("Pomyślnie zarezerwowano pojazd");
-    //     document.location.href = "employee-rent.html";
+        alert("Pomyślnie zarezerwowano pojazd");
+        document.location.href = "employee-rent.html";
     
-    // }).catch( err => {
-    //     console.log('error: '+ err);
-    //     alert("Rezerwacja samochodu nie powiodła się");
+    }).catch( err => {
+        console.log('error: '+ err);
+        alert("Rezerwacja samochodu nie powiodła się");
 
-    //   });
+      });
       }
 
+    }}
+    else{
+      if(document.getElementById('formFileMultiple').files.length!=0){
+        Promise.resolve(getInfoWithBody("http://192.168.33.50:8200/api/v1/rentals/self","POST",rentInfo)).then((data) => {
+          for(var i=0;i<document.getElementById('formFileMultiple').files.length;i++)
+            sendPhotos(data.id,document.getElementById('formFileMultiple').files[i]);
+        alert("Pomyślnie zarezerwowano pojazd")
+        document.location.href="user-reservations.html";
+        }).catch( err => {
+          console.log('error: '+ err);
+          alert("Rezerwacja samochodu nie powiodła się");
+        });
+        
+      }
+      else
+        alert("Nie dodano zdjęć!");
     }
-    else
-    sendPhotos(3,document.getElementById('formFileMultiple').files);
-    //   Promise.resolve(getInfoWithBody("http://192.168.33.50:8200/api/v1/rentals/self","POST",rentInfo)).then((data) => {
-    //     sendPhotos(data.id,document.getElementById('formFileMultiple').files);
-    // alert("Pomyślnie zarezerwowano pojazd")
-    //   document.location.href="user-reservations.html";
-    // }).catch( err => {
-    //     console.log('error: '+ err);
-    //     alert("Rezerwacja samochodu nie powiodła się");
-
-    //   });
   }
+  
 
 
 async function loadRent(currentPage=0){

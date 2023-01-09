@@ -2,7 +2,7 @@
 function edit(){
     const profile=JSON.parse(localStorage.getItem("profile"));
     const changeData = {};
-    var nameVal=document.getElementById("name").value;
+    var nameVal=JSON.parse(JSON.stringify(document.getElementById("name").value));
     var surnameVal=document.getElementById("surname").value;
     var phone_numberVal=document.getElementById("phone_number").value
     var emailVal=document.getElementById("email").value
@@ -14,10 +14,13 @@ function edit(){
         Object.assign(changeData,{phone_number:phone_numberVal});
     if(emailVal!=profile.email)
         Object.assign(changeData,{user:{email:emailVal}});
+    //else
+      //Object.assign(changeData,{user:{email:profile.email}});
     //console.log(changeData)
     if(Object.keys(changeData).length==0)
       alert("Nie zmieniono żadnej wartości!");
     else{
+      console.log(changeData)
       Promise.resolve(getInfoWithBody("http://192.168.33.50:8200/api/v1/clients/self","PUT",changeData)).then((data) => {
         alert("Pomyślnie zmieniono dane.");
         reload();
