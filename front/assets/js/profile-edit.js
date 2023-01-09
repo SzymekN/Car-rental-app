@@ -13,7 +13,7 @@ function edit(){
     if(phone_numberVal!=profile.phone_number)
         Object.assign(changeData,{phone_number:phone_numberVal});
     if(emailVal!=profile.email)
-        Object.assign(changeData,{email:emailVal});
+        Object.assign(changeData,{user:{email:emailVal}});
     //console.log(changeData)
     if(Object.keys(changeData).length==0)
       alert("Nie zmieniono żadnej wartości!");

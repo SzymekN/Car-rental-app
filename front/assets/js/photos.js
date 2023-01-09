@@ -8,7 +8,7 @@ function getPhoto(brand,model){
 //         console.log("LOADED")
 // }
 async function imageUploaded(file) {
-    var image = file[0];
+    var image = file;
  
     console.log("next");
     return new Promise((onSuccess, onError) => {

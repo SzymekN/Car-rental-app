@@ -207,6 +207,7 @@ func (uh *ClientHandler) UpdateSelf(c echo.Context) error {
 
 	logger.Log.Code = http.StatusOK
 	logger.Log.Key = "info"
+	logger.Log.Err = nil
 	logger.Log.Msg = fmt.Sprintf("[INFO] completed, HTTP: %v", logger.Log.Code)
 	return c.JSON(logger.Code, mc)
 
