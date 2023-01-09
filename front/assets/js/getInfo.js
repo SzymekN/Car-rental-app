@@ -23,7 +23,7 @@ function getInfoWithoutBody(target,httpMethod){
     await fetch(target, {method: httpMethod,mode: 'cors',body: JSON.stringify(httpBody),
     headers: {
       "Content-Type": "application/json"
-    }}).then(async (r) => {   // fetch the resourse
+    }}).then(async (r) => {   
       const data =  await r.json();
       if(!r.ok)
       {
@@ -43,7 +43,7 @@ function getInfoWithoutBody(target,httpMethod){
           headers: {
             "Content-Type": "application/json",
             "Authorization":"Bearer "+localStorage.getItem("token")
-          }}).then(async (r) => {   // fetch the resourse
+          }}).then(async (r) => {   
             const data =  await r.json();
             if(!r.ok)
             {

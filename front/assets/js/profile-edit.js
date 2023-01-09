@@ -1,4 +1,3 @@
-// zawsze daje error
 function edit(){
     const profile=JSON.parse(localStorage.getItem("profile"));
     const changeData = {};
@@ -14,9 +13,6 @@ function edit(){
         Object.assign(changeData,{phone_number:phone_numberVal});
     if(emailVal!=profile.email)
         Object.assign(changeData,{user:{email:emailVal}});
-    //else
-      //Object.assign(changeData,{user:{email:profile.email}});
-    //console.log(changeData)
     if(Object.keys(changeData).length==0)
       alert("Nie zmieniono żadnej wartości!");
     else{
@@ -28,8 +24,7 @@ function edit(){
         console.log('error: '+ err);
         alert("Wprowadzono złe dane!");
         reload();
-      });;
-      
+      });
     }
 }
 

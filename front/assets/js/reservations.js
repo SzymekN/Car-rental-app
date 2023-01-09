@@ -16,12 +16,8 @@ async function pay(){
       }
       else{
         Object.assign(rentInfo,{email:emailVal});
-        if(document.getElementById('formFileMultiple').files.length!=0){
+        console.log(rentInfo)
         Promise.resolve(getInfoWithBody("http://192.168.33.50:8200/api/v1/rentals/rent-for-user","POST",rentInfo)).then((data) => {
-        //localStorage.setItem("car start rent photos",document.getElementById('formFileMultiple').files);
-        // for(var i=0;i<document.getElementById('formFileMultiple').files.length;i++)
-        //   sendPhotos(data.id,document.getElementById('formFileMultiple').files[i]);
-
         alert("Pomyślnie zarezerwowano pojazd");
         document.location.href = "employee-rent.html";
     
@@ -30,8 +26,6 @@ async function pay(){
         alert("Rezerwacja samochodu nie powiodła się");
 
       });
-      }
-
     }}
     else{
       if(document.getElementById('formFileMultiple').files.length!=0){
@@ -63,7 +57,6 @@ async function loadRent(currentPage=0){
     var temp, item, a, i=0,maxCarsPage=30,status;
     var car,elem=0;
     
-    //console.log(Object.values(response))
     if(Object.entries(response).length!=0){
         
       for (i = currentPage*maxCarsPage; i < (currentPage*maxCarsPage)+maxCarsPage; i++) {
@@ -137,7 +130,6 @@ function loadRentedCar(car){
 async function endRent(){
   var idVal=localStorage.getItem("currentRentId");
   console.log(idVal);
-  //localStorage.setItem("car end rent photos",document.getElementById('formFileMultiple').files);      
   for(var i=0;i<document.getElementById('formFileMultiple').files.length;i++)
     sendPhotos(idVal,document.getElementById('formFileMultiple').files[i]);
   await getInfoWithBody("http://192.168.33.50:8200/api/v1/rentals/end","POST",{id:parseInt(idVal)});

@@ -2,11 +2,6 @@ function getPhoto(brand,model){
   return "cars/"+brand+model+".jpg";
 }
 
-// let base64String = "";
-// var reader = new FileReader();
-// reader.onload = function () {
-//         console.log("LOADED")
-// }
 async function imageUploaded(file) {
   var image = file;
 
@@ -22,39 +17,27 @@ async function imageUploaded(file) {
     }
   });
 }
-  
-
-function displayString() {
-  console.log("Base64String about to be printed");
-  alert(base64String);
-}
 
 async function sendPhotos(rentId,photos){
-// const fd = new FormData()
-  // let prom = new Promise((resolve, reject) =>{
-
 const prom = await imageUploaded(photos)
-console.log("A to za wcześniue");
-console.log(prom);
 
   const info={
       rental_id:parseInt(rentId),
       img:prom
   }
-  // console.log(JSON.stringify(info))
-  // console.log(typeof(bity))
-  // console.log(prom)
+
   var target;
   if(window.location.href.substring(window.location.href.lastIndexOf('/') + 1)==="user-checkout.html")
     target="http://192.168.33.50:8200/api/v1/rentals/save-image-before";
   else
     target="http://192.168.33.50:8200/api/v1/rentals/save-image-after"
+
   return new Promise(async (res, rej) => {                       
     await fetch(target, {method: 'POST' ,mode: 'cors',body: JSON.stringify(info),
     headers: {
       "Content-Type": "application/json",
       "Authorization":"Bearer "+localStorage.getItem("token")
-    }}).then(async (r) => {   // fetch the resourse
+    }}).then(async (r) => {   
       const data =  await r.json();
       if(!r.ok)
       {

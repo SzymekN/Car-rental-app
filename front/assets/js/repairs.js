@@ -7,9 +7,6 @@ async function loadNotificationRepairs(){
     if(Object.entries(reportsInfo).length!=0){
         for (i = currentPage* maxReports; i < (currentPage* maxReports)+ maxReports; i++) {
             if(i<Object.keys(reportsInfo).length){
-                // to add when vehicle is in repair do not show
-                
-                //await getInfoWithBody("http://192.168.33.50:8200/api/v1/notifications")
                 if(typeof reportsInfo[i].vehicle_id!=="undefined"){
                     console.log(reportsInfo[i])
                 let elem = document.createElement('tr');
@@ -58,7 +55,6 @@ async function loadRepairs(idVal){
                 let elem = document.createElement('tr');
                 elem.append(tmp6.content.cloneNode(true));
                 let td=document.createElement('td');
-                
 
                 elem.querySelector("#id").innerHTML=repairsInfo[i].id;
                 elem.querySelector("#cost").innerHTML=repairsInfo[i].cost;

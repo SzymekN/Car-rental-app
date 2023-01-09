@@ -61,18 +61,6 @@ async function getFilterCars(currentPage=0){
     }
 
     var filteredCars;
-//     if(localStorage.getItem("token")==null){
-//         Promise.resolve(getInfoWithBodyWithoutToken("http://192.168.33.50:8200/api/v1/vehicles/available","POST",carsDate)).then(cars=>{
-//         filteredCars=filterCars(cars,filters);
-//         makeFilters(cars);
-//         createFilterOptions();
-//         printFilteredCars(filteredCars,currentPage);
-//     }).catch( err => {
-//     console.log('error: '+ err);
-//     alert("Złe daty!");
-//   });;
-//     }
-//     else{
 
     Promise.resolve(getInfoWithBody("http://192.168.33.50:8200/api/v1/vehicles/available","POST",carsDate)).then(cars=>{
         filteredCars=filterCars(cars,filters);
@@ -83,8 +71,7 @@ async function getFilterCars(currentPage=0){
     }).catch( err => {
     console.log('error: '+ err);
     alert("Złe daty!");
-  });;
-//}
+  });
 }
 
 function printFilteredCars(filteredCars,currentPage){

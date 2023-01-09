@@ -38,15 +38,8 @@ async function loadReports(currentPage=0){
     }
 }
 
-// async function reportDelete(){
-//     var currentReport ={id:parseInt(localStorage.getItem("reportId"))};
-//     await getInfoWithBody("http://192.168.33.50:8200/api/v1/reports","DELETE",currentReport);
-//     document.location.href = "menage-reports.html";
-// }
-
 async function sendReport(){
     var descVal=document.getElementById("description").value;
-    //const reportInfo={description:descVal};
     if(descVal.length!=0){
         var target;
         if(window.location.href.substring(window.location.href.lastIndexOf('/') + 1)==="employee-report.html")
@@ -59,8 +52,7 @@ async function sendReport(){
         reload();
     }
     else
-        alert("Wiadomość jest pusta")
-    
+        alert("Wiadomość jest pusta");
 }
 
 async function deleteReport(idVal){

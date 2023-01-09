@@ -18,7 +18,6 @@ async function loadClients(currentPage=0){
                 elem.querySelector("#surname").innerHTML=clientsInfo[i].surname;
                 elem.querySelector("#email").innerHTML=userInfo.email;
                 elem.querySelector("#phone_number").innerHTML=clientsInfo[i].phone_number;
-                //console.log(clientsInfo[i])
                 elem.querySelector(".btn-danger").id=clientsInfo[i].userId;
                 elem.querySelector(".btn-success").id=clientsInfo[i].userId;
 
@@ -40,7 +39,6 @@ async function userBlock(){
 }
 
 async function userUnblock(idVal){
-    //console.log(idVal)
     var currentUser ={id:parseInt(idVal)};
     Promise.resolve(getInfoWithBody("http://192.168.33.50:8200/api/v1/users/unblock","PUT",currentUser)).then(data=>{
         document.getElementById("password").innerText=data.password;

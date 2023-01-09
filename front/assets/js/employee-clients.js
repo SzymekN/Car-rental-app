@@ -1,8 +1,6 @@
 async function getClient(idVal){
-
   var client= await getInfoWithBody("http://192.168.33.50:8200/api/v1/clients/info","POST",{id:parseInt(idVal)})
   localStorage.setItem("currentClient",JSON.stringify(client));
-  //console.log(employee);
   var userInfo=await getInfoWithBody("http://192.168.33.50:8200/api/v1/users/info","POST",{id:parseInt(client.userId)});
   localStorage.setItem("currentUser",JSON.stringify(userInfo));
   console.log(client.phone_number)
@@ -30,11 +28,7 @@ async function loadClientsEmp(currentPage=0){
                     elem.querySelector("#surname").innerHTML=clientsInfo[i].surname;
                     elem.querySelector("#email").innerHTML=userInfo.email;
                     elem.querySelector("#phone_number").innerHTML=clientsInfo[i].phone_number;
-                    //console.log(clientsInfo[i])
                     elem.querySelector(".btn-warning").id=clientsInfo[i].id;
-                    //elem.querySelector(".btn-success").id=clientsInfo[i].userId;
-
-                    
                     document.getElementById("tableBody").appendChild(elem);
                 }
             }
@@ -55,9 +49,7 @@ async function editClient(){
     var surnameVal=document.getElementById("modalSurname").value;
     var emailVal=document.getElementById("modalEmail").value;
     var numberVal=document.getElementById("modalPhonenumber").value;
-   
-    //console.log(client.name)
-    
+
     
     if(nameVal!==client.name)
         Object.assign(clientData,{name:nameVal});

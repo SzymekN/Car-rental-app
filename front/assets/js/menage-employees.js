@@ -43,7 +43,6 @@ async function addEmployee(){
   var salaryVal=parseInt(document.getElementById('salary').value);
   var emailVal=document.getElementById('email').value;
   var passwordVal=document.getElementById('password').value;
-  //console.log(nameVal.length)
 
   if(nameVal.length!=0&&surnameVal.length!=0&&peselVal.length!=0&&peselVal.length!=0&&salaryVal.length!=0&&emailVal.length!=0&&passwordVal.length!=0){
   var employeeData = {
@@ -58,7 +57,6 @@ async function addEmployee(){
     }
   }
   await Promise.resolve(getInfoWithBody("http://192.168.33.50:8200/api/v1/employees","POST",employeeData));
-  //console.log(response);
   document.location.href="menage-employees.html";
 }else{
   alert("Wszystkie pola muszą być uzupełnione!")
@@ -72,7 +70,6 @@ async function getEmployee(idVal){
     document.getElementById("roleList").innerHTML="";
   var employee= await getInfoWithBody("http://192.168.33.50:8200/api/v1/employees/info","POST",{id:parseInt(idVal)})
   localStorage.setItem("currentEmployee",JSON.stringify(employee));
-  //console.log(employee);
   var userInfo=await getInfoWithBody("http://192.168.33.50:8200/api/v1/users/info","POST",{id:parseInt(employee.userId)});
   localStorage.setItem("currentUser",JSON.stringify(userInfo));
   document.getElementById("role").innerText=userInfo.role;
@@ -109,11 +106,7 @@ async function getEmployee(idVal){
   a.classList.add("dropdown-item");
   document.getElementById("roleList").appendChild(a);
 }
-// async function changeRole(role){
-// localStorage.setItem("role",role);
-// // await getInfoWithBody("http://192.168.33.50:8200/api/v1/users","PUT",{id:parseInt(words[0]),role:words[1]});
-// // reload();
-// }
+
 async function editEmployee(){
   const employeeId=localStorage.getItem("employeeId");
   var employee=JSON.parse(localStorage.getItem("currentEmployee"));
@@ -126,10 +119,7 @@ async function editEmployee(){
   var surnameVal=document.getElementById("modalSurname").value;
   var emailVal=document.getElementById("modalEmail").value;
   var roleVal=document.getElementById("role").innerText;
- 
-  //console.log(employee.name)
-  
-  
+
   if(nameVal!==employee.name)
       Object.assign(employeeData,{name:nameVal});
   if(surnameVal!==employee.surname)
@@ -168,7 +158,5 @@ async function editEmployee(){
         reload();
       });
     }
-    
   }
-  
 }
